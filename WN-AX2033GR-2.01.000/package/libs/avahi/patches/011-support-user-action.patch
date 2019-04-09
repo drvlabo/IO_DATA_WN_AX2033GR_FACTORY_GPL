@@ -1,0 +1,18 @@
+Index: avahi-0.6.31/avahi-autoipd/avahi-autoipd.action.linux
+===================================================================
+--- avahi-0.6.31.orig/avahi-autoipd/avahi-autoipd.action.linux	2016-09-21 17:39:17.090536621 +0800
++++ avahi-0.6.31/avahi-autoipd/avahi-autoipd.action.linux	2016-09-21 18:11:17.270920781 +0800
+@@ -84,4 +84,13 @@
+ 
+ fi
+ 
++# run user scripts
++for SCRIPT in /etc/avahi/user-autoip-action/*
++do
++	if [ -f $SCRIPT -a -x $SCRIPT ]
++	then
++		. $SCRIPT $@
++	fi
++done
++
+ exit 0

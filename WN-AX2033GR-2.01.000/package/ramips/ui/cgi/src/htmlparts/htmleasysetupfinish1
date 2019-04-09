@@ -1,0 +1,39 @@
+<script language="JavaScript">
+function easysetup_finished()
+{
+	document.location.href = "/cgi-bin/sec/htmlparts/easysetupfamilysmile.htm";
+//	window.top.location="/cgi-bin/luci";
+}
+</script>
+
+
+
+<form name="easysetup" method="POST" action="/cgi-bin/sec/easysetup.cgi">
+
+<div id="waiting" style="display:none">
+<a><Applying the settings. Please wait a moment>     <input type="text" id="wait_time" size="3" maxlength="3" readonly> </input><Seconds></a>
+</div>
+<table width="100%" height="97%" border="0" cellpadding="1" cellspacing="1">
+<tbody><tr>
+	<td align="center" valign="center">
+<table width="500" id="top_menu" border="1" align="center" cellpadding="5" cellspacing="0" >
+<tr>
+<td align="left" >
+<font size="2">
+設定が完了しました。<br>インターネットをお楽しみください。
+<br><br><br><br><br><br>
+</font>
+</td>
+</tr>
+<tr>
+<td align="right" >
+<input type="hidden" name="ottforcsrf">
+<input type="button" name="EasySetupFinish" value="　完了　" onclick="easysetup_finished()">&nbsp;
+</td>
+</tr>
+</table>
+</td>
+</tr></tbody>
+</table>
+</form>
+

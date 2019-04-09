@@ -1,0 +1,741 @@
+var VENDORS=
+{vendorMode:"WN-AC1600DGR", modelName:"WN-AC1600DGR", productID:"030A0060", vendorLogo:"logo.gif", bannerLogo:"banner.gif", titleLogo:"title.gif"};
+var vendorString = VENDORS.productID.substr(0,VENDORS.productID.length/2);
+var modelString = VENDORS.productID.substr(VENDORS.productID.length/2, VENDORS.productID.length-VENDORS.productID.length/2);
+function helpSta() {
+var dateTbl = new Array("Date", "12/17/2001", "12/17/2001", "12/17/2001", "12/17/2001", "01/01/1970", "01/01/1970", "01/01/1970", "01/01/1970", "01/01/1970");
+var timeTbl = new Array("Time", "10:01:21", "10:01:11", "10:01:09", "09:47:17", "00:01:13", "00:01:13", "00:01:13", "00:01:13", "00:00:25");
+var logTbl = new Array("Log Message", "NTP Date/Time updated", "192.168.2.100 login success", "User from 192.168.2.100 timed out", "NTP Date/Time updated", "DHCP Client: Receive Ack from 192.168.1.3,Lease time=300", "DHCP Client: Send Request,Request IP=192.168.1.25", "DHCP Client: Receive Offer from 192.168.1.3", "DHCP Client: Send Discover", "192.168.2.100 login success");
+for ( i=0 ; i<=9 ;i++) {
+document.write("<tr><td><font face='Arial' size='1'>"+ dateTbl[i] +"</td><td><font face='Arial' size='1'>"+ timeTbl[i] +"</td><td><font face='Arial' size='1'>"+ logTbl[i] +"</td></tr>");
+}
+}
+function helpSup() {}
+//******************************************************************************************
+function strRule(name, str) {
+if(name.value=="") {
+//alert(str + ' cannot be empty!');
+alert(str + showText(1015));
+setFocus(name);
+return false;
+}
+return true;
+}
+function strRule_checkempty(name, str) {
+if(name.value=="") {		
+alert(str);
+setFocus(name);
+return false;
+}
+return true;
+}
+Schedule = [
+["Mon",0x1000000],
+["Tue",0x0100000],
+["Wed",0x0010000], 
+["Thu",0x0001000], 
+["Fri",0x0000100], 
+["Sat",0x0000010],
+["Sun",0x0000001]
+];
+BCOLOR = [
+["Mon","#99CCFF",0x1000000],
+["Tue","#FFCC99",0x0100000],
+["Wed","#CCFF99",0x0010000], 
+["Thu","#FFFF99",0x0001000], 
+["Fri","#9999FF",0x0000100], 
+["Sat","#FFCC99",0x0000010],
+["Sun","#CCCCCC",0x0000001]
+];
+function validateKey(str) {
+for (var i=0; i<str.length; i++) {
+if ( (str.charAt(i) >= '0' && str.charAt(i) <= '9') || (str.charAt(i) == '.' ) )
+continue;
+return 0;
+}
+return 1;
+}
+function getDigit(str, num) {
+i=1;
+if ( num != 1 ) {
+while (i!=num && str.length!=0) {
+if ( str.charAt(0) == '.' ) {
+i++;
+}
+str = str.substring(1);
+}
+if ( i!=num )
+return -1;
+}
+for (i=0; i<str.length; i++) {
+if ( str.charAt(i) == '.' ) {
+str = str.substring(0, i);
+break;
+}
+}
+if ( str.length == 0)
+return -1;
+d = parseInt(str, 10);
+return d;
+}
+function checkSameSubnet(ip1,ip2,mask)
+{
+var ip_t=ip1.split(".");
+var mask_t=mask.split(".");
+var ip2_t=ip2.split(".");
+for(var i=0;i<4;i++){
+if( (parseInt(ip_t[i])&parseInt(mask_t[i])) != (parseInt(ip2_t[i])&parseInt(mask_t[i])))
+return false;
+}
+return true;
+}
+function checkIPoverlap(ip1_start, ip1_end, ip2_start, ip2_end)
+{
+var tmpip;
+var ip1_start_4block, ip1_end_4block, ip2_start_4block, ip2_end_4block;
+tmpip = ip1_start.split('.');
+ip1_start_4block = tmpip[3];
+tmpip = ip1_end.split('.');
+ip1_end_4block = tmpip[3];
+tmpip = ip2_start.split('.');
+ip2_start_4block = tmpip[3];
+tmpip = ip2_end.split('.');
+ip2_end_4block = tmpip[3];
+if(((ip2_start_4block - ip1_end_4block)<=0) && ((ip2_end_4block - ip1_start_4block)>=0))
+{
+//overlap
+return false;
+}
+return true;
+}
+function checkDigitRange(str, num, min, max) {
+d = getDigit(str,num);
+if ( d > max || d < min )
+return false;
+return true;
+}
+function setFocus(field) {
+field.value = field.defaultValue;
+field.focus();
+return;
+}
+function checkIpAddr(field, msg)
+{
+if ( validateKey(field.value) == 0) {
+//alert(msg + ' value. It should be the decimal number (0-9).');
+alert(showText(1011)+'\n'+showText(1013));
+return false;
+}
+if ( !checkDigitRange(field.value,1,1,255) ) {
+//alert(msg+' range in 1st digit. It should be 1-255.');
+alert(showText(1011));
+return false;
+}
+if ( !checkDigitRange(field.value,2,0,255) ) {
+//alert(msg + ' range in 2nd digit. It should be 0-255.');
+alert(showText(1011));
+return false;
+}
+if ( !checkDigitRange(field.value,3,0,255) ) {
+//alert(msg + ' range in 3rd digit. It should be 0-255.');
+alert(showText(1011));
+return false;
+}
+if ( !checkDigitRange(field.value,4,1,254) ) {
+//alert(showText(828));
+alert(showText(1011));
+return false;
+}
+if(!IP_REGX.test(field.value))
+{
+alert(showText(1011));
+return false;		
+}
+return true;
+}
+function ipRule(ip, str, type, defVal) {
+if (type == "ip") {
+if (ip.value=="") {
+alert(showText(829));
+if (defVal == 1)
+ip.value = ip.defaultValue;
+ip.focus();
+return false;
+}
+}
+else {
+if (ip.value=="" || ip.value=="0.0.0.0") {
+ip.value = "0.0.0.0";
+return true;
+}
+}
+if ( checkIpAddr(ip, 'Invalid '+str) == false ){
+if (defVal == 1)
+ip.value = ip.defaultValue;
+ip.focus();
+return false;
+}
+return true;
+}
+function portRule( fromPort, fromStr, toPort, toStr, min, max, defVal) {
+//********** from port **********
+if (fromPort.value=="") {
+if(fromStr==" Local Port" ||fromStr==" Public Port" )
+alert(showText(1012));
+else if(fromStr==" MTU")
+alert(showText(1016));
+else if(fromStr==" Fragment Threshold")
+alert(showText(1186));
+else if(fromStr==" RTS Threshold")
+alert(showText(1017));
+else if(fromStr==" Beacon Interval")
+alert(showText(1018));
+else if(fromStr==" DTIM Period")
+alert(showText(1019));
+else if(fromStr==" Remote Access")
+alert(showText(1395));
+else	
+alert(fromStr+" cannot be empty! You should set a value between "+min+"-"+max+".");
+if ( defVal == 1 )
+fromPort.value = fromPort.defaultValue;
+fromPort.focus();
+return false;
+}
+if ( validateKey( fromPort.value ) == 0 ) {
+if(fromStr==" Local Port" ||fromStr==" Public Port" )
+alert(showText(1012));
+else if(fromStr==" MTU")
+alert(showText(1016));
+else if(fromStr==" Fragment Threshold")
+alert(showText(1186));			
+else if(fromStr==" RTS Threshold")
+alert(showText(1017));
+else if(fromStr==" Beacon Interval")
+alert(showText(1018));
+else if(fromStr==" DTIM Period")
+alert(showText(1019));
+else if(fromStr==" Remote Access")
+alert(showText(1395));
+else
+alert("Invalid value of"+fromStr+"! It should be the decimal number (0-9).");		
+if ( defVal == 1 )
+fromPort.value = fromPort.defaultValue;
+fromPort.focus();
+return false;
+}
+d1 = getDigit(fromPort.value, 1);
+if (d1 > max || d1 < min) {
+if(fromStr==" Local Port" ||fromStr==" Public Port" )
+alert(showText(1012));
+else if(fromStr==" MTU")
+{
+if(FunctionList.HAS_WEB_NEW_PPPOE_MTU_MINIMAL==1)
+{
+alert(showText(1276));
+}
+else
+{
+alert(showText(1016));
+}
+}
+else if(fromStr==" Fragment Threshold")
+alert(showText(1186));			
+else if(fromStr==" RTS Threshold")
+alert(showText(1017));
+else if(fromStr==" Beacon Interval")
+alert(showText(1018));
+else if(fromStr==" DTIM Period")
+alert(showText(1019));
+else if(fromStr==" Remote Access")
+alert(showText(1395));					
+else
+alert("Invalid value of"+fromStr+"! You should set a value between "+min+"-"+max+".");
+if ( defVal == 1 )
+fromPort.value = fromPort.defaultValue;
+fromPort.focus();
+return false;
+}
+//********** to port **********
+if (toStr != "") {
+if (toPort.value!="") {
+if ( validateKey( toPort.value ) == 0 ) {
+alert("Invalid value of"+toStr+"! It should be the decimal number (0-9).");
+if ( defVal == 1 )
+toPort.value = toPort.defaultValue;
+toPort.focus();
+return false;
+}
+d2 = getDigit(toPort.value, 1);
+if (d2 > max || d2 < min) {
+if(fromStr==" Local Port" ||fromStr==" Public Port" )
+alert(showText(1012));
+else
+alert("Invalid value of"+toStr+"! You should set a value between "+min+"-"+max+".");
+if ( defVal == 1 )
+toPort.value = toPort.defaultValue;
+toPort.focus();
+return false;
+}
+if (d1 > d2 ) {
+if(defVal==2)
+alert("Invalid time range! Start value should be less than end value.");
+else
+alert("Invalid port range! 1st port value should be less than 2nd value.");
+if ( defVal == 1 )
+toPort.value = toPort.defaultValue;
+fromPort.focus();
+return false;
+}
+}
+}
+return true;
+}
+function macRule( mac, name,defVal) {
+var str = mac.value;
+var retVal=true;
+var errorMes=showText(824);
+//	if((parseInt(str.charAt(1),16)%2) == 1)
+//	{
+//errorMes="Invalid MAC address. First byte should be even.";
+//		errorMes=showText(152);
+//		retVal=false;
+//	}
+if ( str.length < 12) {
+errorMes=showText(824);
+retVal=false;
+}
+for (var i=0; i<str.length; i++) {
+if ( (str.charAt(i) >= '0' && str.charAt(i) <= '9') ||
+(str.charAt(i) >= 'a' && str.charAt(i) <= 'f') ||
+(str.charAt(i) >= 'A' && str.charAt(i) <= 'F') )
+continue;
+errorMes=showText(825);
+retVal=false;
+}
+if(retVal==false)
+{
+if ( defVal == 1 )
+mac.value = mac.defaultValue;
+alert(errorMes);
+mac.focus();
+}
+return retVal;
+}
+function MM_openBrWindow(theURL,winName,features){
+window.open(theURL,winName,features);
+}
+function deleteClick() {
+if ( !confirm('Do you really want to delete the selected entry?') ) {
+return false;
+}
+else
+return true;
+}
+function deleteAllClick() {
+if ( !confirm('Do you really want to delete the all entries?') ) {
+return false;
+}
+else
+return true;
+}
+function qosTxt(text) {
+var buffer;
+if (text == "title")	buffer = "QoS";
+if (text == "enable")	buffer = "<b>&nbsp;&nbsp;Enable QoS</b>";
+if (text == "wan1Tbl")	buffer = "<b>Current QoS Table:</b>";
+if (text == "wan2Tbl")	buffer = "<b>Current QoS of WAN2 Table:</b>";
+if (text == "wan3Tbl")	buffer = "<b>Current QoS of WAN3 Table:</b>";
+if (text == "wan4Tbl")	buffer = "<b>Current QoS of WAN4 Table:</b>";
+if (text == "priority")	buffer = "<b>Priority</b>";
+if (text == "name")	buffer = "<b>Rule Name</b>";
+if (text == "upload")	buffer = "<b>Upload Bandwidth</b>";
+if (text == "download")	buffer = "<b>Download Bandwidth</b>";
+if (text == "select")	buffer = "<b>Select</b>";
+if (text == "tdownload")	buffer = "<b>Total Download Bandwidth</b>";
+if (text == "tupload")	buffer = "<b>Total Upload Bandwidth</b>";
+document.write(buffer);	
+}
+function qosBtnTxt(form) {
+form.addQos.value='Add'; 
+form.showQos.value='Edit'; 
+form.delSelQos.value='Delete Selected'; 
+form.delAllQos.value='Delete All'; 
+form.moveUpQos.value='Move Up'; 
+form.moveDownQos.value='Move Down'; 
+form.reset.value='Reset'; 
+return true;
+}
+function qosAddTxt(text) {
+var buffer;
+if (text == "title")	buffer = "QoS";
+if (text == "descript")	buffer = "";
+if (text == "name")	buffer = "<b>Rule Name :&nbsp;</b>";
+if (text == "wanIf")	buffer = "<b>WAN Port :&nbsp;</b>";
+if (text == "strBw")	buffer = "<b>Bandwidth :&nbsp;</b>";
+if (text == "scAddr")	buffer = "<b>Local Address :&nbsp;</b>";
+if (text == "ip")	buffer = "<b>Local IP Address :&nbsp;</b>";
+if (text == "mac")	buffer = "<b>MAC Address :&nbsp;</b>";
+if (text == "dtIp")	buffer = "<b>Remote IP Address :&nbsp;</b>";
+if (text == "traf")	buffer = "<b>Traffic Type :&nbsp;</b>";
+if (text == "ptl")	buffer = "<b>Protocol :&nbsp;</b>";
+if (text == "scPort")	buffer = "<b>Local Port Range :&nbsp;</b>";
+if (text == "dtPort")	buffer = "<b>Remote Port Range :&nbsp;</b>";
+if (text == "btn") { 
+document.formQos.apply.value='Save';
+document.formQos.reset.value='Reset'; return true; 
+}
+document.write(buffer);	
+}
+var BS_LICENSE_REGX =new RegExp("^[A-Za-z0-9]{12}$");
+var BLT_NAME_REGX =new RegExp("[a-zA-Z0-9\\-]$");
+var BLT_PASSWORD_REGX =new RegExp("[a-zA-Z0-9]{4,16}$");
+var DDNS_Serial_REGX =new RegExp("^[A-Z0-9]{12,12}$");
+var DDNS_Password_REGX =new RegExp("^[a-z0-9\\-_]{6,8}$");
+var DDNS_HOST_REGX =new RegExp("^[a-z0-9\\-_]{3,16}$");
+//var COMMONSTR_0_12_REGX =new RegExp("^[\\(\\)\\[\\]\\{\\}!#$%&\\*~@\\.\\?\\-\\w]{0,12}$");
+//var COMMONSTR_0_30_REGX =new RegExp("^[\\(\\)\\[\\]\\{\\}!#$%&\\*~@\\.\\?\\-\\w]{0,30}$");
+//var COMMONSTR_1_16_REGX =new RegExp("^[\\(\\)\\[\\]\\{\\}!#$%&\\*~@\\.\\?\\-\\w]{1,16}$");
+var COMMONSTR_1_30_REGX =new RegExp("^[\\(\\)\\[\\]\\{\\}!#$%&\\*~@\\.\\?\\-\\w]{1,30}$");
+var COMMONSTR_1_32_REGX =new RegExp("^[\\(\\)\\[\\]\\{\\}!#$%&\\*~@\\.\\?\\-\\w]{1,32}$");
+//var COMMONSTR_1_64_REGX =new RegExp("^[\\(\\)\\{\\}!#$%&~@\\*\\/\\.\\?\\-\\w]{1,64}$");
+//var PASSWDSTR_1_64_REGX =new RegExp("^[\\(\\)\\{\\}!#$%&~@\\*\\/\\.\\?\\-\\w]{1,64}$");
+var HOST_NAME_REGX =new RegExp("^[a-zA-Z0-9][\\-\\w]{0,30}$");
+var HOST_NAME1_REGX =new RegExp("^([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,6}$");
+var HOST_NAME3_REGX =new RegExp("^((http|https)\://)?([a-zA-Z0-9]([a-zA-Z0-9\\-]{0,10}[a-zA-Z0-9])?[\\.]?){1,3}[a-zA-Z0-9]{2,6}$");
+var IP_REGX=new RegExp("^(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])\\.(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])\\.(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])\\.(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])$");
+var IP_REGX1=new RegExp("^((http|https)\://)?(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])\\.(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])\\.(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])\\.(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])$");
+var MULTICAST_IP_REGX = new RegExp("^(22[4-9]|2[3-4][0-9]|25[0-5])\\.(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])\\.(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])\\.(\\d{1,2}|1\\d\\d|2[0-4]\\d|25[0-5])$");
+var DOMAIN_NAME_REGX =new RegExp("^((.[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$");
+var COMMONSTR_0_12_NEW_REGX =new RegExp("^[\\(\\)\\[\\]\\{\\}!#$%&\\*~@\\.\\?\\+\\/=;_ \\-\\w]{0,12}$");
+var COMMONSTR_1_16_NEW_REGX =new RegExp("^[\\(\\)\\[\\]\\{\\}!#$%&\\*~@\\.\\?\\+\\/\\:=;_ \\-\\w]{1,16}$");
+var COMMONSTR_0_20_NEW_REGX =new RegExp("^[\\(\\)\\[\\]\\{\\}!#$%&\\*~@\\.\\?\\+\\/=;_ \\-\\w]{0,20}$");
+var COMMONSTR_0_30_NEW_REGX =new RegExp("^[\\(\\)\\[\\]\\{\\}!#$%&\\*~@\\.\\?\\+\\/\\:=;_ \\-\\w]{0,30}$");
+var COMMONSTR_1_64_NEW_REGX =new RegExp("^[\\(\\)\\[\\]\\{\\}!#$%&\\*~@\\.\\?\\+\\/\\:=;_ \\-\\w]{1,64}$");
+var PASSWDSTR_1_64_NEW_REGX =new RegExp("^[\\(\\)\\[\\]\\{\\}!#$%&\\*~@\\.\\?\\+\\/\\:=;_ \\-\\w]{1,64}$");
+function printf(fmt)
+{
+var reg = /%s/;
+var result = new String(fmt);
+for (var i = 1; i < arguments.length; i++) 
+{
+result = result.replace(reg, new String(arguments[i]));
+}
+document.write(result); 
+}
+function select_option(name,var_js_array,st_value)
+{
+printf("<select align=left size=1 name='%s'>",name);
+for(var i=0; i<var_js_array.length;++i)
+{
+printf("<option value='%s' %s> %s</option>", var_js_array[i][0],((st_value == var_js_array[i][0])?"selected":""),var_js_array[i][1]);
+}
+printf("</select>");
+}
+function getStateString(code)
+{
+var stateCode = parseInt(code,10);
+var mask;
+var codeString = [];
+for (var i = 0; i < BCOLOR.length ; i++)
+{
+mask = parseInt(BCOLOR[i][2],10);
+if (  (mask != 0) && ((stateCode & mask) == mask) )
+{
+codeString.push(BCOLOR[i][0]);
+}
+} 
+return codeString.join(", ");
+}
+function dw(str)
+{
+document.write(str+'\n');
+}
+var SUBMASK_REGX = new RegExp("^1*0*$");
+function rvt(num)
+{
+var x=0, y=0;
+p = new Array;
+q = new Array;
+var bin_num="";
+var tmp;
+x = num;
+for (i=0; i<10; i++)
+{
+y = Math.pow(2, i);
+p[i] = i;
+q[i] = (y&x)/y;
+if (y>x)
+{
+tmp = i;
+break;
+}
+}
+p.pop();
+q.pop();
+p.reverse();
+q.reverse();
+for(i=0;i<tmp;i++)
+bin_num += q[i];
+return bin_num;
+}
+function checkSUBMASK(str)
+{
+var num;
+var zero="";
+var bin="";
+for(var i=1;i<=4;i++)
+{
+zero = "";
+num = getDigit(str.value,i);
+if(num<0 || num>255) return false;
+var length = (rvt(num)).length;
+if(length < 8)
+{			
+for(var j=1;j<=(8-length);j++)
+zero = zero + '0';
+}		
+bin = bin + zero + rvt(num);
+}
+if(!SUBMASK_REGX.test(bin) || eval(bin)==0)
+return false;
+return true;
+}
+function checkIsNMode(bandVal)
+{
+return (bandVal==6||bandVal==7||bandVal==8||bandVal==9||bandVal==11)?true:false;
+}
+function rvtTo2(str)
+{
+var num;
+var zero="";
+var bin="";
+for(var i=1;i<=4;i++)
+{
+zero = "";
+num = getDigit(str,i);
+var length = (rvt(num)).length;
+if(length < 8)
+{			
+for(var j=1;j<=(8-length);j++)
+zero = zero + '0';
+}		
+bin = bin + zero + rvt(num);
+}
+return bin;
+}
+function getNetworkIP(ip,mask)
+{
+var subnetIP="";
+var ip_t=ip.split(".");
+var mask_t=mask.split(".");
+for(var i=0;i<4;i++){
+subnetIP=subnetIP+(ip_t[i] & mask_t[i]);
+if(i!=3)
+subnetIP=subnetIP+'.';
+}
+return subnetIP;
+}
+function getBroadcastIP(ip,mask)
+{
+var broadcastIP="";
+var ip_t=ip.split(".");
+var mask_t=mask.split(".");
+for(var i=0;i<4;i++){
+broadcastIP=broadcastIP+(ip_t[i] | (255-mask_t[i]));
+if(i!=3)
+broadcastIP=broadcastIP+'.';
+}
+return broadcastIP;
+}
+function prefixNetwork(ip)
+{
+var prefixIP="";
+for(var i=1;i<=3;i++){
+prefixIP=prefixIP+getDigit(ip,i)+'.';
+}
+return prefixIP;
+}
+function checksubnetIPwithNetAndBroadcast(ip, mask, client, str, mustSameSubnet)
+{
+var networkIP="";
+var broadcastIP="";
+var isSameSubnet=1;
+networkIP=getNetworkIP(ip.value,mask.value);
+useNetworkIP=prefixNetwork(networkIP)+(eval(getDigit(networkIP,4))+1);
+broadcastIP=getBroadcastIP(ip.value,mask.value);
+useBroadcastIP=prefixNetwork(broadcastIP)+(eval(getDigit(broadcastIP,4))-1);
+isSameSubnet=checkSameSubnet(ip.value,client.value,mask.value);
+if(mask.value=="255.255.255.255")
+{
+if(client.value!=ip.value)
+{
+//alert(showText(370) + str + '!\n' + showText(371) + '\nNow subnet is \"' +ip.value);
+alert(showText(1011));
+client.value = client.defaultValue;
+client.focus();
+return false;
+}
+else
+return true;
+}
+if(isSameSubnet)
+{
+if(client.value==networkIP || client.value==broadcastIP)
+{
+//alert(showText(370) + str + '!\n' + showText(371) + '\nNow subnet is \"' +useNetworkIP+ '\" to \"'+useBroadcastIP+'\"');
+alert(showText(1011));
+client.value = client.defaultValue;
+client.focus();
+return false;
+}
+}
+else if(mustSameSubnet==1)
+{
+//alert(showText(370) + str + '!\n' + showText(371) + '\nNow subnet is \"' +useNetworkIP+ '\" to \"'+useBroadcastIP+'\"');
+alert(showText(1011));
+client.value = client.defaultValue;
+client.focus();
+return false;
+}
+return true;
+}
+function getcalcIPvalue(ip1,ip2,type)
+{
+//type = 1 mean 'and' , type = 2 mean 'or'.
+var lan_ip1_t = ip1.split(".");
+var lan_ip2_t = ip2.split(".");
+var subnetIP="";
+for(var i=0;i<4;i++){
+if(type==1)
+subnetIP=subnetIP+(lan_ip1_t[i] & lan_ip2_t[i]);
+else if(type==2)
+subnetIP=subnetIP+(lan_ip1_t[i] | lan_ip2_t[i]);
+if(i!=3)
+subnetIP=subnetIP+'.';
+}
+return subnetIP;
+}
+function getById(id)
+{
+var obj;
+obj=document.getElementById(id);
+return obj;
+}
+function getByName(name,type)
+{
+var obj;
+obj=document.getElementsByName(name);
+if(typeof(obj)!="undefined")
+{
+if(typeof(type)=="string" && trim(type)=="all")
+return obj;
+else
+return obj[0];
+}
+else
+return "undefined"
+}
+function alertErrorMsg(msgIdx, target)
+{
+if(parseInt(msgIdx)>0){
+alert(showText(msgIdx));
+location.href = target;
+return false;
+}
+}
+function sprintf(fmt)
+{
+var reg = /%s/, space = / /;;
+var result = new String(fmt);
+var tmp="";
+for (var i = 1; i < arguments.length; i++) 
+{      
+tmp=arguments[i];
+if(language=="tw" || language=="cn"){
+/* remove useless padding space */
+if(!isContainAlphabet(tmp))
+tmp=tmp.toString().replace(space, "");
+}
+result = result.replace(reg, new String(tmp));
+}
+//if(language=="tw" || language=="cn")
+//	result = result.replace(space, "");
+return result; 
+}
+function mobileCss()
+{
+var mobiles = new Array('DO_NOT_REMOVE_ME','docomo','blackberry','iphone','android','ipod');
+var ua = navigator.userAgent.toLowerCase();
+var isMobile = false;
+for (var i = 1; i < mobiles.length; i++) {
+if (ua.indexOf(mobiles[i]) > 0) {
+isMobile = true;
+}
+}
+if(isMobile==true)
+{
+dw('<link rel="stylesheet" href="<%=media%>/css2.htm">');
+dw('<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=0;" />');
+}
+else
+{
+dw('<link rel="stylesheet" href="<%=media%>/setcss.htm">');
+}
+}
+function isMobileBody()
+{
+var mobiles = new Array('DO_NOT_REMOVE_ME','docomo','blackberry','iphone','android','ipod');
+var ua = navigator.userAgent.toLowerCase();
+var isMobile = false;
+for (var i = 1; i < mobiles.length; i++) {
+if (ua.indexOf(mobiles[i]) > 0) {
+isMobile = true;
+}
+}
+if(isMobile==true)
+{
+dw('<body id="windowSize" onLoad="copyto();" onResize="windowDisplay();">');
+}
+else
+{
+dw('<body onLoad="copyto();" bgcolor=white  LINK="#000000" VLINK="#000000" ALINK="#000000" leftmargin=0 topmargin=5>');
+}
+}
+function isMobileTd()
+{
+var mobiles = new Array('DO_NOT_REMOVE_ME','docomo','blackberry','iphone','android','ipod');
+var ua = navigator.userAgent.toLowerCase();
+var isMobile = false;
+for (var i = 1; i < mobiles.length; i++) {
+if (ua.indexOf(mobiles[i]) > 0) {
+isMobile = true;
+}
+}
+if(isMobile==true)
+{
+dw('<td align="center" valign="top">');
+}
+else
+{
+dw('<td align="center" valign="center">');
+}
+}
+function isMobileImg()
+{
+var mobiles = new Array('DO_NOT_REMOVE_ME','docomo','blackberry','iphone','android','ipod');
+var ua = navigator.userAgent.toLowerCase();
+var isMobile = false;
+for (var i = 1; i < mobiles.length; i++) {
+if (ua.indexOf(mobiles[i]) > 0) {
+isMobile = true;
+}
+}
+if(isMobile==true)
+{
+dw('<table border="0" width="100%">');
+dw('<tr>');
+dw('<td width="100%"  style="text-align:center" ><a onClick="return backSmartIndexPage()"><img src="<%=media%>/image/iodata.gif"></a></td>');
+dw('</tr>');
+dw('</table>');		
+}
+}

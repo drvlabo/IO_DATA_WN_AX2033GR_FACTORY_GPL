@@ -1,0 +1,63 @@
+Index: linux-3.10.14/drivers/net/raeth/raether.c
+===================================================================
+--- linux-3.10.14.orig/drivers/net/raeth/raether.c	2016-05-17 17:26:02.140254092 +0800
++++ linux-3.10.14/drivers/net/raeth/raether.c	2016-05-17 18:50:05.844241694 +0800
+@@ -126,6 +126,7 @@
+ #endif
+ 
+ struct net_device		*dev_raether;
++struct net_device		*dev2_raether;
+ 
+ static int rx_dma_owner_idx; 
+ static int rx_dma_owner_idx0;
+@@ -1243,6 +1244,34 @@
+ }
+ 
+ #if defined (CONFIG_RT_3052_ESW)
++/* __MSTC__, Smith, use netlink to send wan port connect and disconnect event to user space */
++#if 1
++void kill_sig_workq(struct work_struct *work)
++{
++	struct net_device *dev = dev2_raether;
++	unsigned int reg_val;
++	int port_no;
++
++#if defined (CONFIG_WAN_AT_P0)
++	port_no=0;
++#elif defined (CONFIG_WAN_AT_P4)
++	port_no=4;
++#endif
++#if defined (CONFIG_RALINK_RT6855) || defined(CONFIG_RALINK_RT6855A) || \
++	defined (CONFIG_RALINK_MT7620)
++	reg_val = *((volatile u32 *)(RALINK_ETH_SW_BASE+ 0x3008 + (port_no*0x100)));
++#elif defined (CONFIG_RALINK_MT7621)
++	mii_mgr_read(31, (0x3008 + (port_no*0x100)), &reg_val);
++#endif
++	if(reg_val & 0x1) {
++		kobject_uevent(&dev->dev.kobj, KOBJ_ONLINE);
++	} else {
++		kobject_uevent(&dev->dev.kobj, KOBJ_OFFLINE);
++	}
++}
++
++#else
++
+ void kill_sig_workq(struct work_struct *work)
+ {
+ 	struct file *fp;
+@@ -1296,6 +1325,7 @@
+ 	filp_close(fp, NULL);
+ 
+ }
++#endif	//if 1 /* __MSTC__, Smith, use netlink to send wan port connect and disconnect event to user space */
+ #endif
+ 
+ 
+@@ -3224,6 +3254,7 @@
+ 
+ 	// Register this device
+ 	register_netdevice(dev);
++	dev2_raether = dev;
+     }
+ }
+ #endif

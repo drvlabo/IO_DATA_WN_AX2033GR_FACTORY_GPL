@@ -1,0 +1,30 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2008 OpenWrt.org
+
+START=99
+
+start() {
+	auto_gpio_num=`uci -c /etc/buttons.d/ get buttons.auto_bridge_on.gpio_num`
+	switch_val=`gpio g $auto_gpio_num | awk '{print $4}' 2>/dev/null`
+	[ ! -z "$switch_val" ] && [ "$switch_val" = "1" ]&& {
+		echo "Auto Switch is Enabled" >/dev/console
+		[ -e /tmp/etc_tmp/ ] && {
+			touch /tmp/etc_tmp/auto_switch_on
+		}
+
+		mode=`uci get network.wan.mode 2>/dev/null`
+		[ "$mode" = "repeater" ] && {
+				sleep 16
+				`echo "Auto Bridge: Reboot and change from Repeater to Router mode!!" > /dev/console`
+				LUA_BIN=/usr/bin/lua
+				LUA_SRC=/usr/lib/lua/luci/controller/iodata/internet_mode_switch.lua
+				wan_mode="dhcp"
+				hostname=`uci get system.@system[0].hostname 2>/dev/null`
+				[ -z "$hostname"] && hostname="WN-AX2033GR"
+				ipv6pass=`uci get network.dhcp.ipv6passthrough 2>/dev/null`			
+				[ -z "$ipv6pass"] && ipv6pass="0"			
+				command="$LUA_BIN $LUA_SRC --wan_mode=$wan_mode --hostname=$hostname --ipv6pass=$ipv6pass"
+				eval $command
+		}
+	}
+}

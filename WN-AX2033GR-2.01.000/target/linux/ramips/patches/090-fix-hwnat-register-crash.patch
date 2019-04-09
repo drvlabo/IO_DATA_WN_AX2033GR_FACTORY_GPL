@@ -1,0 +1,13 @@
+Index: linux-3.10.14/net/nat/hw_nat/ra_nat.c
+===================================================================
+--- linux-3.10.14.orig/net/nat/hw_nat/ra_nat.c	2016-03-28 15:28:00.396422132 +0800
++++ linux-3.10.14/net/nat/hw_nat/ra_nat.c	2016-03-28 15:57:54.312446937 +0800
+@@ -3570,6 +3570,8 @@
+ 	dev=ra_dev_get_by_name("eth0");
+ 	printk("eth2 ifindex =%x\n", dev->ifindex);
+ 	DstPort[dev->ifindex] = dev;
++	/* __MSTC__, Autumn, fix DP_GMAC1 have not assign value */
++	DP_GMAC1 = dev->ifindex;
+ #ifdef CONFIG_RAETH_GMAC2
+ 	dev=ra_dev_get_by_name("eth1");
+ 	printk("eth2 ifindex =%x\n", dev->ifindex);

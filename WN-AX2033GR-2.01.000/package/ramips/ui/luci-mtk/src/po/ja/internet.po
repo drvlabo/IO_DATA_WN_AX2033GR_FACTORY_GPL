@@ -1,0 +1,104 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "AP mode"
+msgstr "APモード"
+
+msgid "Connection Password:"
+msgstr "接続パスワード："
+
+msgid "DNS Server 1:"
+msgstr "DNS サーバー1："
+
+msgid "DNS Server 2:"
+msgstr "DNS サーバー2："
+
+msgid "DNS Server is empty"
+msgstr "DNSサーバーが入力されていません。DNSサーバーを入力してください。"
+
+msgid "DNS Server is not correct"
+msgstr "正しいDNSサーバーを入力してください。"
+
+msgid "Default Gateway:"
+msgstr "デフォルトゲートウェイ："
+
+msgid "Default gateway is not correct"
+msgstr "正しいデフォルトゲートウェイを入力してください。"
+
+msgid "Flets"
+msgstr "フレッツシリーズ"
+
+msgid "Host Name:"
+msgstr "ホスト名："
+
+msgid "IP Address:"
+msgstr "IPアドレス："
+
+msgid "IP address is not correct"
+msgstr "正しいIPアドレスを入力してください。"
+
+msgid "IP v6 Passthrough:"
+msgstr "IPv6パススルー："
+
+msgid "Internet"
+msgstr "インターネット"
+
+msgid "It contains characters that can not be used in the Connection Password ."
+msgstr "接続パスワードに使用できない文字が含まれています。"
+
+msgid "It contains characters that can not be used in the User ID ."
+msgstr "ユーザーIDに使用できない文字が含まれています。"
+
+msgid "It contains characters that can not be used in the host name ."
+msgstr "ホスト名に使用できない文字が含まれています。"
+
+msgid "MTU is Out of range, or it contains characters that can not be used."
+msgstr "MTUは576～1492の範囲で入力してください。"
+
+msgid "MTU:"
+msgstr "MTU："
+
+msgid "Others"
+msgstr "その他"
+
+msgid "Repeater mode"
+msgstr "リピーターモード"
+
+msgid "Set the way to connect internet for this product"
+msgstr "本製品のインターネットへの接続方法を設定します。"
+
+msgid "Subnet Mask:"
+msgstr "サブネットマスク："
+
+msgid "Subnet mask is not correct"
+msgstr "正しいサブネットマスクを入力してください。"
+
+msgid "User ID:"
+msgstr "ユーザーID："
+
+msgid "host name is empty"
+msgstr "ホスト名を入力してください。"
+
+msgid "ip address is empty"
+msgstr "IPアドレスが入力されていません。IPアドレスを入力してください。"
+
+msgid "pppoe password is empty"
+msgstr "接続パスワードを入力してください。"
+
+msgid "pppoe user id is empty"
+msgstr "ユーザーIDを入力してください。"
+
+msgid "Please set the connection password and user ID specified by the provider"
+msgstr "プロバイダーから指定されたユーザーIDと接続パスワードを設定してください。"
+
+msgid "User ID and password connection, please check the documentation of the provider"
+msgstr "・ユーザーIDと接続パスワードはプロバイダーの資料を確認してください。"
+
+msgid "NTT FLET series Notes"
+msgstr "・NTTフレッツシリーズなど、「@」から後ろの部分も入力してください。"
+
+msgid "If the user ID and the connection password is unknown, please contact your provider"
+msgstr "・ユーザーIDと接続パスワードが不明な場合、プロバイダーにお問い合わせください。"
+
+msgid "V6 Plus, and IPv6 option"
+msgstr "v6プラス，IPv6オプションなど"

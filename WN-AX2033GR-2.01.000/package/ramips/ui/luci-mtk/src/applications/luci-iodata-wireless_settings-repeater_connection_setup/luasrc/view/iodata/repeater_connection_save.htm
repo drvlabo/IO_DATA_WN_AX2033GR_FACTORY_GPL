@@ -1,0 +1,14 @@
+<script type="text/javascript">
+
+{
+
+	// start to count down on main window
+	window.opener.document.getElementById("top_menu").style.display = 'none';
+	window.opener.document.getElementById("content").style.display = 'none';
+	window.opener.document.getElementById("waiting").style.display = 'block';
+	window.opener.waiting();
+	
+	// close this window
+	window.self.close();
+}
+</script>

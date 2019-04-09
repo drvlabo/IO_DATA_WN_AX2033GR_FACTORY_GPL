@@ -1,0 +1,46 @@
+Index: firewall-2014-09-19/defaults.c
+===================================================================
+--- firewall-2014-09-19.orig/defaults.c	2016-03-25 18:16:10.784821537 +0800
++++ firewall-2014-09-19/defaults.c	2016-03-25 18:18:18.714005000 +0800
+@@ -67,6 +67,9 @@
+ 	FW3_OPT("custom_chains",       bool,     defaults, custom_chains),
+ 	FW3_OPT("disable_ipv6",        bool,     defaults, disable_ipv6),
+ 
++#if 1 // Terence, MSTC, control SPI rule enable/disable
++	FW3_OPT("spi_rule_enable",     bool,     defaults, spi_rule_enable),
++#endif
+ 	FW3_OPT("__flags_v4",          int,      defaults, flags[0]),
+ 	FW3_OPT("__flags_v6",          int,      defaults, flags[1]),
+ 
+@@ -250,10 +253,17 @@
+ 
+ 		for (i = 0; i < ARRAY_SIZE(chains); i += 2)
+ 		{
++#if 1 // Terence, MSTC, control SPI rule enable/disable
++			if ( strcmp(chains[i], "delegate_forward") != 0 || defs->spi_rule_enable )
++			{
++#endif
+ 			r = fw3_ipt_rule_new(handle);
+ 			fw3_ipt_rule_extra(r, "-m conntrack --ctstate RELATED,ESTABLISHED");
+ 			fw3_ipt_rule_target(r, "ACCEPT");
+ 			fw3_ipt_rule_append(r, chains[i]);
++#if 1 // Terence, MSTC, control SPI rule enable/disable
++			}
++#endif
+ 
+ 			if (defs->drop_invalid)
+ 			{
+Index: firewall-2014-09-19/options.h
+===================================================================
+--- firewall-2014-09-19.orig/options.h	2016-03-25 18:16:06.088813683 +0800
++++ firewall-2014-09-19/options.h	2016-03-25 18:16:21.844793569 +0800
+@@ -278,6 +278,9 @@
+ 
+ 	bool disable_ipv6;
+ 
++#if 1 // Terence, MSTC, control SPI rule enable/disable
++	bool spi_rule_enable;
++#endif
+ 	uint32_t flags[2];
+ };
+ 

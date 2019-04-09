@@ -1,0 +1,34 @@
+#!/bin/sh
+
+BOOTSTAGE_UPDATE_CHECK_FLAG="/tmp/bootstage_update_check"
+wanmode=`/sbin/uci get network.wan.mode`
+ifce_automode=`/sbin/uci get network.wan.ifce_automode`
+
+wanup=0;
+delay=5;
+
+if [ "$wanmode" = ap ]; then
+	[ "$INTERFACE" = lan ] && wanup=1;
+elif [ "$wanmode" = repeater ]; then
+	[ "$INTERFACE" = lan ] && wanup=1;
+elif [ "$INTERFACE" = wan ]; then
+	 wanup=1;
+fi
+
+[ "$wanup" = 1 ] && {
+        [ "$ACTION" = "ifup" ] && {
+		if [ -f "/tmp/ioilas_done" -o "$ifce_automode" != "0x01" ] && [ "$wanmode" != "transix" -a "$wanmode" != "v6plus" ]; then
+			# MSTC MBA Sean, v6 mode use eth1 hotplug to trigger fw_auto_upgrade
+			# only run when first time Internet connection
+			if [ ! -f $BOOTSTAGE_UPDATE_CHECK_FLAG ]; then
+				touch $BOOTSTAGE_UPDATE_CHECK_FLAG
+
+				updateability=`/sbin/uci get system.firmware.updateability`
+				if [ "A$updateability" != "A0" ]; then
+					logger -t auto_fwupdate "delay $delay seconds to check"
+					/sbin/start-stop-daemon -S -x /usr/sbin/auto_fwupdate -- -b -d $delay &
+				fi
+			fi
+		fi
+	}
+}

@@ -1,0 +1,70 @@
+Index: linux-3.10.14/net/netfilter/nf_conntrack_core.c
+===================================================================
+--- linux-3.10.14.orig/net/netfilter/nf_conntrack_core.c	2016-01-08 14:07:07.000000000 +0800
++++ linux-3.10.14/net/netfilter/nf_conntrack_core.c	2017-07-25 17:04:01.020854800 +0800
+@@ -87,6 +87,46 @@
+ unsigned int nf_conntrack_hash_rnd __read_mostly;
+ EXPORT_SYMBOL_GPL(nf_conntrack_hash_rnd);
+ 
++//Add for support customized IPv4 over IPv6
++static nf_ct_destroy_handler_func_t *nf_ct_destroy_handler __read_mostly;
++
++int nf_ct_destroy_handler_register(nf_ct_destroy_handler_func_t *func)
++{
++	spin_lock_bh(&nf_conntrack_lock);
++	if (nf_ct_destroy_handler) {
++		spin_unlock_bh(&nf_conntrack_lock);
++		return -EBUSY;
++	}
++
++	rcu_assign_pointer(nf_ct_destroy_handler, func);
++	spin_unlock_bh(&nf_conntrack_lock);
++
++	return 0;
++}
++EXPORT_SYMBOL(nf_ct_destroy_handler_register);
++
++int nf_ct_destroy_handler_unregister(nf_ct_destroy_handler_func_t *func)
++{
++	spin_lock_bh(&nf_conntrack_lock);
++
++	if (unlikely(nf_ct_destroy_handler == NULL)) {
++		spin_unlock_bh(&nf_conntrack_lock);
++		return -ENOENT;
++	}
++
++	if (unlikely(nf_ct_destroy_handler != func)) {
++		spin_unlock_bh(&nf_conntrack_lock);
++		return -EINVAL;
++	}
++
++	rcu_assign_pointer(nf_ct_destroy_handler, NULL);
++	spin_unlock_bh(&nf_conntrack_lock);
++
++	return 0;
++}
++EXPORT_SYMBOL(nf_ct_destroy_handler_unregister);
++//End add
++
+ static u32 hash_conntrack_raw(const struct nf_conntrack_tuple *tuple, u16 zone)
+ {
+ 	/* The direction must be ignored, so we hash everything up to the
+@@ -220,11 +260,18 @@
+ 	struct nf_conn *ct = (struct nf_conn *)nfct;
+ 	struct net *net = nf_ct_net(ct);
+ 	struct nf_conntrack_l4proto *l4proto;
++	nf_ct_destroy_handler_func_t *handler;	//Add for support customized IPv4 over IPv6
+ 
+ 	pr_debug("destroy_conntrack(%p)\n", ct);
+ 	NF_CT_ASSERT(atomic_read(&nfct->use) == 0);
+ 	NF_CT_ASSERT(!timer_pending(&ct->timeout));
+ 
++//Add for suppoprt customized IPv4 over IPv6
++	handler = rcu_dereference(nf_ct_destroy_handler);
++	if (handler)
++		handler(ct);
++//End add
++
+ 	/* To make sure we don't get any weird locking issues here:
+ 	 * destroy_conntrack() MUST NOT be called with a write lock
+ 	 * to nf_conntrack_lock!!! -HW */

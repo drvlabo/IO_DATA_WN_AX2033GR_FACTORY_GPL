@@ -1,0 +1,44 @@
+msgid "Firmware_Upgrade"
+msgstr "Firmware Upgrade"
+
+msgid "do_fw_upgrade"
+msgstr "Do Firmware Upgrade"
+
+msgid "file_path"
+msgstr "File Path"
+
+msgid "file_upload"
+msgstr "Upload"
+
+msgid "fw_file_check"
+msgstr ""Please check the file again."
+
+msgid "fw_remind1"
+msgstr "The flash image was uploaded successfully.The system is flashing now.DO NOT POWER OFF THE DEVICE!"
+
+msgid "fw_remind2"
+msgstr "The system will restart in"
+
+msgid "fw_remind3"
+msgstr "Firmware upgrade failed..."
+
+msgid "fw_remind4"
+msgstr "The flash image was uploaded fail. The error messages are as follows:"
+
+msgid "fw_remind5"
+msgstr "To upgrade the internal device firmware, browse to the location of the binary (.BIN) upgrade file and click Upload."
+
+msgid "fw_upgrade"
+msgstr "Firmware Upgrade"
+
+msgid "fw_upgrading"
+msgstr "Firmware upgrading..."
+
+msgid "fw_uploading"
+msgstr "Firmware uploading..."
+
+msgid "fw_upgrading_message"
+msgstr "Firmware upgrading...Please wait..."
+
+msgid "seconds"
+msgstr "seconds"

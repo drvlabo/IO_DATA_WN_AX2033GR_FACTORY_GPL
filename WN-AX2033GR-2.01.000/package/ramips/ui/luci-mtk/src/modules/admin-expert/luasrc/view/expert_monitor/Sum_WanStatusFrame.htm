@@ -1,0 +1,301 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: header.htm 4891 2009-06-22 10:23:21Z jow $
+
+-%>
+<%
+--require("luci.i18n").loadc("default")
+local i18n = require("luci.i18n")
+require("luci.http").prepare_content("text/html")
+require "luci.sys"
+local uci = require("luci.model.uci").cursor()
+local lang = uci:get("luci","main","lang")
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+-%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"  />
+<title>.::<%:welcome_title_message%>::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+</head>
+<script language="JavaScript">
+
+var time_id=0;
+
+function setRefreshInterval()
+{
+	polling_interval=document.forms[0].interval.selectedIndex*60
+
+	if (polling_interval>0)
+		time_id=self.setTimeout('self.location.reload();', polling_interval*1000);
+
+	document.forms[0].interval.selectedIndex=polling_interval/60;
+}
+
+function stopInterval()
+{
+	clearTimeout(time_id);
+}
+
+function submitData()
+{
+	showWebMessage( 2, '<%:Message%>', '<%:msg_config%>' );
+	return true;
+}
+
+function path_msg_init(){
+	showFullPath(' <%:monitor%> > <%:WAN_Status%>');
+	showWebMessage( 0, '<%:Message%>', '<%:Ready%>' );
+}
+</script>
+<body onload="setRefreshInterval();path_msg_init();">
+<form onSubmit="return submitData()" method="post" name="SetIntervalForm" action="<%=controller%>/expert/monitor/wanstats">
+<div id="tabs">
+  <ul>
+    <li class="hightline"><a title="WAN Status"><span><%:WAN_Status%></span></a></li>
+  </ul>
+  <br class="clearfloat" />
+</div>
+<div id="table">
+  <ul>
+    <li class="table_top"></li>
+    <li class="table_content">
+      <div class="data">
+        <ul>
+          <div class="tableframe">
+            <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0" class="table_frame">
+              <tr>
+                <td>
+                  <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td>
+                        <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                          <tr>
+                            <td>
+							
+							
+                              <table width="100%" cellpadding="0" cellspacing="0" >
+                                <tr>
+                                  <td height="26" colspan="4">
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                      <tr>
+                                        <td height="26" class="table_title"><%:LTE_Device_Status%></td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+                                <tr class="top_font">
+                                  <td width="25%" ><%:dashboard_item%></td>
+                                  <td width="25%" ><%:dashboard_data%></td>
+                                  <td width="25%" ><%:dashboard_item%></td>
+                                  <td width="25%" ><%:dashboard_data%></td>							
+                                </tr>
+								<%
+								local lteDeviceIMEI = uci.get("wanstatus","device_status","imei")
+								local lteSIMCardIMSI = uci.get("wanstatus","device_status","imsi")
+								%>
+                                <tr class="table_font">								 
+                                  <td><%:LTE_DeviceIMEI%></td>
+                                  <td style=" color:#0b70fc;"><%if lteDeviceIMEI == nil or lteDeviceIMEI == "" then%>N/A<%else%><%=lteDeviceIMEI%><%end%></td>
+								  <td><%:LTE_SIMCardIMSI%></td>
+                                  <td style=" color:#0b70fc;"><%if lteSIMCardIMSI == nil or lteSIMCardIMSI == "" then%>N/A<%else%><%=lteSIMCardIMSI%><%end%></td>
+                                </tr>                               								
+							  </table>
+							  
+                              <table width="100%" cellpadding="0" cellspacing="0" >
+                                <tr>
+                                  <td height="26" colspan="4">
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                      <tr>
+                                        <td height="26" class="table_title"><%:LTE_Connection_Status%></td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+				<%
+				local up_time=luci.sys.uptime()
+
+				local ca_date,ca_hour,ca_minute,ca_second
+				while up_time do
+					if up_time>86399 then 
+						ca_date=math.floor(up_time/86400)
+						up_time=up_time-(ca_date*86400)
+					elseif up_time>3599 then
+						ca_hour=math.floor(up_time/3600)
+						up_time=up_time-(ca_hour*3600)
+					elseif up_time>59 then
+						ca_minute=math.floor(up_time/60)
+						up_time=up_time-(ca_minute*60)
+						if ca_minute<10 then 
+							ca_minute="0"..tostring(ca_minute) 
+						end
+					else
+						ca_second=up_time
+						if ca_second<10 then 
+							ca_second="0"..tostring(ca_second) 
+						end
+						break
+					end
+				end
+				
+				
+				local lteStatus = uci.get("wanstatus","status","status")
+				local lteSignalStrength = uci.get("wanstatus","signal_info","signal_strength")
+				local lteServiceProvider =  uci.get("wanstatus","status","service_provider")
+				local lteFrequencyBand = uci.get("wanstatus","cell_status","frequency_band")
+				local lteRoamStatus = uci.get("wanstatus","internet_info","roam_status")						
+				local lteRSRP = uci.get("wanstatus","signal_info","signal_strength_rsrp")
+				local lteRSRQ = uci.get("wanstatus","signal_info","signal_strength_rsrq")				
+				local lteAPN =  uci.get("wanstatus","status","apn_name")				
+				local lteBandwidth = uci.get("wanstatus","cell_status","dl_bandwidth")
+				local lteDynamicAPN = uci.get("wanstatus","status","apn_name")	
+				local lteCellID = uci.get("wanstatus","cell_status","cell_id")
+				
+				local lteUplinkBandwidth = uci.get("wanstatus","cell_status","ul_bandwidth")
+				local lteDownlinkBandwidth = uci.get("wanstatus","cell_status","dl_bandwidth")
+				local lteUplinkFrequency = uci.get("wanstatus","cell_status","ul_frequency")
+				local lteDownlinkFrequency = uci.get("wanstatus","cell_status","dl_frequency")
+				
+				local lteConnectionUpTime = 0	
+				local lte_ca_date=lteConnectionUpTime/86400
+				local lte_ca_hour=(lteConnectionUpTime/3600)%24
+				local lte_ca_minute=(lteConnectionUpTime/60)%60
+				local lte_ca_second=lteConnectionUpTime%60
+				%>
+                                <tr class="top_font">
+                                  <td width="25%" ><%:dashboard_item%></td>
+                                  <td width="25%" ><%:dashboard_data%></td>
+                                  <td width="25%" ><%:dashboard_item%></td>
+                                  <td width="25%" ><%:dashboard_data%></td>							
+                                </tr>
+                                <tr class="table_font">
+				  <td><%:LTE_Status%></td>
+				  <td style=" color:#0b70fc;"><%if lteStatus == nil or lteStatus == "" then%>N/A<%elseif lteStatus == "LIMITED_SERVICE" then%>Disconnected<%else%><%=lteStatus%><%end%></td>
+                                  <td><%:LTE_ConnectionUpTime%></td>
+                                  <td style=" color:#0b70fc;"><%=math.floor(lte_ca_date)%><%:day%> <%=math.floor(lte_ca_hour)%><%:hr%> <%=math.floor(lte_ca_minute)%><%:min%> <%=lte_ca_second%><%:sec%></td>
+                                </tr>
+                                <tr class="table_font">
+                                  <td><%:LTE_ServiceProvider%></td>
+                                  <td style=" color:#0b70fc;"><%if lteStatus == "Disconnected" or lteStatus == "LIMITED_SERVICE" or lteServiceProvider == nil or lteServiceProvider == "" then%>N/A<%else%><%=lteServiceProvider%><%end%></td>
+				  <td><%:LTE_RoamingStatus%></td>
+				  <td style=" color:#0b70fc;"><%if lteStatus == "Disconnected" or lteStatus == "LIMITED_SERVICE" or lteRoamStatus == "0" or lteRoamStatus == nil or lteRoamStatus == "" then%>off<%else%><%=lteRoamStatus%><%end%></td>
+                                </tr>
+                                <tr class="table_font">
+                                  <td><%:LTE_SignalStrength%></td>
+                                  <td style=" color:#0b70fc;"><%if lteSignalStrength == nil or lteSignalStrength == "" then%>N/A<%elseif lteSignalStrength == "" then%>N/A<%else%><%=lteSignalStrength%><%end%></td>
+				  <td><%:LTE_RSRP%></td>
+                                  <td style=" color:#0b70fc;"><%if lteRSRP == nil or lteRSRP == "" or lteRSRP == "-1000" then%>N/A<%else%><%=lteRSRP%><%end%></td>
+                                </tr>
+                                <tr class="table_font">                                
+							  <td><%:LTE_RSRQ%></td>
+							  <td style=" color:#0b70fc;"><%if lteRSRQ == nil or lteRSRQ == "" or lteRSRQ == "-1000" then%>N/A<%else%><%=lteRSRQ%><%end%></td>
+				   <td><%:LTE_FrequencyBand%></td>
+                                  <td style=" color:#0b70fc;"><%if lteStatus == "DOWN" or lteFrequencyBand == nil or lteFrequencyBand == "" then%>N/A<%else%><%=lteFrequencyBand%><%end%></td>
+                                </tr>
+                                <tr class="table_font">
+                                  <td><%:LTE_Uplink_Bandwidth%></td>
+                                  <td style=" color:#0b70fc;"><%if lteStatus == "Disconnected" or lteStatus == "LIMITED_SERVICE" or lteUplinkBandwidth == nil then%>N/A<%else%><%=lteUplinkBandwidth%><%end%></td>
+				  <td><%:LTE_Downlink_Bandwidth%></td>
+				  <td style=" color:#0b70fc;"><%if lteStatus == "Disconnected" or lteStatus == "LIMITED_SERVICE" or lteDownlinkBandwidth == nil then%>N/A<%else%><%=lteDownlinkBandwidth%><%end%></td>
+                                </tr>
+                                <tr class="table_font">
+                                  <td><%:LTE_Uplink_Frequency%></td>
+                                  <td style=" color:#0b70fc;"><%if lteStatus == "Disconnected" or lteStatus == "LIMITED_SERVICE" or lteUplinkFrequency == nil then%>N/A<%else%><%=lteUplinkFrequency%><%end%></td>
+				  <td><%:LTE_Downlink_Frequency%></td>
+				  <td style=" color:#0b70fc;"><%if lteStatus == "Disconnected" or lteStatus == "LIMITED_SERVICE" or lteDownlinkFrequency == nil then%>N/A<%else%><%=lteDownlinkFrequency%><%end%></td>
+                                </tr>  
+    														
+								
+                                <tr class="table_font">
+                        <td><%:APN%></td>
+						<td style=" color:#0b70fc;"><%if lteAPN == nil or lteAPN == "" then%>N/A<%else%><%=lteAPN%><%end%></td>
+						<td><%:LTE_DynamicAPN%></td>
+						<td style=" color:#0b70fc;"><%if lteStatus == "Disconnected" or lteStatus == "LIMITED_SERVICE" or lteDynamicAPN == nil or lteDynamicAPN == "" then%>N/A<%else%><%=lteDynamicAPN%><%end%></td>
+                                </tr>			                          						
+																
+                                <tr class="table_font">
+					
+						<td><%:LTE_CellID%></td>
+						<td style=" color:#0b70fc;"><%if lteCellID == nil or lteCellID == "" then%>N/A<%else%><%=lteCellID%><%end%></td>
+						<td></td>
+						<td></td>
+					
+                                </tr>   	
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </ul>
+        <ul>
+        </ul>
+        <ul>
+          <div class="w_text"><b><%:poll_interval%> : </b>
+	  <%
+      local f = io.open("/tmp/WanStatus_interval","r") 
+	  local sec_interval
+	  if f then
+	  	sec_interval = f:read("*all")
+		f:close()
+	  end
+
+	  local auto_connect_boot = uci.get("wanconfig","wanconfig","boot_autoconnect")	  
+	  %>
+            <select name="interval" size="1">
+              <option value="00000000" <% if not sec_interval or sec_interval == "0" then %>selected="selected"<% end %>><%:interval_select_none%></option>
+              <option value="00000001" <% if sec_interval == "60" then %>selected="selected"<% end %>>60 <%:seconds%></option>
+              <option value="00000002" <% if sec_interval == "120" then %>selected="selected"<% end %>>120 <%:seconds%></option>
+              <option value="00000003" <% if sec_interval == "180" then %>selected="selected"<% end %>>180 <%:seconds%></option>
+              <option value="00000004" <% if sec_interval == "240" then %>selected="selected"<% end %>>240 <%:seconds%></option>
+              <option value="00000005" <% if sec_interval == "300" then %>selected="selected"<% end %>>300 <%:seconds%></option>
+            </select>
+            &nbsp;&nbsp;
+            <input onclick="setRefreshInterval();" value="<%:set_interval%>" id="StatisticsSetInterval" name="SetIntvl"  type="submit" />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <!--<input onclick="stopInterval();" value="<%:stop_interval%>" id="StatisticsStop" name="stopIntvl"  type="button"/>-->
+          </div>
+		  <div class="w_text"><b  lang="L_MIManualConnect"><%:LTE_Maunal_Connection%> : </b>
+			<input id="btnConnect" lang="L_BTNConnect" name="lte_connect" value=<%:Connect%> type="submit" />			  
+            <input id="btnDisconnect" lang="L_BTNDisconnect" name="lte_disconnect" value=<%:Disconnect%> type="submit" />
+			<input name="man_connect" id="man_connect" type="hidden" value="0"/>
+		  </div>
+		   <div class="w_text"><b lang="L_MIAutoConnect"><%:LTE_Auto_Connect_From_Boot%> : </b>
+            <select name="auto_connect_boot" id="auto_connect_boot" size="1">
+			  <option value="0" <% if auto_connect_boot == "0" then %>selected="selected"<% end %>> NO </option>
+			  <option value="1" <% if auto_connect_boot == "1" then %>selected="selected"<% end %>> YES </option>
+            </select>
+            &nbsp;&nbsp;
+            <input id="btnSetAutoConnectBoot" lang="L_BTNSetAutoConnectBoot" name="set_auto_connect_boot" value=<%:Set%> type="submit" />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          </div>
+        </ul>
+        <ul>
+          <div class="spaceair"></div>
+        </ul>
+      </div>
+    </li>
+    <li class="table_button"></li>
+  </ul>
+</div>
+</form>
+</body>
+</html>

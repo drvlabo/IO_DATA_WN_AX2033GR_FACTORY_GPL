@@ -1,0 +1,3389 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Configuration"
+msgstr "Configuration"
+
+msgid "Dashboard"
+msgstr "Dashboard"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "Login_Msg_1_1"
+msgstr "Welcome to "
+
+msgid "Login_Msg_1_2"
+msgstr " configuration interface. Please enter username and password to login."
+
+msgid "Login_Msg_3"
+msgstr "An online administrator session already exists , still login in and substitute it?"
+
+msgid "Login_Msg_4"
+msgstr "Wrong account or password,please input again!"
+
+msgid "Maintenance"
+msgstr "Maintenance"
+
+msgid "Message"
+msgstr "Message"
+
+msgid "Monitor"
+msgstr "Monitor"
+
+msgid "Password"
+msgstr "Password"
+
+msgid "Ready"
+msgstr "Ready"
+
+msgid "Skip"
+msgstr "Skip"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Username"
+msgstr "Username"
+
+msgid "about"
+msgstr "About"
+
+msgid "apply"
+msgstr "Apply"
+
+msgid "c_contributors"
+msgstr ""
+
+msgid "c_leaddev"
+msgstr ""
+
+msgid "c_lucidesc"
+msgstr ""
+
+msgid "c_projecthome"
+msgstr ""
+
+msgid "c_thanksto"
+msgstr ""
+
+msgid "change_pw"
+msgstr "Change password"
+
+msgid "close_all"
+msgstr "close all"
+
+msgid "confirm_password"
+msgstr "Retype to Confirm"
+
+msgid "msg_confirm_1"
+msgstr "Are you sure you want to do that?"
+
+msgid "new_password"
+msgstr "New Password"
+
+msgid "open_all"
+msgstr "open all"
+
+msgid "passErrMsg2"
+msgstr "Your <New Password> is empty!"
+
+msgid "passErrMsg3"
+msgstr "Your <Retype to Confirm> is empty!"
+
+msgid "passErrMsg5"
+msgstr "Your <New Password> is not equal to <Retype to Confirm>!"
+
+msgid "passErrMsg8"
+msgstr "Password is not modified!"
+
+msgid "pass_warning_msg"
+msgstr "It is highly recommended to setup a new password instead of using the default one for security concern."
+
+msgid "welcome"
+msgstr "Welcome"
+
+msgid "welcome_title_message"
+msgstr "Welcome to LTE Portable Router"
+
+msgid "128bits"
+msgstr "128-bits"
+
+msgid "16_digit_Hex"
+msgstr "16 digit_Hex"
+
+msgid "32_digit_Hex"
+msgstr "32 digit_Hex"
+
+msgid "40_digit_Hex"
+msgstr "40 digit_Hex"
+
+msgid "48_digit_Hex"
+msgstr "48 digit_Hex"
+
+msgid "64bits"
+msgstr "64-bits"
+
+msgid "APN"
+msgstr "APN"
+
+msgid "APN_1"
+msgstr "APN 1"
+
+msgid "APN_2"
+msgstr "APN 2"
+
+msgid "APN_Error_1"
+msgstr "Only contain printable ascii characters except + , # & ? ; \\\" \\\\"
+
+msgid "APN_Error_2"
+msgstr "Only contain printable ascii characters except: space, + , # & ? ; \\\" \\\\"
+
+msgid "APN_Name"
+msgstr "APN Name"
+
+msgid "APN_Setup"
+msgstr "APN Setup"
+
+msgid "Abu_Dhabi"
+msgstr "(GMT+04:00) Abu Dhabi, Muscat"
+
+msgid "Access_Status"
+msgstr "Access Status"
+
+msgid "Action"
+msgstr "Access Status"
+
+msgid "ActiveX"
+msgstr "Access Status"
+
+msgid "Add"
+msgstr "Access Status"
+
+msgid "Add_Firewall_Rule"
+msgstr "Add Firewall Rule"
+
+msgid "Add_Rule"
+msgstr "Add Rule"
+
+msgid "Add_Static_Route"
+msgstr "Add Static Route"
+
+msgid "Address_Type"
+msgstr "Address Type"
+
+msgid "Adelaide"
+msgstr "(GMT+09:30) Adelaide, Darwin"
+
+msgid "Advanced"
+msgstr "Advanced"
+
+msgid "Aggressive"
+msgstr "Aggressive"
+
+msgid "Alaska"
+msgstr "(GMT-09:00) Alaska"
+
+msgid "Algorithm"
+msgstr "Algorithm"
+
+msgid "All"
+msgstr "All"
+
+msgid "Allow_Through_IPSec_Tunnel"
+msgstr "Allow Through IPSec Tunnel"
+
+msgid "Almaty"
+msgstr "(GMT+06:00) Almaty, Novosibirsk"
+
+msgid "Altlantic_Time"
+msgstr "(GMT-04:00) Altlantic Time (Canada)"
+
+msgid "Amsterdam"
+msgstr "(GMT+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna"
+
+msgid "Application_List"
+msgstr "Application List"
+
+msgid "Application_Rules_Summary"
+msgstr "Application Rules Summary"
+
+msgid "Apply"
+msgstr "Apply"
+
+msgid "April"
+msgstr "Apply"
+
+msgid "Arizona"
+msgstr "(GMT-07:00) Arizona"
+
+msgid "Astana"
+msgstr "(GMT+06:00) Astana, Dhaka"
+
+msgid "Athens"
+msgstr "(GMT+02:00) Athens, Beirut, Istanbul, Minsk"
+
+msgid "Auckland"
+msgstr "(GMT+12:00) Auckland, Wellington"
+
+msgid "August"
+msgstr "August"
+
+msgid "Authentication_Algorithm"
+msgstr "Authentication Algorithm"
+
+msgid "Authentication_Key"
+msgstr "Authentication Key"
+
+msgid "Authentication_Method"
+msgstr "Authentication Method"
+
+msgid "Auto_APN"
+msgstr "Auto APN"
+
+msgid "Auth"
+msgstr "Authentication"
+
+msgid "Auto_Subnet_Configuration"
+msgstr "Auto-Subnet Configuration"
+
+msgid "Azores"
+msgstr "(GMT-01:00) Azores, Cape Verde Is."
+
+msgid "Back"
+msgstr "(GMT-01:00) Azores, Cape Verde Is."
+
+msgid "Backup_Restore"
+msgstr "Backup/Restore"
+
+msgid "Baghdad"
+msgstr "(GMT+03:00) Baghdad, Kuwait, Riyadh, Nairobi"
+
+msgid "Baku"
+msgstr "(GMT+04:00) Baku, Tbilisi, Yerevan"
+
+msgid "Bandwidth_MGMT"
+msgstr "Bandwidth MGMT"
+
+msgid "Bandwidth_MGMT_Error_1"
+msgstr "Please choose different priority level for each category !!"
+
+msgid "Bandwidth_MGMT_Error_2"
+msgstr "Source Port and Destination Port can NOT be applied simultaneously when muilt-port is configured !!"
+
+msgid "Bandwidth_MGMT_Note"
+msgstr "Note: The larger priority number, the higher priority level is served."
+
+msgid "Bangkok"
+msgstr "(GMT+07:00) Bangkok, Hanoi, Jakarta"
+
+msgid "Battlenet"
+msgstr "Battlenet"
+
+msgid "Beijing"
+msgstr "(GMT+08:00) Beijing, Chongqing, Hong Kong, Urumqi"
+
+msgid "Belgrade"
+msgstr "(GMT+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague"
+
+msgid "Bogota"
+msgstr "(GMT-05:00) Bogota, Lima, Quito"
+
+msgid "Brasilia"
+msgstr "(GMT-03:00) Brasilia, Greenland"
+
+msgid "Brisbane"
+msgstr "(GMT+10:00) Brisbane, Vladivostok"
+
+msgid "Broadband"
+msgstr "Broadband"
+
+msgid "Brussels"
+msgstr "(GMT+01:00) Brussels, Copenhagen, Madrid, Paris"
+
+msgid "Bucharest"
+msgstr "(GMT+02:00) Bucharest, Cairo, Harare, Pretoria"
+
+msgid "Buenos_Aires"
+msgstr "(GMT-03:00) Buenos Aires, Georgetown"
+
+msgid "CF_Error_1"
+msgstr "Key word is exist"
+
+msgid "CF_Error_2"
+msgstr "The rule number is exceeded."
+
+msgid "CF_Error_3"
+msgstr "It should be a [0-9] number."
+
+msgid "CF_Error_4"
+msgstr "IP address format error."
+
+msgid "CFmsg"
+msgstr "A trusted computer has full access to all blocked resources. 0.0.0.0 means there is no trusted computer."
+
+msgid "Canberra"
+msgstr "(GMT+10:00) Canberra, Melbourne, Sydney"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Cannot_get_the_WAN_MAC_Address"
+msgstr "Cannot get the WAN MAC Address"
+
+msgid "Caracas"
+msgstr "(GMT-04:00) Caracas, La Poz, Santiago"
+
+msgid "Casablanca"
+msgstr "(GMT) Casablanca, Monrovia"
+
+msgid "Category"
+msgstr "Category"
+
+msgid "Central_America"
+msgstr "(GMT-06:00) Central America"
+
+msgid "Central_Time"
+msgstr "(GMT-06:00) Central Time (US &amp; Canada)"
+
+msgid "DMZ_Server_IP"
+msgstr "DMZ Server IP Address : "
+
+msgid "Chennai"
+msgstr "(GMT+05:30) Chennai, Kolkata, Mumbai, New Delhi"
+
+msgid "Chihuahua"
+msgstr "(GMT-07:00) Chihuahua, La Paz, Mazatlan"
+
+msgid "Chinese"
+msgstr "ÁπÅÈ?‰∏≠Ê?"
+
+msgid "Clear_All"
+msgstr "Clear All"
+
+msgid "Client_List"
+msgstr "Client List"
+
+msgid "Clone_the_computer_MAC_address"
+msgstr "Clone the computer's MAC address - IP Address"
+
+msgid "Configuration"
+msgstr "Configuration"
+
+msgid "Connection_Name"
+msgstr "Connection Name"
+
+msgid "Connection_Type"
+msgstr "Connection Type"
+
+msgid "Content_filter"
+msgstr "Content filter"
+
+msgid "Cookies"
+msgstr "Cookies"
+
+msgid "Current_IPSec_Security_Association"
+msgstr "Current IPSec Security Association"
+
+msgid "DHCP_Client_Table"
+msgstr "DHCP Client Table"
+
+msgid "DHCP_Error_1"
+msgstr "invalid configuration"
+
+msgid "DHCP_Error_2"
+msgstr "duplicated MAC address"
+
+msgid "DHCP_Error_3"
+msgstr "duplicated ip address"
+
+msgid "DHCP_Error_4"
+msgstr "DHCP Start IP is outside LAN.It should be between"
+
+msgid "DHCP_Error_5"
+msgstr "DHCP End IP is outside LAN.It should be between"
+
+msgid "DHCP_Error_6"
+msgstr "DHCP IP Range should not include Device IP."
+
+msgid "DHCP_PoolSizes_Error_1"
+msgstr "DHCP Pool sizes is outside IP range"
+
+msgid "DHCP_PoolSizes_Error_2"
+msgstr "Pool sizes can not be empty"
+
+msgid "DHCP_PoolSizes_Error_3"
+msgstr "Pool sizes must be number"
+
+msgid "DHCP_PoolSizes_Error_4"
+msgstr "Pool sizes can not be 0"
+
+msgid "DHCP_Server"
+msgstr "DHCP Server"
+
+msgid "DHCP_Table"
+msgstr "DHCP Table"
+
+msgid "DNS_Relay"
+msgstr "DNS Relay"
+
+msgid "DNS_Server"
+msgstr "DNS Server"
+
+msgid "DNS_Servers_Assigned_by_DHCP_Server"
+msgstr "DNS Servers Assigned by DHCP Server"
+
+msgid "Dashboard"
+msgstr "Dashboard"
+
+msgid "December"
+msgstr "December"
+
+msgid "Default_Server"
+msgstr "Default Server"
+
+msgid "Default_Server_Setup"
+msgstr "Default Server Setup"
+
+msgid "Delete"
+msgstr "Delete"
+
+msgid "DestIP"
+msgstr "DestIP"
+
+msgid "DestPortRange"
+msgstr "DestPortRange"
+
+msgid "Dest_IP_Address"
+msgstr "Dest_IP_Address"
+
+msgid "Destination"
+msgstr "Destination"
+
+msgid "Destination_Address"
+msgstr "Destination Address"
+
+msgid "Destination_IP_Address"
+msgstr "Destination IP Address"
+
+msgid "Destination_Port"
+msgstr "Destination Port"
+
+msgid "Destination_Subnet_Netmask"
+msgstr "Destination Subnet Netmask"
+
+msgid "Deutsch"
+msgstr "Deutsch"
+
+msgid "Direction"
+msgstr "Direction"
+
+msgid "Disable"
+msgstr "Disable"
+
+msgid "Domain_Name"
+msgstr "Domain Name"
+
+msgid "Domain_Name_or_IP_Address"
+msgstr "Domain Name or IP Address"
+
+msgid "Downstream_Bandwidth"
+msgstr "Downstream Bandwidth"
+
+msgid "Dynamic_DNS"
+msgstr "Dynamic DNS"
+
+msgid "Dynamic_DNS_Internet_IP"
+msgstr "Internet IP"
+
+msgid "Dynamic_DNS_Msg_1"
+msgstr "Cannot be empty while enable!"
+
+msgid "Dynamic_DNS_Real_WAN_IP"
+msgstr "Determine Real WAN IP"
+
+msgid "Dynamic_DNS_Setup"
+msgstr "Dynamic DNS Setup"
+
+msgid "Dynamic_DNS_WAN_IP"
+msgstr "WAN IP"
+
+msgid "E_Mail"
+msgstr "E-Mail"
+
+msgid "E_mail_POP3"
+msgstr "E-mail (POP3)"
+
+msgid "E_mail_SMTP"
+msgstr "E-mail (SMTP)"
+
+msgid "Eastern_Time"
+msgstr "(GMT-05:00) Eastern Time (US &amp; Canada)"
+
+msgid "Edit"
+msgstr "Edit"
+
+msgid "Ekaterinburg"
+msgstr "(GMT+05:00) Ekaterinburg"
+
+msgid "Enable"
+msgstr "Enable"
+
+msgid "Enable_Auto_IP_Change_Mode"
+msgstr "Enable Auto-IP-Change Mode"
+
+msgid "Enable_Bandwidth_Management"
+msgstr "Enable Bandwidth Management"
+
+msgid "Enable_Firewall"
+msgstr "Enable Firewall"
+
+msgid "Enable_Firewall_Rule"
+msgstr "Enable Firewall Rule"
+
+msgid "Enable_URL_Keyword_Blocking"
+msgstr "Enable URL Keyword Blocking"
+
+msgid "Enable_WOL_over_WAN"
+msgstr "Enable WOL over WAN"
+
+msgid "Encap_dot"
+msgstr "Encap."
+
+msgid "Encapsulation"
+msgstr "Encapsulation"
+
+msgid "Encapsulation_Mode"
+msgstr "Encapsulation Mode"
+
+msgid "Encryption_Algorithm"
+msgstr "Encryption Algorithm"
+
+msgid "Encryption_Key"
+msgstr "Encryption Key"
+
+msgid "End_Port"
+msgstr "End Port"
+
+msgid "English"
+msgstr "English"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "Espanol"
+msgstr "Espanol"
+
+msgid "FTP"
+msgstr "FTP"
+
+msgid "Factory_default"
+msgstr "Factory default"
+
+msgid "February"
+msgstr "February"
+
+msgid "Fiji"
+msgstr "(GMT+12:00) Fiji, Kamchatka, Marshall Is."
+
+msgid "Firewall"
+msgstr "Firewall"
+
+msgid "Firewall_Error_1"
+msgstr "Please input any IP or/and port value."
+
+msgid "Firewall_Error_2"
+msgstr "Invalid source port number."
+
+msgid "Firewall_Error_3"
+msgstr "Invalid source port range setting."
+
+msgid "Firewall_Error_4"
+msgstr "Invalid dest port number."
+
+msgid "Firewall_Error_5"
+msgstr "Invalid dest port range setting."
+
+msgid "Firewall_Rule"
+msgstr "Firewall Rule"
+
+msgid "Firewall_Setup"
+msgstr "Firewall Setup"
+
+msgid "Firmware_Upgrade"
+msgstr "Firmware Upgrade"
+
+msgid "First_DNS_Server"
+msgstr "First DNS Server"
+
+msgid "Francais"
+msgstr "Francais"
+
+msgid "From_LAN_WLAN"
+msgstr "From LAN&WLAN"
+
+msgid "From_WAN"
+msgstr "From_WAN"
+
+msgid "Game_Console"
+msgstr "Game Console"
+
+msgid "Gateway"
+msgstr "Gateway"
+
+msgid "Gateway_IP_Address"
+msgstr "Gateway IP Address"
+
+msgid "General"
+msgstr "General"
+
+msgid "Get_automatically_from_ISP"
+msgstr "Get automatically from ISP"
+
+msgid "Greenwich"
+msgstr "(GMT) Greenwich Mean Time : Dublin, Edinburgh, Lisbon, London"
+
+msgid "Guadalajara"
+msgstr "(GMT-06:00) Guadalajara, Mexico City, Monterrey"
+
+msgid "Guam"
+msgstr "(GMT+10:00) Guam, Port Moresby, Hobart"
+
+msgid "HTTPS"
+msgstr "HTTPS"
+
+msgid "Hawaii"
+msgstr "(GMT-10:00) Hawaii"
+
+msgid "Helsinki"
+msgstr "(GMT+02:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius"
+
+msgid "Hex"
+msgstr "Hex"
+
+msgid "Host_Name"
+msgstr "Host Name"
+
+msgid "ICMP"
+msgstr "ICMP"
+
+msgid "IDLE_Timeout_second"
+msgstr "IDLE Timeout [second] "
+
+msgid "IGMP_v1_v2"
+msgstr "IGMPv1/v2"
+
+msgid "IP"
+msgstr "IP"
+
+msgid "IPSec"
+msgstr "IPSec"
+
+msgid "IPSec_Algorithm"
+msgstr "IPSec Algorithm"
+
+msgid "IPSec_Keying_Mode"
+msgstr "IPSec Keying Mode"
+
+msgid "IPSec_Protocol"
+msgstr "IPSec Protocol"
+
+msgid "IPSec_VPN"
+msgstr "IPSec VPN"
+
+msgid "IP_Address"
+msgstr "IP Address"
+
+msgid "IPv6_Address"
+msgstr "IPv6 Address"
+
+msgid "IP_Alias"
+msgstr "IP Alias"
+
+msgid "IP_Error_1"
+msgstr "Error. IP address is empty."
+
+msgid "IP_Error_2"
+msgstr "It should be a [0-9] number."
+
+msgid "IP_Error_3"
+msgstr "IP adress format error."
+
+msgid "IP_Error_4"
+msgstr "IP can not be LAN IP."
+
+msgid "IP_Pool_Starting_Address"
+msgstr "IP Pool Starting Address"
+
+msgid "IP_Subnet_Mask"
+msgstr "IP Subnet Mask"
+
+msgid "IPoE"
+msgstr "IPoE"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "IPv6_IPv4_Mode"
+msgstr "IPv6/IPv4 Mode"
+
+msgid "ISP_Parameters_for_Internet_Access"
+msgstr "ISP Parameters for Internet Access"
+
+msgid "Incoming"
+msgstr "incoming"
+
+msgid "Indiana"
+msgstr "(GMT-05:00) Indiana(East)"
+
+msgid "Instant_Messenger"
+msgstr "Instant Messenger"
+
+msgid "International"
+msgstr "(GMT-12:00) International Date Line West"
+
+msgid "Irkutsk"
+msgstr "(GMT+08:00) Irkutsk, Ulaan Bataar"
+
+msgid "Islamabad"
+msgstr "(GMT+05:00) Islamabad, Karachi, Tashkent"
+
+msgid "Italiano"
+msgstr "Italiano"
+
+msgid "January"
+msgstr "January"
+
+msgid "Java"
+msgstr "Java"
+
+msgid "Jerusalem"
+msgstr "(GMT+02:00) Jerusalem"
+
+msgid "July"
+msgstr "July"
+
+msgid "June"
+msgstr "June"
+
+msgid "Kabul"
+msgstr "(GMT+04:30) Kabul"
+
+msgid "Katmandu"
+msgstr "(GMT+05:45) Katmandu"
+
+msgid "Keep_Alive"
+msgstr "NAT Keep Alive"
+
+msgid "Key_Group"
+msgstr "Key Group"
+
+msgid "Keyword"
+msgstr "Keyword"
+
+msgid "Keyword_Blocking"
+msgstr "Keyword Blocking"
+
+msgid "Keyword_List"
+msgstr "Keyword List"
+
+msgid "Krasnoyarsk"
+msgstr "(GMT+07:00) Krasnoyarsk"
+
+msgid "LAN"
+msgstr "LAN"
+
+msgid "LAN_Error_1"
+msgstr "Invalid IP"
+
+msgid "LAN_Error_2"
+msgstr "Invalid Netmask"
+
+msgid "LAN_WAN"
+msgstr "LAN&WAN"
+
+msgid "LTE"
+msgstr "LTE"
+
+msgid "LTE_BandWidth"
+msgstr "BandWidth"
+
+msgid "LTE_RoamingStatus"
+msgstr "Roaming Status"
+
+msgid "LTE_Uplink_Bandwidth"
+msgstr "Upink Bandwidth"
+
+msgid "LTE_Uplink_Frequency"
+msgstr "Uplink Frequency"
+
+msgid "LTE_Downlink_Bandwidth"
+msgstr "Downlink Bandwidth"
+
+msgid "LTE_Downlink_Frequency"
+msgstr "Downlink Frequency"
+
+msgid "LTE_CellID"
+msgstr "Cell ID"
+
+msgid "LTE_ConnectionUpTime"
+msgstr "Connection Uptime"
+
+msgid "LTE_Connection_Status"
+msgstr "LTE Status"
+
+msgid "LTE_DeviceFWVersion"
+msgstr "Device F/W Version"
+
+msgid "LTE_DeviceIMEI"
+msgstr "Device IMEI"
+
+msgid "LTE_Device_Status"
+msgstr "Device Status"
+
+msgid "LTE_DownThroughput"
+msgstr "DownLink Throughput"
+
+msgid "LTE_DuplexingMode"
+msgstr "Duplexing Mode"
+
+msgid "LTE_DynamicAPN"
+msgstr "Dynamic APN"
+
+msgid "LTE_DynamicAPN_1"
+msgstr "Dynamic APN 1"
+
+msgid "LTE_DynamicAPN_2"
+msgstr "Dynamic APN 2"
+
+msgid "LTE_EARFCN"
+msgstr "EARFCN"
+
+msgid "LTE_FWVersion"
+msgstr "LTE F/W Version"
+
+msgid "LTE_FrequencyBand"
+msgstr "Frequency Band"
+
+msgid "LTE_GlobalCellID"
+msgstr "Global Cell ID"
+
+msgid "LTE_IMEI"
+msgstr "IMEI"
+
+msgid "LTE_IMSI"
+msgstr "IMSI"
+
+msgid "LTE_ModuleFWVersion"
+msgstr "Module F/W Version"
+
+msgid "LTE_PhysicalCellID"
+msgstr "Physical Cell ID"
+
+msgid "LTE_RSRP"
+msgstr "RSRP"
+
+msgid "LTE_RSRQ"
+msgstr "RSRQ"
+
+msgid "LTE_ReceivePDU"
+msgstr "Receive PDU"
+
+msgid "LTE_SIMCardIMSI"
+msgstr "SIM Card IMSI"
+
+msgid "LTE_SINR"
+msgstr "SINR"
+
+msgid "LTE_ServiceProvider"
+msgstr "Service Provider"
+
+msgid "LTE_SignalStrength"
+msgstr "Signal Strength"
+
+msgid "LTE_Status"
+msgstr "Link Status"
+
+msgid "LTE_TranmissionMode"
+msgstr "Tranmission Mode"
+
+msgid "LTE_TransmitPDU"
+msgstr "Transmit PDU"
+
+msgid "LTE_UPThroughput"
+msgstr "UpLink Throughput"
+
+msgid "LTE_Maunal_Connection"
+msgstr "Manual Connection"
+
+msgid "LTE_Auto_Connect_From_Boot"
+msgstr "Auto Connect from Boot"
+
+msgid "Connect"
+msgstr "Connect"
+
+msgid "Disconnect"
+msgstr "Disconnect"
+
+msgid "Set"
+msgstr "Set"
+
+msgid "Language"
+msgstr "Language"
+
+msgid "LengthErrMsgPIN"
+msgstr "The length of PIN should be 4-8."
+
+msgid "LengthErrMsgPUK"
+msgstr "The length of PUK should be 8."
+
+msgid "Local_Addr_dot"
+msgstr "Local Addr."
+
+msgid "Local_Address"
+msgstr "Local Address"
+
+msgid "Local_Address_End_Mask"
+msgstr "Local Address End/Mask"
+
+msgid "Local_Content"
+msgstr "Local Content"
+
+msgid "Local_ID_Type"
+msgstr "Local ID Type"
+
+msgid "Local_Policy"
+msgstr "Local Policy"
+
+msgid "Log"
+msgstr "Log"
+
+msgid "MAC_Address"
+msgstr "MAC Address"
+
+msgid "MACaddresse"
+msgstr "MACaddresse"
+
+msgid "MLG_MLG_YouCanTryOnMoreTimeNewPINConfirmErrMsg_LTEWan"
+msgstr "Confirm New PIN ERROR!"
+
+msgid "MLG_PINRemainAttempts_LTEWan"
+msgstr "Remain attempts :"
+
+msgid "MLG_PIN_Confirm_New_PIN_LTEWan"
+msgstr "Confirm New PIN :"
+
+msgid "MLG_PIN_InputPIN_LTEWan"
+msgstr "Input PIN :"
+
+msgid "MLG_PIN_Management_LTEWan"
+msgstr "PIN Management"
+
+msgid "MLG_PIN_Modification_LTEWan"
+msgstr "Modification :"
+
+msgid "MLG_PIN_New_PIN_LTEWan"
+msgstr "New PIN :"
+
+msgid "MLG_PIN_Old_PIN_LTEWan"
+msgstr "Old PIN :"
+
+msgid "MLG_PIN_Verification_LTEWan"
+msgstr "PIN Verification"
+
+msgid "MLG_PUKRemainAttempts_LTEWan"
+msgstr "Remain attempts :"
+
+msgid "MLG_PUK_LTEWan"
+msgstr "PUK :"
+
+msgid "MLG_SIMCard_Status_LTEWan"
+msgstr "SIM Card Status"
+
+msgid "MLG_PIN_DISABLE"
+msgstr "PIN Disable"
+
+msgid "MLG_PIN_REQUIRED"
+msgstr "PIN Required"
+
+msgid "MLG_PIN_VERIFIED"
+msgstr "PIN Verified"
+
+msgid "MLG_PIN_LOCKED"
+msgstr "PIN Locked"
+
+msgid "MLG_NOT_PRESENT"
+msgstr "Not Present"
+
+msgid "MLG_Save_my_PIN_LTEWan"
+msgstr "Save my PIN :"
+
+msgid "MLG_ThePINIsEmptyErrMsg_LTEWan"
+msgstr "The PIN or PUK is empty. Please enter the number again."
+
+msgid "MLG_ThePINIsInvalidErrMsg_LTEWan"
+msgstr "The PIN is invalid. Please enter the number again."
+
+msgid "MLG_YouCanTryOnMoreTimePINErrMsg_LTEWan"
+msgstr "You can try one more time. If PIN verification fails one more time, PUK verification is required. Are you sure you want to continue?"
+
+msgid "MLG_YouCanTryOnMoreTimePUKErrMsg_LTEWan"
+msgstr "You can try one more time. If PUK verification fails one more time, your SIM card will be permanently locked. Are you sure you want to continue?"
+
+msgid "NETWORK_SETTINGS"
+msgstr "Network Settings"
+
+msgid "NETWORK_MODE"
+msgstr "Network Mode"
+
+msgid "NETWORK_MODE_PREFERENCE"
+msgstr "Network Mode Preference"
+
+msgid "MTU"
+msgstr "MTU"
+
+msgid "MTU_SIZE"
+msgstr "MTU Size"
+
+msgid "NETWORK_SELECT"
+msgstr "Network Select"
+
+msgid "AUTO_NETWORK_SELECTION"
+msgstr "Auto Network Selection"
+
+msgid "MANUAL_SELECTION"
+msgstr "Manual Selection"
+
+msgid "L_CIMValidateNW_SELWarn"
+msgstr "Start to scan networks? It may take many time."
+
+msgid "L_CIMResult_info1"
+msgstr "Done. Nothing find...Or Try again later."
+
+msgid "L_CIMResult_info2"
+msgstr "Done. Please select..."
+
+msgid "MLG_PleaseWait"
+msgstr "Please wait..."
+
+msgid "MSN_Game_Zone"
+msgstr "MSN Game Zone"
+
+msgid "Magadan"
+msgstr "(GMT+11:00) Magadan, Solomon Is., New Caledonia"
+
+msgid "Main"
+msgstr "Main"
+
+msgid "Maintenance"
+msgstr "Maintenance"
+
+msgid "Management"
+msgstr "Management"
+
+msgid "Manual"
+msgstr "Manual"
+
+msgid "March"
+msgstr "March"
+
+msgid "Max_NAT_Firewall_Session_Per_User"
+msgstr "Max NAT/Firewall Session Per User"
+
+msgid "May"
+msgstr "May"
+
+msgid "Message"
+msgstr "Message"
+
+msgid "Mid_Atlantic"
+msgstr "(GMT-02:00) Mid-Atlantic"
+
+msgid "Midway_Island"
+msgstr "(GMT-11:00) Midway Island, Samoa"
+
+msgid "Mode"
+msgstr "Mode"
+
+msgid "Modify"
+msgstr "Modify"
+
+msgid "Monitor"
+msgstr "Monitor"
+
+msgid "Moscow"
+msgstr "(GMT+03:00) Moscow, St. Petersburg, Volgograd"
+
+msgid "Mountain_Time"
+msgstr "(GMT-07:00) Mountain Time (US &amp; Canada)"
+
+msgid "Multicast_Setup"
+msgstr "Multicast Setup"
+
+msgid "My_IP_Address"
+msgstr "My IP Address"
+
+msgid "My_WAN_IP_Address"
+msgstr "My WAN IP Address"
+
+msgid "NAT"
+msgstr "NAT"
+
+msgid "NAT_Error_1"
+msgstr "invalid max session number!! please re-configure it in range 1~16000"
+
+msgid "NAT_Error_10"
+msgstr "Incoming End port is exist"
+
+msgid "NAT_Error_11"
+msgstr "Trigger port is exist"
+
+msgid "NAT_Error_12"
+msgstr "Trigger End port is exist"
+
+msgid "NAT_Error_13"
+msgstr "Only contain printable ascii characters except + , # & ? ; \\\" \\\\"
+
+msgid "NAT_Error_14"
+msgstr "Service Name cannot be empty"
+
+msgid "NAT_Error_2"
+msgstr "Invalid default server ip address!\nIt should be located in the same subnet of current LAN IP address."
+
+msgid "NAT_Error_3"
+msgstr "Invalid server ip address!\nIt should be located in the same subnet of current LAN IP address."
+
+msgid "NAT_Error_5"
+msgstr "Invalid Setting"
+
+msgid "NAT_Error_6"
+msgstr "Incoming End port is error"
+
+msgid "NAT_Error_7"
+msgstr "Trigger port should not be zero"
+
+msgid "NAT_Error_8"
+msgstr "Trigger End port is error"
+
+msgid "NAT_Error_9"
+msgstr "Incoming port is exist"
+
+msgid "NAT_Msg_1"
+msgstr "Since Port 80 is used, the device will re-login automatically with port 8080 after applying setting, which will be reset to 80 when this rule is removed."
+
+msgid "NAT_Msg_2"
+msgstr "Since Port 23 is used, the device TELNET Server port will be moved to 2323, which will be reset to 23 when this rule is removed."
+
+msgid "NAT_Msg_3"
+msgstr "The device will re-login automatically with port 80 after applying setting"
+
+msgid "NAT_Msg_4"
+msgstr "The device TELNET Server port will be reset to 23"
+
+msgid "NAT_Traversal"
+msgstr "NAT Traversal"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "NetMeeting"
+msgstr "NetMeeting"
+
+msgid "Network"
+msgstr "Network"
+
+msgid "Network_Address_Translation"
+msgstr "Network Address Translation(NAT)"
+
+msgid "Newfoundland"
+msgstr "(GMT-03:30) Newfoundland"
+
+msgid "None"
+msgstr "None"
+
+msgid "Note"
+msgstr "Note"
+
+msgid "November"
+msgstr "November"
+
+msgid "Nuku_alofa"
+msgstr "(GMT+13:00) Nuku'alofa"
+
+msgid "Obtain_an_IP_Address_Automatically"
+msgstr "Obtain an IP Address Automatically"
+
+msgid "Obtained_From_ISP"
+msgstr "Obtained From ISP"
+
+msgid "October"
+msgstr "October"
+
+msgid "Off"
+msgstr "Off"
+
+msgid "On"
+msgstr "On"
+
+msgid "Others"
+msgstr "Others"
+
+msgid "PPP_Auto_Connect"
+msgstr "PPP Auto Connect"
+
+msgid "PPP_Information"
+msgstr "PPP Information"
+
+msgid "PPP_Password"
+msgstr "PPP Password"
+
+msgid "PPP_Username"
+msgstr "PPP Username"
+
+msgid "PPPoE"
+msgstr "PPPoE"
+
+msgid "PPPoE_Service_Name"
+msgstr "PPPoE Service Name"
+
+msgid "PPTP"
+msgstr "PPTP"
+
+msgid "PPTP_Auto_Connect"
+msgstr "PPTP Auto Connect"
+
+msgid "PPTP_Configuration"
+msgstr "PPTP CONFIGURATION"
+
+msgid "PPTP_Information"
+msgstr "PPTP Information"
+
+msgid "PPTP_Password"
+msgstr "PPTP Password"
+
+msgid "PPTP_SER_IP"
+msgstr "PPTP Server IP Address"
+
+msgid "PPTP_Username"
+msgstr "PPTP Username"
+
+msgid "Pacific_Time"
+msgstr "(GMT-08:00) Pacific Time (US &amp; Canada), Tijuana"
+
+msgid "Packet_Statistics"
+msgstr "Packet Statistics"
+
+msgid "Password"
+msgstr "Password"
+
+msgid "Peer_Content"
+msgstr "Peer Content"
+
+msgid "Peer_ID_Type"
+msgstr "Peer ID Type"
+
+msgid "Phase_1"
+msgstr "Phase 1"
+
+msgid "Phase_2"
+msgstr "Phase 2"
+
+msgid "PlayStation"
+msgstr "PlayStation"
+
+msgid "Pool_Size"
+msgstr "Pool Size"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Port_Error_1"
+msgstr "port number cannot be empty !!"
+
+msgid "Port_Error_2"
+msgstr "Please set port between 1~65535"
+
+msgid "Port_Error_3"
+msgstr "port number format error."
+
+msgid "Port_Error_4"
+msgstr "duplicated port number or range."
+
+msgid "Port_Forwarding"
+msgstr "Port Forwarding"
+
+msgid "Port_Forwarding_Summary"
+msgstr ""
+
+msgid "Port_Trigger"
+msgstr "Port Trigger"
+
+msgid "Port_Trigger_Rules"
+msgstr "Port Trigger Rules"
+
+msgid "Pre_Shared_Key"
+msgstr "Pre-Shared Key"
+
+msgid "Priority"
+msgstr "Priority"
+
+msgid "Property"
+msgstr "Property"
+
+msgid "Protocol"
+msgstr "Protocol"
+
+msgid "Rangoon"
+msgstr "(GMT+06:30) Rangoon"
+
+msgid "Ready"
+msgstr "Ready"
+
+msgid "Real_Audio"
+msgstr "Real-Audio"
+
+msgid "Refresh"
+msgstr "Refresh"
+
+msgid "Remote_Addr_dot"
+msgstr "Remote Addr."
+
+msgid "Remote_Address"
+msgstr "Remote Address"
+
+msgid "Remote_Address_End_Mask"
+msgstr "Remote Address End/Mask"
+
+msgid "Remote_Gateway"
+msgstr "Remote Gateway"
+
+msgid "Remote_MGMT"
+msgstr "Remote MGMT"
+
+msgid "Remote_MGMT_Note_3"
+msgstr "<span class="i_note_a"> Please insert the MAC Address in this format 00:00:00:00:00:00 </span>"
+
+msgid "Remote_Policy"
+msgstr "Remote Policy"
+
+msgid "Reserve"
+msgstr "Reserve"
+
+msgid "Reset"
+msgstr "Reset"
+
+msgid "clear"
+msgstr "Clear"
+
+msgid "Respond_to_Ping_on"
+msgstr "Respond to Ping on"
+
+msgid "Restrict_Web_Features"
+msgstr "Restrict Web Features"
+
+msgid "Route_Error_1"
+msgstr "Route Name must be in A-Z, a-z, 0-9 and underline"
+
+msgid "Route_Error_2"
+msgstr "Gateway IP Address is in illegel format."
+
+msgid "Route_Error_3"
+msgstr "Netmask is in illegel format."
+
+msgid "Route_Name"
+msgstr "Route Name"
+
+msgid "Rule_Configuration"
+msgstr "Rule Configuration"
+
+msgid "SA_Life_Time"
+msgstr "SA Life Time"
+
+msgid "SA_Monitor"
+msgstr "SA Monitor"
+
+msgid "SIM"
+msgstr "SIM"
+
+msgid "SPI"
+msgstr "SPI"
+
+msgid "SSID_Select"
+msgstr "SSID Select"
+
+msgid "Sarajevo"
+msgstr "(GMT+01:00) Sarajevo, Skopje, Warsaw, Zagreb"
+
+msgid "Saskatchewan"
+msgstr "(GMT-06:00) Saskatchewan"
+
+msgid "Second_DNS_Server"
+msgstr "Second DNS Server"
+
+msgid "Seconds"
+msgstr "Seconds"
+
+msgid "Secure_Gateway_Address"
+msgstr "Secure Gateway Address"
+
+msgid "Secured_Client_IP_Address"
+msgstr "Secured Client IP Address"
+
+msgid "Security"
+msgstr "Security"
+
+msgid "Selected"
+msgstr "Selected"
+
+msgid "Seoul"
+msgstr "(GMT+09:00) Seoul, Yakutsk"
+
+msgid "September"
+msgstr "September"
+
+msgid "Server_IP_Address"
+msgstr "Server IP Address"
+
+msgid "Service"
+msgstr "Service"
+
+msgid "ServiceName"
+msgstr "ServiceName"
+
+msgid "Service_Management"
+msgstr "Service Management"
+
+msgid "Service_Name"
+msgstr "Service Name"
+
+msgid "Service_Protocol"
+msgstr "Service Protocol"
+
+msgid "Service_Provider"
+msgstr "Service Provider"
+
+msgid "Services"
+msgstr "Services"
+
+msgid "Set_WAN_MAC_Address"
+msgstr "Set WAN MAC Address"
+
+msgid "Singapore"
+msgstr "(GMT+08:00) Kuala Lumpur, Singapore"
+
+msgid "Single_Address"
+msgstr "Single Address"
+
+msgid "SourceIP"
+msgstr "SourceIP"
+
+msgid "SourcePortRange"
+msgstr "SourcePortRange"
+
+msgid "Source_Address"
+msgstr "Source Address"
+
+msgid "Source_IP_Address"
+msgstr "Source_IP_Address"
+
+msgid "Source_Port"
+msgstr "Source_Port"
+
+msgid "Source_Subnet_Netmask"
+msgstr "Source Subnet Netmask"
+
+msgid "Sri_Jayawardenepura"
+msgstr "(GMT+06:00) Sri Jayawardenepura"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "Static_DHCP_Table"
+msgstr "Static DHCP Table"
+
+msgid "Static_IP_Address"
+msgstr "Static IP Address"
+
+msgid "Static_Route"
+msgstr "Static Route"
+
+msgid "Static_Route_Rules"
+msgstr "Static Route Rules"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Subnet_Address"
+msgstr "Subnet Address"
+
+msgid "Subnet_Mask"
+msgstr "Subnet Mask"
+
+msgid "Systemrebooting"
+msgstr "Restart"
+
+msgid "TCP"
+msgstr "TCP"
+
+msgid "TCP_UDP"
+msgstr "TCP_UDP"
+
+msgid "TFTP"
+msgstr "TFTP"
+
+msgid "Taipei"
+msgstr "(GMT+08:00) Perth, Taipei"
+
+msgid "Tehran"
+msgstr "(GMT+03:30) Tehran"
+
+msgid "Telnet"
+msgstr "Telnet"
+
+msgid "Third_DNS_Server"
+msgstr "Third DNS Server"
+
+msgid "Time"
+msgstr "Time"
+
+msgid "Time_Msg_1"
+msgstr "You must input 0~23 hours!!"
+
+msgid "Time_Msg_10"
+msgstr "You must input 0~23 hours!!"
+
+msgid "Time_Msg_13"
+msgstr "You must input 1~30 days!"
+
+msgid "Time_Msg_15"
+msgstr "You must input 1~30 days!"
+
+msgid "Time_Msg_16"
+msgstr "You must input 1~29 days!"
+
+msgid "Time_Msg_17"
+msgstr "You must input 1~28 days!"
+
+msgid "Time_Msg_18"
+msgstr "You must input 1~29 days!"
+
+msgid "Time_Msg_19"
+msgstr "You must input 1~28 days!"
+
+msgid "Time_Msg_2"
+msgstr "You must input 0~59 minutes!!"
+
+msgid "Time_Msg_3"
+msgstr "You must input 0~59 seconds!!"
+
+msgid "Time_Msg_4"
+msgstr "You must input 1970~2050 years!!"
+
+msgid "Time_Msg_5"
+msgstr "You must input 1~12 month!!"
+
+msgid "Time_Msg_6"
+msgstr "You must input 1~31 days!"
+
+msgid "Time_Msg_7"
+msgstr "You must input 1~30 days!"
+
+msgid "Time_Msg_8"
+msgstr "You must input 1~29 days!"
+
+msgid "Time_Msg_9"
+msgstr "You must input 1~28 days!"
+
+msgid "Tokyo"
+msgstr "(GMT+09:00) Osaka, Sapporo, Tokyo"
+
+msgid "Transport"
+msgstr "Transport"
+
+msgid "Trigger"
+msgstr "trigger"
+
+msgid "Trusted_Computer_IP_Address"
+msgstr "Trusted Computer IP Address:"
+
+msgid "Trusted_IP_Setup"
+msgstr "Trusted IP Setup"
+
+msgid "Tunnel"
+msgstr "Tunnel"
+
+msgid "UDP"
+msgstr "UDP"
+
+msgid "UPnP"
+msgstr "UPnP"
+
+msgid "Upstream_Bandwidth"
+msgstr "Upstream Bandwidth"
+
+msgid "Use_Fixed_IP_Address"
+msgstr "Use Fixed IP Address"
+
+msgid "User_Defined"
+msgstr "User-Defined"
+
+msgid "User_define"
+msgstr "User define"
+
+msgid "User_defined_Service"
+msgstr "User-defined Service"
+
+msgid "Username"
+msgstr "Username"
+
+msgid "VPN"
+msgstr "VPN"
+
+msgid "VPN_Monitor"
+msgstr "VPN Monitor"
+
+msgid "VPN_Passthrough"
+msgstr "VPN Passthrough"
+
+msgid "VPN_Summary"
+msgstr "VPN Summary"
+
+msgid "VoIP"
+msgstr "VoIP"
+
+msgid "VoIP_SIP"
+msgstr "VoIP (SIP)"
+
+msgid "WAN"
+msgstr "WAN"
+
+msgid "WAN_Error_11"
+msgstr "Please specify Idle Time"
+
+msgid "WAN_Error_12"
+msgstr "First DNS Server should not be empty with User-Defined."
+
+msgid "WAN_Error_13"
+msgstr "First DNS Server should not be 0.0.0.0, please give DNS IP Address."
+
+msgid "WAN_Error_14"
+msgstr "Second DNS Server should not be empty with User-Defined."
+
+msgid "WAN_Error_15"
+msgstr "Second DNS Server should not be 0.0.0.0, please give DNS IP Address."
+
+msgid "WAN_Error_16"
+msgstr "Third DNS Server should not be empty with User-Defined."
+
+msgid "WAN_Error_17"
+msgstr "Third DNS Server should not be 0.0.0.0, please give DNS IP Address."
+
+msgid "WAN_Error_18"
+msgstr "MAC Address should not be empty!"
+
+msgid "WAN_Error_19"
+msgstr "Please fill the MAC Address in correct format (XX:XX:XX:XX:XX:XX) with hex value !"
+
+msgid "WAN_Error_2"
+msgstr ""
+
+msgid "WAN_Error_20"
+msgstr "Please set MTU Size between 1280 ~ 1500 !"
+
+msgid "WAN_Error_21"
+msgstr "Please set MTU Size between 1360 ~ 1492 !"
+
+msgid "WAN_Error_22"
+msgstr "It should be a [0-9] number with MTU Size."
+
+msgid "WAN_Error_4"
+msgstr "WAN is Fixed IP, please set DNS Assignment to User-Defined or None."
+
+msgid "WAN_Error_5"
+msgstr "PPPoE user name should not be empty!"
+
+msgid "WAN_Error_6"
+msgstr "PPPoE password should not be empty!"
+
+msgid "WAN_IP_Address_Assignment"
+msgstr "WAN IP Address Assignment"
+
+msgid "WAN_MAC_Address"
+msgstr "WAN MAC Address"
+
+msgid "WAN_Status"
+msgstr "Internet Status"
+
+msgid "WLAN_2_dot_4_G_Station_Status"
+msgstr "WLAN Station Status"
+
+msgid "WLAN_5_G_Station_Status"
+msgstr "WLAN 5G Station Status"
+
+msgid "WWW"
+msgstr "WWW"
+
+msgid "Wake_MAC_Address"
+msgstr "Wake MAC Address"
+
+msgid "Wake_On_LAN"
+msgstr "Wake On LAN"
+
+msgid "Wake_On_LAN_over_WAN_Settings"
+msgstr "Wake On LAN over WAN Settings"
+
+msgid "Web_Proxy"
+msgstr "Web Proxy"
+
+msgid "Web_Surfing"
+msgstr "Web Surfing"
+
+msgid "West_Central_Africa"
+msgstr "(GMT+01:00) West Central Africa"
+
+msgid "XBox_Live"
+msgstr "XBox Live"
+
+msgid "_encryption"
+msgstr ""
+
+msgid "a_i_keepflash"
+msgstr ""
+
+msgid "a_i_keepflash1"
+msgstr ""
+
+msgid "a_i_luci1"
+msgstr ""
+
+msgid "a_i_ucicommit"
+msgstr ""
+
+msgid "a_i_ucicommit1"
+msgstr ""
+
+msgid "a_n_conntrack"
+msgstr ""
+
+msgid "a_n_conntrack_desc"
+msgstr ""
+
+msgid "a_n_i_bridge"
+msgstr ""
+
+msgid "a_n_i_bridge1"
+msgstr ""
+
+msgid "a_n_i_stp"
+msgstr ""
+
+msgid "a_n_i_stp1"
+msgstr ""
+
+msgid "a_n_ifaces1"
+msgstr ""
+
+msgid "a_n_r_netmask1"
+msgstr ""
+
+msgid "a_n_r_target1"
+msgstr ""
+
+msgid "a_n_r_target6"
+msgstr ""
+
+msgid "a_n_routes"
+msgstr ""
+
+msgid "a_n_routes1"
+msgstr ""
+
+msgid "a_n_routes_kernel4"
+msgstr ""
+
+msgid "a_n_routes_kernel6"
+msgstr ""
+
+msgid "a_n_routes_static4"
+msgstr ""
+
+msgid "a_n_routes_static6"
+msgstr ""
+
+msgid "a_n_switch"
+msgstr ""
+
+msgid "a_n_switch1"
+msgstr ""
+
+msgid "a_s_changepw"
+msgstr ""
+
+msgid "a_s_changepw1"
+msgstr ""
+
+msgid "a_s_changepw_changed"
+msgstr ""
+
+msgid "a_s_crontab"
+msgstr ""
+
+msgid "a_s_crontab1"
+msgstr ""
+
+msgid "a_s_desc"
+msgstr ""
+
+msgid "a_s_fstab"
+msgstr ""
+
+msgid "a_s_fstab_active"
+msgstr ""
+
+msgid "a_s_fstab_avail"
+msgstr ""
+
+msgid "a_s_fstab_device1"
+msgstr ""
+
+msgid "a_s_fstab_fs1"
+msgstr ""
+
+msgid "a_s_fstab_mountpoint"
+msgstr ""
+
+msgid "a_s_fstab_mountpoints"
+msgstr ""
+
+msgid "a_s_fstab_mountpoints1"
+msgstr ""
+
+msgid "a_s_fstab_swap1"
+msgstr ""
+
+msgid "a_s_fstab_used"
+msgstr ""
+
+msgid "a_s_p_ipkg"
+msgstr ""
+
+msgid "a_s_sshkeys"
+msgstr ""
+
+msgid "a_s_sshkeys1"
+msgstr ""
+
+msgid "a_srv_d_pwauth"
+msgstr ""
+
+msgid "a_srv_d_pwauth1"
+msgstr ""
+
+msgid "a_srv_dropbear1"
+msgstr ""
+
+msgid "a_srv_http1"
+msgstr ""
+
+msgid "a_srv_http_authrealm"
+msgstr ""
+
+msgid "a_srv_http_authrealm1"
+msgstr ""
+
+msgid "a_srv_http_config1"
+msgstr ""
+
+msgid "a_srv_http_keepalive"
+msgstr ""
+
+msgid "a_srv_http_path"
+msgstr ""
+
+msgid "a_srv_http_root"
+msgstr ""
+
+msgid "a_srv_http_timeout"
+msgstr ""
+
+msgid "a_srv_lucittpd"
+msgstr ""
+
+msgid "a_w_adhoc"
+msgstr ""
+
+msgid "a_w_ahdemo"
+msgstr ""
+
+msgid "a_w_ap"
+msgstr ""
+
+msgid "a_w_cacert"
+msgstr ""
+
+msgid "a_w_channel"
+msgstr ""
+
+msgid "a_w_client"
+msgstr ""
+
+msgid "a_w_create"
+msgstr ""
+
+msgid "a_w_eaptype"
+msgstr ""
+
+msgid "a_w_monitor"
+msgstr ""
+
+msgid "a_w_nasid"
+msgstr ""
+
+msgid "a_w_netmanual"
+msgstr ""
+
+msgid "a_w_network1"
+msgstr ""
+
+msgid "a_w_networks1"
+msgstr ""
+
+msgid "a_w_peapauth"
+msgstr ""
+
+msgid "a_w_peapidentity"
+msgstr ""
+
+msgid "a_w_peappassword"
+msgstr ""
+
+msgid "a_w_radiusport"
+msgstr ""
+
+msgid "a_w_radiussrv"
+msgstr ""
+
+msgid "a_w_tlsprivkey"
+msgstr ""
+
+msgid "a_w_tlsprivkeypwd"
+msgstr ""
+
+msgid "a_w_txpwr"
+msgstr ""
+
+msgid "a_w_wds"
+msgstr ""
+
+msgid "active_log_alert"
+msgstr "Active Log and Alert"
+
+msgid "addresses"
+msgstr ""
+
+msgid "admin_inactive_timer"
+msgstr "Administrator Inactivity Timer"
+
+msgid "aliases"
+msgstr ""
+
+msgid "all_logs"
+msgstr "All Logs"
+
+msgid "allow"
+msgstr "Allow"
+
+msgid "apply"
+msgstr "Apply"
+
+msgid "association_list"
+msgstr "Association List"
+
+msgid "association_time"
+msgstr "Association Time"
+
+msgid "at"
+msgstr "at"
+
+msgid "auth_method"
+msgstr "Authentication Method"
+
+msgid "auto"
+msgstr ""
+
+msgid "auto_channel_select"
+msgstr "Auto Channel Selection"
+
+msgid "backup"
+msgstr "Backup"
+
+msgid "bak_configure"
+msgstr "Backup Configuration"
+
+msgid "bak_remind1"
+msgstr "The system will restart in"
+
+msgid "bak_remind2"
+msgstr "Click Backup to save the current configuration of your system to your computer."
+
+msgid "bak_rst"
+msgstr "Backup/Restore"
+
+msgid "broadcast"
+msgstr ""
+
+msgid "buttons"
+msgstr ""
+
+msgid "buttons_desc"
+msgstr ""
+
+msgid "cancel"
+msgstr "Cancel"
+
+msgid "cbi_select"
+msgstr ""
+
+msgid "channel"
+msgstr "Channel"
+
+msgid "channel_mode"
+msgstr "Channel Mode"
+
+msgid "channel_select"
+msgstr "Channel Selection"
+
+msgid "channel_width"
+msgstr "Channel Width"
+
+msgid "cidr6"
+msgstr ""
+
+msgid "configfile"
+msgstr ""
+
+msgid "confirm_password"
+msgstr "Retype to Confirm"
+
+msgid "confirmation"
+msgstr ""
+
+msgid "cpu_usage"
+msgstr "CPU Usage"
+
+msgid "current_date"
+msgstr "Current Date"
+
+msgid "current_date_time"
+msgstr "Current Date/Time"
+
+msgid "battery_status"
+msgstr "Battery Status"
+
+msgid "battery_charging"
+msgstr "Charging"
+
+msgid "current_ipsec"
+msgstr "Current IPSec Security Association"
+
+msgid "current_time"
+msgstr "Current Time"
+
+msgid "current_time_date"
+msgstr "Current Time and Date"
+
+msgid "dashboard_data"
+msgstr "Data"
+
+msgid "dashboard_item"
+msgstr "Item"
+
+msgid "day"
+msgstr "day"
+
+msgid "daylight_savings"
+msgstr "Daylight Savings"
+
+msgid "deny"
+msgstr "Deny"
+
+msgid "design"
+msgstr ""
+
+msgid "destination"
+msgstr ""
+
+msgid "device"
+msgstr "device"
+
+msgid "device_host_name"
+msgstr "Host Name"
+
+msgid "device_info"
+msgstr "Device Information"
+
+msgid "device_model_name"
+msgstr "Model Number"
+
+msgid "device_status"
+msgstr "Status"
+
+msgid "dhcp_host_name"
+msgstr "Host Name"
+
+msgid "dhcp_host_status"
+msgstr "Status"
+
+msgid "dhcp_host_status_on"
+msgstr "On"
+
+msgid "dhcp_leases"
+msgstr ""
+
+msgid "dhcp_leases_active"
+msgstr ""
+
+msgid "dhcp_reserve"
+msgstr "Reserve"
+
+msgid "dhcp_timeremain"
+msgstr ""
+
+msgid "disable"
+msgstr "Disable"
+
+msgid "dnsserver"
+msgstr ""
+
+msgid "do_fw_upgrade"
+msgstr "Do Firmware Upgrade"
+
+msgid "domain_name"
+msgstr "Domain Name"
+
+msgid "enable"
+msgstr "Enable"
+
+msgid "encryption"
+msgstr "Encryption"
+
+msgid "end_date"
+msgstr "End Date"
+
+msgid "factory_default"
+msgstr "Back to Factory Defaults"
+
+msgid "factory_dhcp"
+msgstr "DHCP will be reset to server"
+
+msgid "factory_lan_ip"
+msgstr "LAN IP address will be"
+
+msgid "factory_pwd"
+msgstr "Password will be"
+
+msgid "factory_remind1"
+msgstr "Click Reset to clear all user-entered   configuration information and return to factory defaults."
+
+msgid "factory_reset"
+msgstr "Reset"
+
+msgid "file_path"
+msgstr "File Path"
+
+msgid "file_upload"
+msgstr "Upload"
+
+msgid "filesystem"
+msgstr ""
+
+msgid "filter_action"
+msgstr "Filter Action"
+
+msgid "frag_threshold"
+msgstr "Fragmentation Threshold"
+
+msgid "fw_file_check"
+msgstr "Please check the file again."
+
+msgid "fw_remind1"
+msgstr "The flash image was uploaded successfully.The system is flashing now.DO NOT POWER OFF THE DEVICE!"
+
+msgid "fw_remind2"
+msgstr "The system will restart in"
+
+msgid "fw_remind3"
+msgstr "Firmware upgrade failed..."
+
+msgid "fw_remind4"
+msgstr "The flash image was uploaded fail. The error messages are as follows:"
+
+msgid "fw_remind5"
+msgstr "To upgrade the internal device firmware, browse to the location of the binary (.BIN) upgrade file and click Upload. Upgrade files can be downloaded from website. If the upgrade file is compressed (.ZIP file), you must first extract the binary (.BIN) file. In some cases, you may need to reconfigure."
+
+msgid "fw_upgrade"
+msgstr "Firmware Upgrade"
+
+msgid "fw_upgrading"
+msgstr "Firmware upgrading..."
+
+msgid "fw_upgrading_message"
+msgstr "Firmware upgrading...Please wait..."
+
+msgid "fw_version"
+msgstr "Firmware Version"
+
+msgid "hw_version"
+msgstr "Hardware Version"
+
+msgid "gateway"
+msgstr ""
+
+msgid "gateway6"
+msgstr ""
+
+msgid "general"
+msgstr ""
+
+msgid "get_from_server"
+msgstr "Get from Time Server"
+
+msgid "hide_ssid"
+msgstr "Hide SSID"
+
+msgid "hostname"
+msgstr ""
+
+msgid "hostnames"
+msgstr ""
+
+msgid "hostnames_address"
+msgstr ""
+
+msgid "hostnames_entries"
+msgstr ""
+
+msgid "hostnames_hostname"
+msgstr ""
+
+msgid "hr"
+msgstr "hr"
+
+msgid "idle_mode"
+msgstr "Disable WLAN when there is not any client connected"
+
+msgid "iface"
+msgstr "Interface"
+
+msgid "iface_down"
+msgstr "Down"
+
+msgid "iface_lan"
+msgstr "LAN"
+
+msgid "iface_status"
+msgstr "Status"
+
+msgid "iface_up"
+msgstr "Up"
+
+msgid "iface_wan"
+msgstr "WAN"
+
+msgid "iface_wlan"
+msgstr "WLAN"
+
+msgid "interface"
+msgstr ""
+
+msgid "interface_status"
+msgstr "Interface Status"
+
+msgid "interfaces"
+msgstr ""
+
+msgid "interval_select_none"
+msgstr "None"
+
+msgid "intra_bss"
+msgstr "Intra-BSS Traffic"
+
+msgid "ip6address"
+msgstr ""
+
+msgid "ip_addr"
+msgstr "IP Address"
+
+msgid "ip_subnet_mask"
+msgstr "IP Subnet Mask"
+
+msgid "ipaddress"
+msgstr ""
+
+msgid "iwscan"
+msgstr ""
+
+msgid "iwscan1"
+msgstr ""
+
+msgid "iwscan_encr"
+msgstr ""
+
+msgid "iwscan_link"
+msgstr ""
+
+msgid "iwscan_noise"
+msgstr ""
+
+msgid "iwscan_signal"
+msgstr ""
+
+msgid "key"
+msgstr "Key"
+
+msgid "lan_info"
+msgstr "LAN Information"
+
+msgid "language"
+msgstr "Language"
+
+msgid "language_selection"
+msgstr "Language selection"
+
+msgid "leds"
+msgstr ""
+
+msgid "leds_desc"
+msgstr ""
+
+msgid "limit"
+msgstr ""
+
+msgid "link"
+msgstr ""
+
+msgid "load"
+msgstr ""
+
+msgid "log"
+msgstr "Log"
+
+msgid "log_SysAlert"
+msgstr "System Alert"
+
+msgid "log_SysCritical"
+msgstr "System Critical"
+
+msgid "log_SysDebug"
+msgstr "System Debug"
+
+msgid "log_SysEmergency"
+msgstr "System Emergency"
+
+msgid "log_SysError"
+msgstr "System Error"
+
+msgid "log_SysInfo"
+msgstr "System Info"
+
+msgid "log_SysNotice"
+msgstr "System Notice"
+
+msgid "log_SysWarning"
+msgstr "System Warning"
+
+msgid "log_clear"
+msgstr "Clear Log"
+
+msgid "log_display"
+msgstr "Display"
+
+msgid "log_refresh"
+msgstr "Refresh"
+
+msgid "log_setting"
+msgstr "Log Setting"
+
+msgid "log_summary"
+msgstr "Summary"
+
+msgid "log_summary_msg"
+msgstr "Message"
+
+msgid "log_summary_time"
+msgstr "Time"
+
+msgid "luci_ethers"
+msgstr ""
+
+msgid "m_i_memory"
+msgstr ""
+
+msgid "m_i_processor"
+msgstr ""
+
+msgid "m_i_systemtime"
+msgstr ""
+
+msgid "m_i_uptime"
+msgstr ""
+
+msgid "mac_addr"
+msgstr "MAC Address"
+
+msgid "mac_addr_filter"
+msgstr "MAC Address Filter"
+
+msgid "mac_filter"
+msgstr "MAC Filter"
+
+msgid "mac_filter_summary"
+msgstr "MAC Filter Summary"
+
+msgid "macaddress"
+msgstr ""
+
+msgid "main_Msg_1"
+msgstr "Your <System Name> is empty!"
+
+msgid "main_Msg_2"
+msgstr "Your <System Name> format is error!"
+
+msgid "main_Msg_3"
+msgstr "Your <Domain Name> is empty!"
+
+msgid "main_Msg_4"
+msgstr "Your <Domain Name> format is error!"
+
+msgid "main_Msg_5"
+msgstr "Your <Administrator Inactivity Timer> is empty!"
+
+msgid "main_Msg_6"
+msgstr "Your <Administrator Inactivity Timer> format is error!"
+
+msgid "main_Msg_7"
+msgstr "Only contain printable ascii characters except \\\""
+
+msgid "main_general"
+msgstr "General"
+
+msgid "main_language"
+msgstr "Language"
+
+msgid "main_password"
+msgstr "Password"
+
+msgid "main_remind1"
+msgstr "minutes, 0 means no timeout"
+
+msgid "maintenance"
+msgstr "Maintenance"
+
+msgid "manpage"
+msgstr ""
+
+msgid "mem_buffered"
+msgstr ""
+
+msgid "mem_cached"
+msgstr ""
+
+msgid "mem_free"
+msgstr ""
+
+msgid "memory_usage"
+msgstr "Memory Usage"
+
+msgid "metric"
+msgstr ""
+
+msgid "min"
+msgstr "min"
+
+msgid "mode"
+msgstr "mode"
+
+msgid "monitor"
+msgstr "Monitor"
+
+msgid "monitor_dhcp_table"
+msgstr "DHCP Table"
+
+msgid "more_ap"
+msgstr "More AP"
+
+msgid "msg_config"
+msgstr "Configuration Update is proceeding. Please Wait..."
+
+msgid "msg_confirm_1"
+msgstr "Are you sure you want to do that?"
+
+msgid "msg_relogin"
+msgstr "The device will relogin automatically, please don't close the web page !!"
+
+msgid "name"
+msgstr ""
+
+msgid "netmask"
+msgstr ""
+
+msgid "network"
+msgstr ""
+
+msgid "network_interface_apn"
+msgstr ""
+
+msgid "network_interface_connect"
+msgstr ""
+
+msgid "network_interface_connect_desc"
+msgstr ""
+
+msgid "network_interface_defaultroute"
+msgstr ""
+
+msgid "network_interface_defaultroute_desc"
+msgstr ""
+
+msgid "network_interface_demand"
+msgstr ""
+
+msgid "network_interface_demand_desc"
+msgstr ""
+
+msgid "network_interface_device"
+msgstr ""
+
+msgid "network_interface_device_desc"
+msgstr ""
+
+msgid "network_interface_disconnect"
+msgstr ""
+
+msgid "network_interface_disconnect_desc"
+msgstr ""
+
+msgid "network_interface_encaps"
+msgstr ""
+
+msgid "network_interface_fwzone"
+msgstr ""
+
+msgid "network_interface_fwzone_desc"
+msgstr ""
+
+msgid "network_interface_ipv6"
+msgstr ""
+
+msgid "network_interface_keepalive"
+msgstr ""
+
+msgid "network_interface_keepalive_desc"
+msgstr ""
+
+msgid "network_interface_maxwait"
+msgstr ""
+
+msgid "network_interface_maxwait_desc"
+msgstr ""
+
+msgid "network_interface_peerdns"
+msgstr ""
+
+msgid "network_interface_peerdns_desc"
+msgstr ""
+
+msgid "network_interface_pincode"
+msgstr ""
+
+msgid "network_interface_pincode_desc"
+msgstr ""
+
+msgid "network_interface_pppd_options"
+msgstr ""
+
+msgid "network_interface_pppd_options_desc"
+msgstr ""
+
+msgid "network_interface_prereq"
+msgstr ""
+
+msgid "network_interface_server"
+msgstr ""
+
+msgid "network_interface_service"
+msgstr ""
+
+msgid "networks"
+msgstr ""
+
+msgid "new_date"
+msgstr "New Date (yyyy/mm/dd)"
+
+msgid "new_password"
+msgstr "New Password"
+
+msgid "new_time"
+msgstr "New Time (hh:mm:ss)"
+
+msgid "no_security"
+msgstr "No Security"
+
+msgid "none"
+msgstr ""
+
+msgid "note"
+msgstr "Note"
+
+msgid "oclock"
+msgstr "o'clock"
+
+msgid "of"
+msgstr "of"
+
+msgid "old_password"
+msgstr "Old Password"
+
+msgid "operate_channel"
+msgstr "Operating Channel"
+
+msgid "options"
+msgstr ""
+
+msgid "overview"
+msgstr ""
+
+msgid "passErrMsg1"
+msgstr "Your <Old Password> is empty!"
+
+msgid "passErrMsg2"
+msgstr "Your <New Password> is empty!"
+
+msgid "passErrMsg3"
+msgstr "Your <Retype to Confirm> is empty!"
+
+msgid "passErrMsg4"
+msgstr "Your <New Password> is equal to <Old Password>!"
+
+msgid "passErrMsg5"
+msgstr "Your <New Password> is not equal to <Retype to Confirm>!"
+
+msgid "passErrMsg6"
+msgstr "Your <Old Password> is not correct!"
+
+msgid "passErrMsg7"
+msgstr "Password is modified successfully!"
+
+msgid "passErrMsg8"
+msgstr "Password is not modified!"
+
+msgid "password"
+msgstr ""
+
+msgid "pkt_collisions"
+msgstr "Collisions"
+
+msgid "pkt_statistics"
+msgstr "Packet Statistics"
+
+msgid "pkt_statistics_lan"
+msgstr "LAN"
+
+msgid "pkt_statistics_port"
+msgstr "Port"
+
+msgid "pkt_statistics_status"
+msgstr "Status"
+
+msgid "pkt_statistics_wan"
+msgstr "WAN"
+
+msgid "pkt_statistics_wlan1"
+msgstr "WLAN"
+
+msgid "poll_interval"
+msgstr "Poll Interval(s)"
+
+msgid "port"
+msgstr ""
+
+msgid "power"
+msgstr ""
+
+msgid "process_command"
+msgstr ""
+
+msgid "process_cpu"
+msgstr ""
+
+msgid "process_descr"
+msgstr ""
+
+msgid "process_head"
+msgstr ""
+
+msgid "process_hup"
+msgstr ""
+
+msgid "process_kill"
+msgstr ""
+
+msgid "process_mem"
+msgstr ""
+
+msgid "process_owner"
+msgstr ""
+
+msgid "process_pid"
+msgstr ""
+
+msgid "process_term"
+msgstr ""
+
+msgid "protocol"
+msgstr ""
+
+msgid "psk"
+msgstr "Pre-Shared Key"
+
+msgid "refresh_interval"
+msgstr "Refresh Interval"
+
+msgid "refresh_now"
+msgstr "Refresh Now"
+
+msgid "restarting"
+msgstr "Restarting..."
+
+msgid "rst_configure"
+msgstr "Restore Configuration"
+
+msgid "rst_err1"
+msgstr "Do you really want to restart the device ?"
+
+msgid "rst_info1"
+msgstr "Click Restart to have the device perform a software restart."
+
+msgid "rst_remind1"
+msgstr "To restore a previously saved configuration file to your system, browse to the location of the configuration file and click Upload."
+
+msgid "rst_remind2"
+msgstr "File not found."
+
+msgid "rst_remind3"
+msgstr "Restore was not sucess , please check rom file was correct."
+
+msgid "rts_cts_threshold"
+msgstr "RTS/CTS  Threshold"
+
+msgid "rx_bps"
+msgstr "Rx B/s"
+
+msgid "rx_pkt"
+msgstr "RxPkts"
+
+msgid "scan"
+msgstr ""
+
+msgid "sch_day"
+msgstr "Day"
+
+msgid "sch_everyday"
+msgstr "Everyday"
+
+msgid "sch_fri"
+msgstr "Fri"
+
+msgid "sch_hour"
+msgstr "hour"
+
+msgid "sch_min"
+msgstr "min"
+
+msgid "sch_mon"
+msgstr "Mon"
+
+msgid "sch_note1"
+msgstr "Specify the same begin time and end time means the whole day schedule."
+
+msgid "sch_off"
+msgstr "Off"
+
+msgid "sch_on"
+msgstr "On"
+
+msgid "sch_sat"
+msgstr "Sat"
+
+msgid "sch_sun"
+msgstr "Sun"
+
+msgid "sch_thu"
+msgstr "Thu"
+
+msgid "sch_time"
+msgstr "For the following times   (24-Hour Format)"
+
+msgid "sch_tue"
+msgstr "Tue"
+
+msgid "sch_warn1"
+msgstr " Start Time must greater than End Time"
+
+msgid "sch_wed"
+msgstr "Wed"
+
+msgid "scheduling"
+msgstr "Scheduling"
+
+msgid "sec"
+msgstr "sec"
+
+msgid "sec_association"
+msgstr "Security Associations"
+
+msgid "seconds"
+msgstr "seconds"
+
+msgid "security"
+msgstr "Security"
+
+msgid "security_mode"
+msgstr "Security Mode"
+
+msgid "encryption_method"
+msgstr "Encryption Method"
+
+msgid "serial_number"
+msgstr "Serial Number"
+
+msgid "server"
+msgstr "Server"
+
+msgid "server_address"
+msgstr "User Defined Time Server Address"
+
+msgid "set"
+msgstr "Set"
+
+msgid "set_interval"
+msgstr "Set Interval"
+
+msgid "settings"
+msgstr ""
+
+msgid "shared_key"
+msgstr "Shared Key"
+
+msgid "source"
+msgstr ""
+
+msgid "ssid_name"
+msgstr "Name"
+
+msgid "start"
+msgstr ""
+
+msgid "start_date"
+msgstr "Start Date"
+
+msgid "static"
+msgstr ""
+
+msgid "static_wep"
+msgstr "Static WEP"
+
+msgid "wpa_psk"
+msgstr "WPA-PSK"
+
+msgid "wpa2_psk"
+msgstr "WPA2-PSK"
+
+msgid "wpa2_wpa_psk"
+msgstr "WPA2-PSK/WPA-PSK"
+
+msgid "aes"
+msgstr "AES"
+
+msgid "tkip"
+msgstr "TKIP"
+
+msgid "aes_tkip"
+msgstr "AES/TKIP"
+
+msgid "stop_interval"
+msgstr "Stop"
+
+msgid "sys_rst"
+msgstr "System Restart"
+
+msgid "system"
+msgstr ""
+
+msgid "system_led_mode_link"
+msgstr ""
+
+msgid "system_led_mode_rx"
+msgstr ""
+
+msgid "system_led_mode_tx"
+msgstr ""
+
+msgid "system_led_trigger_"
+msgstr ""
+
+msgid "system_name"
+msgstr "System Name"
+
+msgid "system_resource"
+msgstr "System Resource"
+
+msgid "system_status"
+msgstr "System Status"
+
+msgid "system_up_time"
+msgstr "System Up Time"
+
+msgid "target"
+msgstr ""
+
+msgid "time"
+msgstr "Time"
+
+msgid "time_date_setup"
+msgstr "Time and Date Setup"
+
+msgid "time_manual"
+msgstr "Manual"
+
+msgid "time_zone"
+msgstr "Time Zone"
+
+msgid "time_zone_setup"
+msgstr "Time Zone"
+
+msgid "timesrv"
+msgstr ""
+
+msgid "timezone"
+msgstr ""
+
+msgid "tx_bps"
+msgstr "Tx B/s"
+
+msgid "tx_pkt"
+msgstr "TxPkts"
+
+msgid "tx_power"
+msgstr "Tx Power"
+
+msgid "type"
+msgstr ""
+
+msgid "unknownerror"
+msgstr ""
+
+msgid "up_day"
+msgstr "day's"
+
+msgid "username"
+msgstr ""
+
+msgid "view_log"
+msgstr "View Log"
+
+msgid "vpn_connect_name"
+msgstr "Connection Name"
+
+msgid "vpn_local_addr"
+msgstr "Local Address"
+
+msgid "vpn_monitor"
+msgstr "VPN Monitor"
+
+msgid "vpn_remote_addr"
+msgstr "Remote Address"
+
+msgid "vpn_remote_gw"
+msgstr "Remote Gateway"
+
+msgid "vpn_status"
+msgstr "Status"
+
+msgid "vpn_status_refresh"
+msgstr "Refresh"
+
+msgid "wan2_info"
+msgstr "WAN 2 Information"
+
+msgid "wan_info"
+msgstr "WAN Information"
+
+msgid "webui"
+msgstr ""
+
+msgid "welcome"
+msgstr "Welcome"
+
+msgid "welcome_title_message"
+msgstr "Welcome to LTE Portable Router"
+
+msgid "wep_open"
+msgstr "Open System"
+
+msgid "wifi"
+msgstr ""
+
+msgid "wifi_ar"
+msgstr ""
+
+msgid "wifi_auto"
+msgstr ""
+
+msgid "wifi_bgscan"
+msgstr ""
+
+msgid "wifi_blacklist"
+msgstr ""
+
+msgid "wifi_bssid"
+msgstr ""
+
+msgid "wifi_bursting"
+msgstr ""
+
+msgid "wifi_compression"
+msgstr ""
+
+msgid "wifi_country"
+msgstr ""
+
+msgid "wifi_country_iso3166"
+msgstr ""
+
+msgid "wifi_distance"
+msgstr ""
+
+msgid "wifi_distance_desc"
+msgstr ""
+
+msgid "wifi_diversity"
+msgstr ""
+
+msgid "wifi_essid"
+msgstr ""
+
+msgid "wifi_ff"
+msgstr ""
+
+msgid "wifi_fh"
+msgstr ""
+
+msgid "wifi_frag"
+msgstr ""
+
+msgid "wifi_hidden"
+msgstr ""
+
+msgid "wifi_ht40m"
+msgstr ""
+
+msgid "wifi_ht40p"
+msgstr ""
+
+msgid "wifi_htcapab"
+msgstr ""
+
+msgid "wifi_htmode"
+msgstr ""
+
+msgid "wifi_isolate"
+msgstr ""
+
+msgid "wifi_isolate_desc"
+msgstr ""
+
+msgid "wifi_maclist"
+msgstr ""
+
+msgid "wifi_macpolicy"
+msgstr ""
+
+msgid "wifi_maxassoc"
+msgstr ""
+
+msgid "wifi_maxrate"
+msgstr ""
+
+msgid "wifi_mcast_rate"
+msgstr ""
+
+msgid "wifi_minrate"
+msgstr ""
+
+msgid "wifi_noprobereq"
+msgstr ""
+
+msgid "wifi_nosbeacon"
+msgstr ""
+
+msgid "wifi_outdoor"
+msgstr ""
+
+msgid "wifi_rate"
+msgstr ""
+
+msgid "wifi_regdomain"
+msgstr ""
+
+msgid "wifi_rts"
+msgstr ""
+
+msgid "wifi_rxantenna"
+msgstr ""
+
+msgid "wifi_slottime"
+msgstr ""
+
+msgid "wifi_turbo"
+msgstr ""
+
+msgid "wifi_txantenna"
+msgstr ""
+
+msgid "wifi_wdssep"
+msgstr ""
+
+msgid "wifi_whitelist"
+msgstr ""
+
+msgid "wifi_wmm"
+msgstr ""
+
+msgid "wifi_wpareq"
+msgstr ""
+
+msgid "wifi_xr"
+msgstr ""
+
+msgid "wireless_advance"
+msgstr "Advanced"
+
+msgid "wireless_advance_setup"
+msgstr "Wireless Advanced Setup"
+
+msgid "wireless_lan"
+msgstr "Wireless LAN"
+
+msgid "wireless_qos"
+msgstr "QoS"
+
+msgid "wireless_setup"
+msgstr "Wireless Setup"
+
+msgid "wlan24G_info"
+msgstr "WLAN_2.4G Information"
+
+msgid "wlan_note1"
+msgstr "64-bit WEP: Enter 5 ASCII characters or 10 hexadecimal characters ("0-9", "A-F") for each Key (1-4)."
+
+msgid "wlan_note2"
+msgstr "128-bit WEP: Enter 13 ASCII characters or 26 hexadecimal characters ("0-9", "A-F") for each Key (1-4)."
+
+msgid "wlan_note3"
+msgstr "Select one WEP key as an active key to encrypt wireless data transmission."
+
+msgid "wlan_scheduling"
+msgstr "Wireless LAN Scheduling"
+
+msgid "wlan_sta_status"
+msgstr "WLAN Station Status"
+
+msgid "wlan_status"
+msgstr "WLAN status"
+
+msgid "wlan_mac"
+msgstr "Mac Address"
+
+msgid "wlan_invalid"
+msgstr "is invalid!"
+
+msgid "wlan_macfilter_alert_1"
+msgstr "You must specify at least one mac address when filter function is enabled!"
+
+msgid "wmm_note1"
+msgstr "When the wireless mode contains N mode, wmm support will be enabled automatically."
+
+msgid "wmm_qos"
+msgstr "WMM QoS"
+
+msgid "wps"
+msgstr "WPS"
+
+msgid "wps_station"
+msgstr "WPS Station"
+
+msgid "zone"
+msgstr ""
+
+msgid "sms"
+msgstr "SMS"
+
+msgid "sms_list"
+msgstr "List"
+
+msgid "sms_send"
+msgstr "Send"
+
+msgid "sms_sender"
+msgstr "Sender"
+
+msgid "sms_date"
+msgstr "Date"
+
+msgid "sms_content"
+msgstr "Content"
+
+msgid "sms_del"
+msgstr "Delete"
+
+msgid "sms_receiver"
+msgstr "Receiver : "
+
+msgid "sms_char_set"
+msgstr "Character Set : "
+
+msgid "sms_send_content"
+msgstr "Content : "
+
+msgid "sms_note"
+msgstr "Note : "
+
+msgid "sms_note1_1"
+msgstr "* A single SMS can contain only up to 160 GSM characters."
+
+msgid "sms_note1_2"
+msgstr "* If you enter a character that GSM character set is not supported, you need to use Unicode character set instead."
+
+msgid "sms_note2"
+msgstr "* A single SMS can contain only up to 70 Unicode characters."
+
+msgid "sms_error1"
+msgstr "Invalid phone number!"
+
+msgid "sms_error2"
+msgstr "SMS and Receiver can't be NULL."
+
+msgid "sms_error3_1"
+msgstr "Max length of Unicode is "
+
+msgid "sms_error3_2"
+msgstr ", your message length is "
+
+msgid "sms_error3_3"
+msgstr "!"
+
+msgid "sms_error4"
+msgstr "Max length of GSM is "
+
+msgid "sms_error5"
+msgstr "Chinese or fullwidth word is included, please use Unicode to send."
+
+msgid "sms_warn"
+msgstr "Max length "
+
+msgid "sms_warn2"
+msgstr "Are you sure you want to clear the form?"
+
+msgid "oled_display"
+msgstr "OLED Display"
+
+msgid "oled_display_time_sel"
+msgstr "OLED Display Time Select"
+
+msgid "oled_note"
+msgstr "Note:"
+
+msgid "oled_note_1"
+msgstr "* OLED Panel is always on."
+
+msgid "oled_0_sec"
+msgstr "0 sec"
+
+msgid "oled_30_sec"
+msgstr "30 sec"
+
+msgid "oled_60_sec"
+msgstr "60 sec"
+
+msgid "oled_300_sec"
+msgstr "300 sec"
+
+msgid "oled_600_sec"
+msgstr "600 sec"
+
+msgid "oled_clear_wan_count"
+msgstr "Click clear to clear wan traffic count on Panel. After Clear, the"
+
+msgid "oled_clear_wan_count_warn"
+msgstr "traffic count will be reset on Panel"
+
+msgid "lan_ipv6"
+msgstr "IPv6 LAN"
+
+msgid "lan_ipv6_setup"
+msgstr "IPv6 LAN Address Assign Setup :"
+
+msgid "lan_ipv6_setup_stateless"
+msgstr "Stateless Address Autoconfiguration "
+
+msgid "lan_ipv6_setup_stateful"
+msgstr "Stateful Address Autoconfiguration "
+
+msgid "lan_ipv6_dns"
+msgstr "IPv6 DNS Configuration "
+
+msgid "lan_ipv6_dns_server1"
+msgstr "IPv6 DNS Server Address 1 "
+
+msgid "lan_ipv6_dns_server2"
+msgstr "IPv6 DNS Server Address 2 "
+
+msgid "lan_ipv6_fromISP"
+msgstr "From ISP "
+
+msgid "lan_ipv6_user_defined"
+msgstr "User Defined "
+
+msgid "lan_ipv6_dhcpv6"
+msgstr "DHCPv6 Address Configuration "
+
+msgid "lan_ipv6_dhcpv6_start_addr"
+msgstr "DHCPv6 Starting Address "
+
+msgid "lan_ipv6_dhcpv6_end_addr"
+msgstr "DHCPv6 Ending Address "
+
+msgid "lan_ipv6_invalid_addr"
+msgstr "Invalid IPv6 Address "
+
+msgid "lan_ipv6_invalid_start_addr"
+msgstr "Invalid Starting Address, must be 1~ffff !"
+
+msgid "lan_ipv6_invalid_end_addr"
+msgstr "Invalid Ending Address, must be 1~ffff !"
+
+msgid "lan_ipv6_invalid_dhcp_setting"
+msgstr "Invalid DHCPv6 pool range, starting address must be smaller than ending address !"
+
+msgid "lan_ipv6_refresh_setting_err1"
+msgstr "Please enable IPv6 mode in \"Internet\" page in order to change the setting of this page."
+
+msgid "lan_ipv6_update_setting_success"
+msgstr "Success"
+
+msgid "lan_ipv6_update_setting_err1"
+msgstr "Error, please try again"
+
+msgid "DMZ"
+msgstr "DMZ"

@@ -1,0 +1,206 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+ROUTER_AP_MODE="1"
+
+LIGHTTPD_CONFD_PATH="/etc/lighttpd/conf.d"
+
+show_waiting_page(){
+	printf "\$HTTP[\"url\"] !~ \"^(\/ioilas_running.htm)\" {\n\
+		\$HTTP[\"url\"] !~ \"^(\/luci-static/.*)\" {\n\
+			url.redirect = (\n\
+			  \"^/(.*)\" => \"/ioilas_running.htm\"\n\
+			)\n\
+		}\n\
+	}\n" > $LIGHTTPD_CONFD_PATH/91-ioilas_running.conf
+	
+	/etc/init.d/lighttpd reload
+}
+
+dont_show_waiting_page(){
+	rm -rf $LIGHTTPD_CONFD_PATH/91-ioilas_running.conf
+	
+	/etc/init.d/lighttpd reload
+}
+
+
+change_lan_setting(){
+	target_mode=$1
+	mode=`uci get network."lan_"$target_mode.mode`
+
+	if [ "$mode" == "$target_mode" ]; then
+		uci delete network.lan
+		tmp_name="`uci add network interface`"
+
+		uci rename network.$tmp_name="lan"
+
+		lan_ifname=`uci get network.lan_$target_mode.ifname`
+		lan_force_link=`uci get network.lan_$target_mode.force_link`
+		lan_type=`uci get network.lan_$target_mode.type`
+		lan_proto=`uci get network.lan_$target_mode.proto`
+		lan_ipaddr=`uci get network.lan_$target_mode.ipaddr`
+		lan_netmask=`uci get network.lan_$target_mode.netmask`
+		lan_autoip=`uci get network.lan_$target_mode.autoip`
+
+		
+		uci set network.lan.ifname="$lan_ifname"
+		uci set network.lan.force_link="$lan_force_link"
+		uci set network.lan.type="$lan_type"
+		uci set network.lan.proto="$lan_proto"
+		uci set network.lan.ipaddr="$lan_ipaddr"
+		uci set network.lan.netmask="$lan_netmask"
+		uci set network.lan.autoip="$lan_autoip"
+
+		if [ "$lan_proto" == "dhcp" ]; then
+			if [ -f /etc/openwrt_release ];then
+				product_name=`cat openwrt_release | grep DISTRIB_PRODUCT | sed -e 's/DISTRIB_PRODUCT="//g' | sed -e 's/"//g'`
+				uci set network.lan.hostname="$product_name"
+			fi
+		fi
+	fi
+}
+set_ipv6_firewall_enable(){
+	fw_rules=`uci show firewall| grep "]=rule" |  sed -n "s/=rule//gp"`
+
+	for fw_rule in $fw_rules; do
+		name=`uci -q get ${fw_rule}.name`
+			
+		case "$name" in
+			Drop-IPv6-Input )
+				`uci set ${fw_rule}.enabled=false`
+				;;
+			Drop-IPv6-Output)
+				`uci set ${fw_rule}.enabled=false`
+				;;
+			* )
+		esac            
+			
+	done
+	
+	uci set firewall.v6jp.enabled=1
+	uci commit
+
+}
+
+start(){
+	config_load network
+	config_load system
+	auto_gpio_num=$(/sbin/uci -c /etc/buttons.d/ get buttons.auto_bridge_on.gpio_num)
+	switch_val=$(gpio g $auto_gpio_num | awk '{print $4}' 2>/dev/null) #return 0:repeater/1:router,ap
+	config_get wan_mode "wan" "mode"
+	config_get ifce_automode "wan" "ifce_automode"
+	config_get wan_proto "wan" "proto"
+	
+	if [ "$switch_val" == "$ROUTER_AP_MODE" ] && [ "$ifce_automode" == "0x01" ]; then #Mode Switch: Router/AP
+		#MSTC MBA OLIVIA we need to wait network execute finished
+		i=0
+		while [ $i -lt 45 ]
+		do
+			if ps | grep -v "grep" | grep -q "/etc/init.d/network"; then
+				sleep 1
+				i=$(($i+1))
+			else
+				i=45
+			fi
+		done
+		
+		#MSTC MBA Sean show_waiting_page if we need to run ioilas
+		if [ "$wan_proto" == "dhcp" ] && [ -f /tmp/boot_with_wan_connected ]; then 
+			mstc_led.sh power blink
+			show_waiting_page
+		fi
+		
+		sleep 4 #end
+		# determine the wan proto type and the wan connection status
+		if [ "$wan_proto" == "dhcp" ] && [ -f /tmp/boot_with_wan_connected ]; then 
+			#check the WAN env by executing ioilsa
+			/etc/init.d/firewall stop
+			ifconfig br-lan 0.0.0.0
+			wan_iface=$(uci get network.wan.ifname)
+			ioilas -i $wan_iface
+			ioilas_ret=`echo $?`
+			dont_show_waiting_page
+			cvt_to_hex=$(echo "obase=16; $ioilas_ret" | bc)
+			if [ "$cvt_to_hex" == "1" ];then
+				ioilas_rslt="0x0"$cvt_to_hex
+			else
+				ioilas_rslt="0x"$cvt_to_hex
+			fi
+			if [ "$ioilas_rslt" != "0x01" ];then
+				if [ "$ioilas_rslt" == "0x41" ];then #v6 Plus mode (IPv6 Stateless Auto IP), and HTTP Redirect off.
+					echo "### 0x41 v6 Plus mode (IPv6 Stateless Auto IP) .." >/dev/console
+					uci set network.wan.mode="v6plus"
+					uci set network.wan.ifname="eth1"
+					uci set network.wan.proto="v6jp"
+					uci set network.wan.ipv6="1"
+					uci set upnpd.config.enable_natpmp="0"
+					uci set upnpd.config.enable_upnp="0"
+					uci set system.easysetup.http_redirect_enable="0"
+					set_ipv6_firewall_enable
+				elif [ "$ioilas_rslt" == "0x43" ];then #transix mode (IPv6 Stateless Auto IP), and HTTP Redirect off.
+					echo "### 0x43 transix mode (IPv6 Stateless Auto IP)" >/dev/console
+					uci set network.wan.mode="transix"
+					uci set network.wan.ifname="eth1"
+					uci set network.wan.proto="v6jp"
+					uci set network.wan.ipv6="1"
+					uci set upnpd.config.enable_natpmp="0"
+					uci set upnpd.config.enable_upnp="0"
+					uci set system.easysetup.http_redirect_enable="0"
+					set_ipv6_firewall_enable
+				elif [ "$ioilas_rslt" == "0x45" ];then #transix mode (IPv6 Stateless Auto IP), and HTTP Redirect off.
+					echo "### 0x45 Bridge mode" >/dev/console
+					uci set network.wan.mode="ap"
+					uci set network.wan.ifname="eth1"
+					uci set network.ap.mode="ap"
+					uci set network.ap.ifname="eth1"
+					uci set network.wan.ipv6="0"
+					uci set network.wan.ipv6passthrough="0"
+					
+					uci set dhcp.dnsmasq[0].enabled="0"
+					uci set dhcp.lan.ignore="1"
+					change_lan_setting "ap"
+				elif [ "$ioilas_rslt" == "0xA2" ];then #IPv4 DHCP Client w/ IPv6 passthrough, and HTTP Redirect on.
+					echo "### 0xA2 IPv4 DHCP Client w/ IPv6 passthrough, and HTTP Redirect " >/dev/console
+					uci set network.wan.ipv6passthrough="1"
+					uci set system.easysetup.http_redirect_enable="1"
+				elif [ "$ioilas_rslt" == "0x02" ];then #IPv4 DHCP Client w/o IPv6 passthrough, and HTTP Redirect off.
+					echo "### 0x02IPv4 DHCP Client w/o IPv6 passthrough, and HTTP Redirect off" >/dev/console
+					uci set network.wan.ipv6passthrough="0"
+					uci set system.easysetup.http_redirect_enable="0"
+				elif [ "$ioilas_rslt" == "0x22" ];then #IPv4 DHCP Client w/ IPv6 passthrough, and HTTP Redirect off.
+					echo "### 0x22 IPv4 DHCP Client w/ IPv6 passthrough, and HTTP Redirect off." >/dev/console
+					uci set network.wan.ipv6passthrough="1"
+					uci set system.easysetup.http_redirect_enable="0"
+				else #0x82, IPv4 DHCP Client w/o IPv6 passthrough, and HTTP Redirect on.
+					echo " ### 0x82 IPv4 DHCP Client w/o IPv6 passthrough" >/dev/console
+					uci set network.wan.ipv6passthrough="0"
+					uci set system.easysetup.http_redirect_enable="1"
+				fi
+				
+				uci set network.wan.ifce_automode=$ioilas_rslt
+				uci commit
+				sync
+				reboot
+			else 
+				# 0x01,Auto Mode, Set IPv4 DHCP Client w/o IPv6 passthrough, and HTTP redirect on.
+				mstc_led.sh power on #keep LED lightting
+			fi
+		else
+			mstc_led.sh power on #keep LED lightting 
+		fi
+		#MSTC MBA Sean, Mark it as done & retrigger netifd
+		touch /tmp/ioilas_done
+		ifdown wan
+		ifup wan
+		
+		/etc/init.d/firewall restart
+	else
+		mstc_led.sh power on
+		touch /tmp/ioilas_done
+		ifdown wan
+		ifup wan
+	fi
+	
+}
+
+

@@ -1,0 +1,33 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2008 OpenWrt.org
+
+START=96
+BUTTON_DEAMON="btnd"
+
+load_button() {
+	local button
+	local action
+	local gpio_num
+	local handler
+	
+	config_get button $1 button
+	config_get action $1 action
+	config_get gpio_num $1 gpio_num
+	config_get handler $1 handler
+	
+	[ -n "$button" -a -n "$gpio_num" -a -n "$action" -a -n "$handler" ] && {
+		echo "setting up button ${button}"
+		local command="$BUTTON_DEAMON $button $gpio_num &"
+		eval $command
+	}
+}
+
+start() {
+	local UCI_CONFIG_DIR='/etc/buttons.d'
+	config_load buttons
+	config_foreach load_button button
+}
+
+stop() {
+	killall $BUTTON_DEAMON
+}

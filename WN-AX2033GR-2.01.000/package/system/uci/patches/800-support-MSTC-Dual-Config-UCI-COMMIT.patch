@@ -1,0 +1,504 @@
+Index: uci-2014-04-11.1/cli.c
+===================================================================
+--- uci-2014-04-11.1.orig/cli.c	2016-03-28 19:26:01.750754131 +0800
++++ uci-2014-04-11.1/cli.c	2016-03-28 18:57:19.342242000 +0800
+@@ -15,6 +15,10 @@
+ #include <string.h>
+ #include <stdlib.h>
+ #include <unistd.h>
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++#include <sys/wait.h>
++#include <errno.h>
++#endif
+ #include "uci.h"
+ 
+ #define MAX_ARGS	4 /* max command line arguments for batch mode */
+@@ -62,9 +66,124 @@
+ static struct uci_type_list *type_list = NULL;
+ static char *typestr = NULL;
+ static const char *cur_section_ref = NULL;
+-
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++extern int gint_pathc;
++extern int gint_commitChange;
++char **g_allocMem = NULL;
++int gint_config_num = 0;
++#endif
+ static int uci_cmd(int argc, char **argv);
+ 
++
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++char **mallocFileNameStrings(int rows){
++	char **buf = (char **) malloc(sizeof(char *)*rows);
++	
++	if(buf != NULL){
++		return buf;
++	} else{
++		return NULL;
++	}
++}
++
++void freeFileNameStrings(int rows){
++    int i;
++	
++    for(i=0; i<rows; i++){
++		if(g_allocMem[i] != NULL){
++			free(g_allocMem[i]);
++			g_allocMem[i] = NULL;
++		}
++	}
++	if(g_allocMem != NULL){
++		free(g_allocMem);
++		g_allocMem = NULL;
++	}
++}
++
++/*
++ * parse uci config file name white list
++ */
++int parseConfigWhiteList(){
++	FILE *input = NULL;
++	FILE *wc = NULL;
++	char *find = NULL;
++	char wordCount_str[16] = {0};
++	int wordCount = 0;
++	char str[512];
++	int i;
++	
++	snprintf(str, sizeof(str), "wc -w %s | sed 's/ .*//g'", MSTC_UCI_CFG_FILE_WHITE_LIST);
++	wc = popen(str,"r");
++	if(wc != NULL){
++		if( fgets(wordCount_str, sizeof(wordCount_str), wc) != NULL ){
++			if(wordCount_str != NULL){
++				wordCount = atoi(wordCount_str);
++				if(0 == wordCount){
++					fprintf(stderr,"Empty uci config file white list\n");
++					return 1;
++				}
++			}
++		}
++		pclose(wc);
++	} else {
++		perror("uci");
++		return 1;
++	}
++	
++	
++	input = fopen(MSTC_UCI_CFG_FILE_WHITE_LIST, "r");
++	if (!input) {
++		perror("uci");
++		return 1;
++	}
++	
++	gint_config_num = wordCount;
++
++	g_allocMem = mallocFileNameStrings(gint_config_num);
++	
++	if(g_allocMem != NULL){
++		i = 0;
++		 while(!feof(input)){
++			memset(str, 0, sizeof(str));
++			if( fgets(str, sizeof(str), input) != NULL ){
++				if( (find = strrchr(str, '\n')) ){
++					*find = '\0';
++				} else {
++					char ch;
++					while (((ch = fgetc(input)) != EOF) && (ch != '\n'));
++				}
++				
++				if ( i<gint_config_num )
++				{
++					g_allocMem[i] = (char *) malloc(1+strlen(str));
++					if(g_allocMem[i] != NULL){
++						memset(g_allocMem[i], 0, 1+strlen(str));
++						strncpy(g_allocMem[i], str, strlen(str));
++						i++;
++					} else {
++						freeFileNameStrings(i);
++						goto err;
++					}
++				}
++			}
++		 }
++	}
++	else {
++		goto err;
++	}
++
++	//freeFileNameStrings is called in uci_do_package_cmd()
++	//free g_allocMem[i] and g_allocMem after uci commit is finished
++	
++	fclose(input);	
++	return 0;
++err:
++	fclose(input);
++	return 1;
++}
++#endif //#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++
+ static void
+ uci_reset_typelist(void)
+ {
+@@ -360,23 +479,166 @@
+ {
+ 	char **configs = NULL;
+ 	char **p;
+-
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++	int chkCfg = 0;
++	char buf[128] = {0};
++	int status = 0;
++	FILE *file_before = NULL;
++	FILE *file_after = NULL;
++	char chksum1_str[32] = {0};
++	char chksum2_str[32] = {0};
++	char size1_str[32] = {0};
++	unsigned long chksum1;
++	unsigned long chksum2;
++	int i;
++#endif
+ 	if (argc > 2)
+ 		return 255;
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++	switch(cmd) {
++	case CMD_COMMIT:
++		if (flags & CLI_FLAG_NOCOMMIT)
++			break;
++		chkCfg = 1;
++		break;
++	default:
++		break;
++	}
+ 
+-	if (argc == 2)
+-		return package_cmd(cmd, argv[1]);
+-
++	if(1 == chkCfg){
++		//remove the temporary file before doing uci commit; 
++		//it contains all config file contents before rename file to /etc/config
++		snprintf(buf, sizeof(buf), "rm -f %s", CONFIG_ALL_UCI_COMMIT);
++		status = system(buf);
++		if(status < 0){			
++			fprintf(stderr,"cmd: %s\t error: %s", buf, strerror(errno));			
++			return 1;	
++		}
++		
++		if(WIFEXITED(status))
++		{
++			//printf("normal termination, exit status = %d\n", WEXITSTATUS(status));
++		}
++		else if(WIFSIGNALED(status))
++		{
++			fprintf(stderr,"abnormal termination,signal number =%d\n", WTERMSIG(status));
++		}
++		else if(WIFSTOPPED(status))
++		{
++			fprintf(stderr,"process stopped, signal number =%d\n", WSTOPSIG(status));
++		}
++		parseConfigWhiteList();
++	}
++	else {
++		//loop all packages even if uci commit specify some package 
++		//so that the file used to calculate cksum will contain all config file content.
++		//if command is commit, only run package_cmd once.
++#endif
++		if (argc == 2)
++			return package_cmd(cmd, argv[1]);
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++	}
++#endif
++		
+ 	if ((uci_list_configs(ctx, &configs) != UCI_OK) || !configs) {
+ 		cli_perror();
+ 		return 1;
+ 	}
+ 
++/* uci will first sort the files in /etc/config in alphabetical order(uci_list_config_files()) 
++ * then uci_do_package_cmd() will do package_cmd() in such order.
++ * If there is any directory in /etc/config, the uci_do_package_cmd() will stop the loop when encountering directory.
++ * Therefore, uci commit changes in alphabetical order bigger than directory will not be applied.
++ * e.g. in /etc/config, there are several files such as
++ * "dhcp dropbear firewall fstab luci network non-uci pptpd system ucitrack upnpd wireless", and non-uci is a directory.
++ * uci commit loop will stop at "non-uci", so uci commit changes in "pptpd system ucitrack upnpd wireless" will not be applied.
++*/
++
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++	for (i=0, p=configs; i<gint_pathc; i++) {
++#else
+ 	for (p = configs; *p; p++) {
+-		package_cmd(cmd, *p);
+-	}
++#endif
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++		if(*p)
++#endif
++			package_cmd(cmd, *p);
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++		p++;
++#endif
++	}
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT	
++	if(1 == chkCfg){
++		//set cfgapply to 1 in persist partition if there are different config values; else do nothing
++		if(1 == gint_commitChange){
++			snprintf(buf, sizeof(buf),"%s write %s 1", MSTC_PERSIST, MSTC_PERSIST_CFGAPPLY);
++			system(buf);
++			fprintf(stderr,"### Set cfgapply to 1 ###\n");
++		} else {
++			fprintf(stderr,"### DO NOT set cfgapply ###\n");
++		}
++		
++		snprintf(buf, sizeof(buf), "%s chksum %s",  MSTC_CFG_CHKSUM, CONFIG_ALL_UCI_COMMIT);
++		file_before = popen(buf,"r");
++		if(file_before != NULL){
++			if( fgets(chksum1_str, sizeof(chksum1_str), file_before) != NULL )
++				;
++			pclose(file_before);			
++		} else {
++			goto quit_do_package_cmd;
++		}
++		
++		snprintf(buf,sizeof(buf), "%s chksum 1", MSTC_CFG_CHKSUM);
++		file_after = popen(buf,"r");
++		if(file_after != NULL){
++			if( fgets(chksum2_str, sizeof(chksum2_str), file_after) != NULL )
++				;
++			pclose(file_after);
++		} else {
++			goto quit_do_package_cmd;
++		}
++		
++		chksum1 = strtoul (chksum1_str, NULL, 16);
++		chksum2 = strtoul (chksum2_str, NULL, 16);
++
++		/* compare the two checksums before and after rename merged file to /etc/config;
++		if different, do resotre from config 2 */
++		if(chksum1 != chksum2){
++			snprintf(buf,sizeof(buf), "%s restore",  MSTC_CFG_CHKSUM);
++			system(buf);
++		} else {
++			if(1 == gint_commitChange){
++				//write cfg1Chksum to persist partition
++				snprintf(buf, sizeof(buf),"%s write %s %s", MSTC_PERSIST, MSTC_PERSIST_CFG1CHKSUM, chksum1_str);
++				system(buf);
++				
++				//write cfg1Size to persist partition
++				snprintf(buf, sizeof(buf), "%s size %s",  MSTC_CFG_CHKSUM, CONFIG_ALL_UCI_COMMIT);
++				file_before = popen(buf,"r");
++				if(file_before != NULL){
++					if( fgets(size1_str, sizeof(size1_str), file_before) != NULL )
++						;
++					pclose(file_before);
++				} else {
++					goto quit_do_package_cmd;
++				}
+ 
++				snprintf(buf, sizeof(buf),"%s write %s %s", MSTC_PERSIST, MSTC_PERSIST_CFG1SIZE, size1_str);
++				system(buf);
++			} else {
++				fprintf(stderr,"### Checksum is the same but commit does not change anything! Do nothing! ###\n");
++			}
++		}
++		freeFileNameStrings(gint_config_num);
++	}
++#endif
+ 	return 0;
++
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++quit_do_package_cmd:	
++	freeFileNameStrings(gint_config_num);
++	return 1;
++#endif
+ }
+ 
+ static int uci_do_add(int argc, char **argv)
+Index: uci-2014-04-11.1/delta.c
+===================================================================
+--- uci-2014-04-11.1.orig/delta.c	2016-03-28 19:26:01.743203280 +0800
++++ uci-2014-04-11.1/delta.c	2016-03-28 18:53:26.547355000 +0800
+@@ -31,6 +31,10 @@
+ #include "uci.h"
+ #include "uci_internal.h"
+ 
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++int gint_commitChange = 0;
++#endif
++
+ /* record a change that was done to a package */
+ void
+ uci_add_delta(struct uci_context *ctx, struct uci_list *list, int cmd, const char *section, const char *option, const char *value)
+@@ -276,6 +280,9 @@
+ 
+ 	changes = uci_load_delta_file(ctx, p, filename, &f, flush);
+ 	if (flush && f && (changes > 0)) {
++	#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++		gint_commitChange = 1;
++	#endif
+ 		rewind(f);
+ 		if (ftruncate(fileno(f), 0) < 0) {
+ 			uci_close_stream(f);
+Index: uci-2014-04-11.1/file.c
+===================================================================
+--- uci-2014-04-11.1.orig/file.c	2016-03-28 19:26:01.722837021 +0800
++++ uci-2014-04-11.1/file.c	2016-03-28 18:53:13.602242000 +0800
+@@ -28,13 +28,43 @@
+ #include <glob.h>
+ #include <string.h>
+ #include <stdlib.h>
+-
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++#include <sys/wait.h>
++#include <errno.h>
++#endif
+ #include "uci.h"
+ #include "uci_internal.h"
+ 
+ #define LINEBUF	32
+ #define LINEBUF_MAX	4096
+ 
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++int gint_pathc = 0;
++char g_dirName[128] = {0};
++extern char **g_allocMem;
++extern int gint_config_num;
++
++
++/*
++ * check if the file is in the the white list to be included in config checksum
++ */
++int checkConfigWhiteList(char *filename){
++	int i;
++	
++	if( (g_allocMem != NULL) && (filename != NULL) ){
++		for(i=0; i<gint_config_num; i++){
++			if( g_allocMem[i] != NULL ){
++				//fprintf(stderr,"### g_allocMem[%d]=%s ###\n", i, g_allocMem[i]);
++				if(strcmp(filename, g_allocMem[i]) == 0){
++					return 1;
++				}
++			}
++		}
++	}
++	return 0;
++}
++#endif 
++
+ /*
+  * Fetch a new line from the input stream and resize buffer if necessary
+  */
+@@ -691,6 +721,10 @@
+ 	char *filename = NULL;
+ 	struct stat statbuf;
+ 	bool do_rename = false;
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++	char buf[256] = {0};
++	int status = 0;
++#endif
+ 
+ 	if (!p->path) {
+ 		if (overwrite)
+@@ -698,7 +732,7 @@
+ 		else
+ 			UCI_THROW(ctx, UCI_ERR_INVAL);
+ 	}
+-
++	
+ 	if ((asprintf(&filename, "%s/.%s.uci-XXXXXX", ctx->confdir, p->e.name) < 0) || !filename)
+ 		UCI_THROW(ctx, UCI_ERR_MEM);
+ 
+@@ -762,6 +796,37 @@
+ 	free(name);
+ 	free(path);
+ 	uci_close_stream(f1);
++
++	#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++	//fprintf(stderr,"p->e.name=%s\n", p->e.name);
++	if( 1 == checkConfigWhiteList(p->e.name) ){
++		if(do_rename){
++			snprintf(buf, sizeof(buf), "cat %s >> %s", filename, CONFIG_ALL_UCI_COMMIT);
++		}
++		else {
++			snprintf(buf, sizeof(buf), "cat %s >> %s", p->path, CONFIG_ALL_UCI_COMMIT);
++		}
++		status = system(buf);
++		if(status < 0)
++		{
++			fprintf(stderr,"cmd: %s\t error: %s", buf, strerror(errno));
++			goto done;
++		}
++		 
++		if(WIFEXITED(status))
++		{
++			//printf("normal termination, exit status = %d\n", WEXITSTATUS(status));
++		}
++		else if(WIFSIGNALED(status))
++		{
++			fprintf(stderr,"abnormal termination,signal number =%d\n", WTERMSIG(status));
++		}
++		else if(WIFSTOPPED(status))
++		{
++			fprintf(stderr,"process stopped, signal number =%d\n", WSTOPSIG(status));
++		}
++	}
++	#endif	
+ 	if (do_rename && rename(filename, p->path)) {
+ 		unlink(filename);
+ 		UCI_THROW(ctx, UCI_ERR_IO);
+@@ -782,11 +847,11 @@
+ static inline char *get_filename(char *path)
+ {
+ 	char *p;
+-
+-	p = strrchr(path, '/');
+-	p++;
+-	if (!*p)
+-		return NULL;
++	
++	p = strrchr(path, '/');	
++	p++;	
++	if (!*p)		
++		return NULL;	
+ 	return p;
+ }
+ 
+@@ -804,7 +869,9 @@
+ 		free(dir);
+ 		UCI_THROW(ctx, UCI_ERR_NOTFOUND);
+ 	}
+-
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++	gint_pathc = globbuf.gl_pathc;
++#endif
+ 	size = sizeof(char *) * (globbuf.gl_pathc + 1);
+ 	for(i = 0; i < globbuf.gl_pathc; i++) {
+ 		char *p;
+@@ -828,7 +895,7 @@
+ 		if (!uci_validate_package(p))
+ 			continue;
+ 
+-		configs[i] = buf;
++		configs[i] = buf;	
+ 		strcpy(buf, p);
+ 		buf += strlen(buf) + 1;
+ 	}
+Index: uci-2014-04-11.1/uci.h
+===================================================================
+--- uci-2014-04-11.1.orig/uci.h	2016-03-28 19:26:01.714822550 +0800
++++ uci-2014-04-11.1/uci.h	2016-03-28 18:52:36.494239000 +0800
+@@ -39,7 +39,15 @@
+ #define UCI_SAVEDIR "/tmp/.uci"
+ #define UCI_DIRMODE 0700
+ #define UCI_FILEMODE 0600
+-
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++#define CONFIG_ALL_UCI_COMMIT		"/tmp/ConfigUCICOMMIT"
++#define	MSTC_CFG_CHKSUM				"/usr/bin/mstc_cfg_chksum"
++#define MSTC_PERSIST				"/sbin/mstc_persist"
++#define MSTC_PERSIST_CFGAPPLY		"cfgapply"
++#define MSTC_PERSIST_CFG1SIZE		"cfg1Size"
++#define MSTC_PERSIST_CFG1CHKSUM		"cfg1Chksum"
++#define MSTC_UCI_CFG_FILE_WHITE_LIST	"/etc/uciConfigList"
++#endif
+ enum
+ {
+ 	UCI_OK = 0,

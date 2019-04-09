@@ -1,0 +1,50 @@
+<script language="JavaScript">
+var seconds=45;
+
+function initindexwindow() {
+	document.location.href = "/cgi-bin/sec/easysetup.cgi?redirecteasysetup=0&ottforcsrf=iaO9D1T7Kxt7tzO0";
+}
+
+function waiting()
+{
+	(seconds<=0)?seconds=0:seconds-=1;
+	document.getElementById("wait_time").value=seconds;
+	if(seconds==0)
+	{	
+		/* When display this window */
+		document.location.href = "/cgi-bin/sec/easysetup.cgi?easysetupfinish=0";
+	};
+	setTimeout('waiting()',1000);
+} 
+
+
+//waiting();
+</script>
+
+<form name="easysetup" id="form" method="POST" action="/cgi-bin/sec/easysetup.cgi">
+<table width="100%" height="97%" border="0" cellpadding="1" cellspacing="1">
+<tbody><tr>
+	<td align="center" valign="center">
+<table width="500" border="1" align="center" cellpadding="5" cellspacing="0" >
+<tr>
+<td align="left" >
+<font size="2">
+設定を変更しています。<br>
+しばらくお待ちください。完了まで<input type="text" id="wait_time" value ="30" size="3" maxlength="3" readonly disabled="disabled"> 秒です。
+<!--
+<input type="button" name="apply" value="apply" onclick = "waiting()">
+-->
+<br><br><br><br><br><br>
+</font>
+</td>
+</tr>
+<tr>
+</tr>
+</table>
+</td>
+</tr></tbody>
+</table>
+</form>
+<script language="JavaScript">
+waiting();
+</script>

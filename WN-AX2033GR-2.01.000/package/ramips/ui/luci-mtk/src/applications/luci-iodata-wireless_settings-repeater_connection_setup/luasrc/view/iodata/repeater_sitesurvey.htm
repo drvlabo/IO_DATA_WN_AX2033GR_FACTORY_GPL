@@ -1,0 +1,29 @@
+<body onLoad="frmLoad()">
+<script type="text/javascript">
+
+function changePage()
+{
+	document.location.href="<%=controller%>/content/wireless_settings/repeater_connection_settings/repeater_sitesurvey_result";
+}
+
+function frmLoad()
+{
+	setTimeout("changePage()", 8000);
+}
+</script>
+
+<br><br>
+<div id="content">
+<blockquote>
+<form name="sitesurvey">
+	<table width="500" border="0">
+	<tbody><tr>
+		<td colspan="4" style="font-weight:bold;"><font size="4"><%:Site Survey%></font></td>
+	</tr></tbody>
+	</table>
+	<%:Searching for access point...%>
+</form>
+</blockquote>
+</div>
+
+</body>

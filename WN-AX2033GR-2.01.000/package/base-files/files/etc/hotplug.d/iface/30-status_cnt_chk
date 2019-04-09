@@ -1,0 +1,17 @@
+#!/bin/sh
+
+wanmode=`/sbin/uci get network.wan.mode`
+
+if [ "$ACTION" == "ifup" ]; then
+	if [ -z "`ps | grep -v "grep" | grep status_cnt_chk`" ] && [ "$wanmode" != "ap" -a "$wanmode" != "repeater" ]; then
+		if [ "$wanmode" != "transix" -a "$wanmode" != "v6plus" ]; then
+			#echo "[MSTC Sean Debug]call from 30status link!!" > /dev/console
+			/usr/bin/status_cnt_chk &
+		fi
+	else
+		if [ "$wanmode" != "transix" -a "$wanmode" != "v6plus" ]; then
+			killall status_cnt_chk
+		fi
+	fi
+	fi			
+

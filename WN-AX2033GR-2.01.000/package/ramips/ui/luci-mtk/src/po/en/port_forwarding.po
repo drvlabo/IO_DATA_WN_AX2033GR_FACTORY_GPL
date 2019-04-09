@@ -1,0 +1,50 @@
+msgid "Open Ports"
+msgstr "Open Ports"
+
+msgid "Port Forwarding."
+msgstr "Port Forwarding."
+
+msgid "IP address want to open"
+msgstr "IP address want to open"
+
+msgid "Protocol"
+msgstr "Protocol"
+
+msgid "TCP and UDP"
+msgstr "TCP and UDP"
+
+msgid "Port number in LAN side"
+msgstr "Port number in LAN side"
+
+msgid "Port number in WAN side"
+msgstr "Port number in WAN side"
+
+msgid "Current Port Forwarding Rule Table"
+msgstr "Current Port Forwarding Rule Table"
+
+msgid "Name is empty."
+msgstr "Name is empty."
+
+msgid "IP address want to open is empty."
+msgstr "IP address want to open is empty."
+
+msgid "LAN Port is empty."
+msgstr "LAN Port is empty."
+
+msgid "WAN Port is empty."
+msgstr "WAN Port is empty."
+
+msgid "Name is not correct."
+msgstr "Name is not correct."
+
+msgid "IP address want to open is not correct."
+msgstr "IP address want to open is not correct."
+
+msgid "LAN Port is not correct."
+msgstr "LAN Port is not correct."
+
+msgid "WAN Port is not correct."
+msgstr "WAN Port is not correct."
+
+msgid "The maximum number of port forwarding entries is limited to 32."
+msgstr "The maximum number of port forwarding entries is limited to 32."

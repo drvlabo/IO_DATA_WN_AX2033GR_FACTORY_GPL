@@ -1,0 +1,30 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+
+msgid "You agree to the net filtering User Agreement that appears after clicking the Service use the Start button"
+msgstr "サービスを利用するには［サービス利用開始］ボタンクリック後に表示される「ネットフィルタリング利用約款」への同意が必要です。"
+
+msgid "License number"
+msgstr "ライセンス番号"
+
+msgid "service"
+msgstr "サービス"
+
+msgid "limitation"
+msgstr "全体制限"
+
+msgid "Security Course"
+msgstr "安全コース"
+
+msgid "Service start"
+msgstr "サービス利用開始"
+
+msgid "License to purchase"
+msgstr "ライセンス購入へ"
+
+msgid "agree"
+msgstr "同意する"
+
+msgid "disagree"
+msgstr "同意しない"

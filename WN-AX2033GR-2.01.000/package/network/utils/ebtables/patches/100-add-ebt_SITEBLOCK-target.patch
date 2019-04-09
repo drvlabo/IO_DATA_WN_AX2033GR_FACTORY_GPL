@@ -1,0 +1,129 @@
+Index: ebtables-v2.0.10-4/extensions/Makefile
+===================================================================
+--- ebtables-v2.0.10-4.orig/extensions/Makefile	2016-11-04 11:56:39.383527717 +0800
++++ ebtables-v2.0.10-4/extensions/Makefile	2016-11-04 11:57:00.862207000 +0800
+@@ -2,6 +2,11 @@
+ 
+ EXT_FUNC+=802_3 nat arp arpreply ip ip6 standard log redirect vlan mark_m mark \
+           pkttype stp among limit ulog nflog
++
++ifeq ($(CONFIG_EBT_TARGET_SITEBLOCK),y)
++EXT_FUNC+=siteblock
++endif
++
+ EXT_TABLES+=filter nat broute
+ EXT_OBJS+=$(foreach T,$(EXT_FUNC), extensions/ebt_$(T).o)
+ EXT_OBJS+=$(foreach T,$(EXT_TABLES), extensions/ebtable_$(T).o)
+Index: ebtables-v2.0.10-4/extensions/ebt_siteblock.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ ebtables-v2.0.10-4/extensions/ebt_siteblock.c	2016-11-04 11:57:21.919263834 +0800
+@@ -0,0 +1,108 @@
++/* ebt_siteblock
++ *
++ * Authors:
++ * __MSTC__, Terence Yang 2016/07/22 <Terence.Yang@mitrastar.com.tw>
++ *
++ */
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <getopt.h>
++#include <ebt_siteblock.h>
++#include "../include/ebtables_u.h"
++
++enum {
++	O_SITEBLOCK_TARGET = 0,
++	O_SITEBLOCK_TIMEOUT,
++};
++
++static struct option opts[] =
++{
++	{ "timeout", required_argument, 0, O_SITEBLOCK_TIMEOUT },
++	{ 0 }
++};
++
++static void print_help()
++{
++	printf(
++	"siteblock target options:\n"
++	" --timeout    						specify timeout value (msec) to free skb\n"
++	"              						***be careful! siteblock doesn't free skb, you must to set this value\n"
++	);
++}
++
++static void init(struct ebt_entry_target *target)
++{
++	struct ebt_siteblock_info *info =
++	   (struct ebt_siteblock_info *)target->data;
++
++	info->target = EBT_SITEBLOCK;
++	return;
++}
++
++#define OPT_TIMEOUT 0x01
++static int parse(int c, char **argv, int argc,
++   const struct ebt_u_entry *entry, unsigned int *flags,
++   struct ebt_entry_target **target)
++{
++	int i = 0;
++	struct ebt_siteblock_info *info = (struct ebt_siteblock_info *)(*target)->data;
++
++	switch (c) {
++		case O_SITEBLOCK_TIMEOUT:
++			ebt_check_option2(flags, OPT_TIMEOUT);
++			i = atoi(optarg);
++
++			if ( i < EBT_SITEBLOCK_TIMEOUT_MIN || i > EBT_SITEBLOCK_TIMEOUT_MAX ) 
++				ebt_print_error("timeout range error, range : %d-%d", EBT_SITEBLOCK_TIMEOUT_MIN, EBT_SITEBLOCK_TIMEOUT_MAX);
++
++			info->timeout = i;
++			break;
++		default:
++			break;
++	}
++	return 1;
++}
++
++static void final_check(const struct ebt_u_entry *entry,
++   const struct ebt_entry_target *target, const char *name,
++   unsigned int hookmask, unsigned int time)
++{
++
++}
++
++static void print(const struct ebt_u_entry *entry,
++   const struct ebt_entry_target *target)
++{
++}
++
++static int compare(const struct ebt_entry_target *t1,
++   const struct ebt_entry_target *t2)
++{
++	struct ebt_siteblock_info *info1 =
++	   (struct ebt_siteblock_info *)t1->data;
++	struct ebt_siteblock_info *info2 =
++	   (struct ebt_siteblock_info *)t2->data;
++
++	return info1->target == info2->target;
++}
++
++static struct ebt_u_target siteblock_target =
++{
++	.name			= EBT_SITEBLOCK_NAME,
++	.size			= sizeof(struct ebt_siteblock_info),
++	.help			= print_help,
++	.init			= init,
++	.parse			= parse,
++	.final_check	= final_check,
++	.print			= print,
++	.compare		= compare,
++	.extra_ops		= opts,
++};
++
++void _init(void)
++{
++	ebt_register_target(&siteblock_target);
++}
++

@@ -1,0 +1,347 @@
+<%+header%>
+
+<script language="JavaScript">
+
+<%
+	--MBA Sean, get the waiting time, default is 30 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+
+	local network_waiting_time_uci = uci_t.get("web", "gui_config", "network_apply_waiting_time")
+	
+	local network_waiting_time = 30;
+	
+	if network_waiting_time_uci then
+		network_waiting_time = network_waiting_time_uci
+	end
+	
+	uci_t.set_confdir(original_confdir)
+%>
+
+<%
+	--MSTC MVA Sean, get all 2.4G & 5G chip device name
+    
+	local ifce_2g={}
+	local ifce_5g={}
+	local dev_2G = ""
+	local dev_5G = ""
+	uci.foreach("wireless", "wifi-iface", 
+	function(s)
+		if s.mode == "ap" then
+			if (s.device == "mt7620" or s.device == "mt7602e" or s.device == "mt7603e" or s.device == "mt7628" or s.device == "mt7688" or s.device == "mt7615e2") then 
+				dev_2G = s.device
+				ifce_2g[#ifce_2g+1] = s[".name"]
+			end
+			if ( s.device == "mt7615e5" or s.device == "mt7610e" or s.device == "mt7612e" ) then
+				dev_5G = s.device
+				ifce_5g[#ifce_5g+1] = s[".name"]
+			end
+		end
+    end)
+	local mac_filter_enable = uci.get("wireless", ifce_2g[1], "accesspolicy")
+	local ssid1_security = uci.get("wireless", ifce_2g[1], "encryption")
+	local ssid1_hidden = uci.get("wireless", ifce_2g[1], "hidden")
+	local ssid2_security = uci.get("wireless", ifce_5g[1], "encryption")
+	local ssid2_hidden = uci.get("wireless", ifce_5g[1], "hidden")
+	
+	local wps_vendor_pincode = ""
+	
+	--MBA Sean , get the WPS Vendor Pin code 
+	local file = io.popen("cat /etc/wireless/" .. dev_2G .. "/" .. dev_2G .. ".dat | grep WscVendorPinCode", 'r')
+	if file then
+        local data_raw = file:read()
+        if data_raw then
+                local value_tmp = data_raw:match("WscVendorPinCode=(.+)")
+				-- if value is exist, get the value
+				if value_tmp then
+					wps_vendor_pincode = value_tmp
+				end
+        end
+	end
+	io.close(file)
+%>
+
+var ssid1_security = "<%=ssid1_security%>";
+var ssid1_hidden = "<%=ssid1_hidden%>";
+var ssid2_security = "<%=ssid2_security%>";
+var ssid2_hidden = "<%=ssid2_hidden%>";
+var mac_filter_enable ="<%=mac_filter_enable%>"
+
+var url ="<%=controller%>/content/wireless_settings/wps"; //current page url
+
+//MBA Sean, check the wps checksum is correct or not
+function check_wps_checksum()
+{
+	if( document.getElementById("wps_pin_code").value.length == 8 || !isNaN(document.getElementById("wps_pin_code").value) ) {
+		var wps_front7 = document.getElementById("wps_pin_code").value.substring(0, 7);
+		var wps_checksum = document.getElementById("wps_pin_code").value.substring(7, 8);
+		var wps_checksum_int = parseInt(wps_checksum);
+		var wps_front7_int = parseInt(wps_front7);
+		var accum = 0
+		while ( wps_front7_int>0) {
+			accum += 3 * (wps_front7_int % 10);
+			wps_front7_int = Math.floor(wps_front7_int/10);
+			accum += wps_front7_int % 10;
+			wps_front7_int = Math.floor(wps_front7_int/10);
+		}
+		var correct_checksum =  (10 - accum % 10) % 10;
+			
+		if ( wps_checksum_int != correct_checksum ) {
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+	else {
+		return false;
+	}
+}
+
+//MBA Sean, Apply Button script
+function btnApply(x)
+{
+	var verifyFlag = false;
+	
+	if(x == "wps_onoff") {
+		if(document.getElementById("wps_enable").checked) {
+			document.getElementById('wps_enable_hidden').disabled = true;
+			if ( ssid1_security == "none") {
+				alert("<%:When the encryption of SSID1 is disabled , you can not use WPS.%>");
+				return false;
+			}
+			if ( ssid1_security == "wep-auto" || ssid1_security == "wep") {
+				alert("<%:When the encryption of SSID1 is set to WEP, you can not use the WPS.%>");
+				return false;
+			}
+			if ( ssid2_security == "none") {
+				alert("<%:When the encryption of SSID2 is disabled , you can not use WPS.%>");
+				return false;
+			}
+			if ( ssid2_security == "wep-auto" || ssid2_security == "wep") {
+				alert("<%:When the encryption of SSID2 is set to WEP, you can not use the WPS.%>");
+				return false;
+			}
+			if ( ssid1_hidden == "1" || ssid2_hidden == "1" ) {
+				alert("<%:When the SSID notification is disabled , you can not use WPS.%>");
+				return false;
+			}
+			if ( mac_filter_enable == "1" ) {
+				alert("<%:When the MAC Filter is disabled , you can not use WPS.%>");
+				return false;
+			}
+		}
+		verifyFlag = true;
+	}
+	else if(x == "wps_configure_reset") {
+		if(!confirm("<%:it will reset the wireless setting%>"))
+			return false;
+		else
+			verifyFlag = true;
+	}
+	else if(x == "wps_push_button") {
+		alert("<%:Start the WPS.\n Please press the WPS button on the handset to be connected within two minutes%>");
+		verifyFlag = true;
+	}
+	else if(x == "wps_pin_connect") {
+		if ( isNaN(document.getElementById("wps_pin_code").value) 
+			|| document.getElementById("wps_pin_code").value =="" 
+			|| document.getElementById("wps_pin_code").value.length != 8 ) {
+			alert("<%:Please enter the correct pin code!%>");
+			verifyFlag = false;
+		}
+		else {
+
+			if ( !check_wps_checksum() ) {
+				alert("<%:Please enter the correct pin code!%>");
+				verifyFlag = false;
+			}
+			else {
+				alert("<%:Start the WPS.\n%>");
+				verifyFlag = true;
+			}
+		}
+	}
+	
+	if(verifyFlag){
+		//MBA Sean, start to countdown.
+		if ( x == "wps_onoff" || x == "wps_configure_reset" ) {
+			//MBA Sean, show the waiting page & hide the original content
+			document.getElementById("top_menu").style.display = 'none';
+			document.getElementById("content").style.display = 'none';
+			document.getElementById("waiting").style.display = 'block';
+			waiting();
+		} 
+		
+		//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+        $.ajax({
+        type:"POST",
+        url: url,
+        data: $("#form_"+x).serialize(),// serializes the form's elements.
+        });
+		
+		if ( x == "wps_push_button" || x == "wps_pin_connect" ){ // Push button or pin 
+			//MBA Sean, we need refresh to get new csrf token
+			setTimeout( function () { 
+				location.href = url;
+			}, 1000);
+		}
+		
+		return false;
+	}
+	else {
+		return false;
+	}
+	
+}
+
+var seconds = <%=network_waiting_time%>;
+
+function waiting()
+{
+	(seconds<=0)?seconds=0:seconds-=1;
+	document.getElementById("wait_time").value=seconds;
+	if(seconds==0)
+	{
+		location.href=url;
+		return true;
+	};
+	setTimeout('waiting()',1000);
+} 
+
+function frmLoad()
+{
+
+	<%
+	local wps_enable = uci.get("wireless", dev_2G, "wsc_confmode")
+	if wps_enable then
+		if wps_enable == "7" then	%>
+			document.getElementById("wps_enable").checked = true;
+		<%else%>
+			document.getElementById("wps_enable").checked = false;
+		<%end%>
+	<%else%>
+		document.getElementById("wps_enable").checked = true;
+	<%end%>	
+	
+	document.getElementById("wps_onoff").addEventListener("click", function() {
+		btnApply("wps_onoff");
+	}, false);
+	
+	if( (document.getElementById("wps_configure_reset") !== null) && (document.getElementById("wps_configure_reset") !== undefined) ) {
+		document.getElementById("wps_configure_reset").addEventListener("click", function() {
+			btnApply("wps_configure_reset");
+		}, false);
+	}
+	
+	document.getElementById("wps_push_button").addEventListener("click", function() {
+		btnApply("wps_push_button");
+	}, false);
+	document.getElementById("wps_pin_connect").addEventListener("click", function() {
+		btnApply("wps_pin_connect");
+	}, false);
+}
+
+</SCRIPT>
+
+<div id="content">
+<form id="form_wps_onoff" name="form_wps_onoff">
+<blockquote>
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+
+<table width="500" border="0" cellspacing="4">
+<tbody><tr><td valign="top" width="35%" class="background">
+<b><font size="2"><%:WPS%>: &nbsp;</font></b>
+</td>
+<td valign="top" width="65%">
+<input type="checkbox" id="wps_enable" name="wps_enable"  value="7">
+<input id='wps_enable_hidden' type='hidden' value="0" name='wps_enable'>
+<%:effective%>
+<input type="button" name="wps_onoff" id="wps_onoff" value="<%:Setup%>">
+</td></tr></tbody>
+</table>
+<table border="0" cellspacing="4" width="500">
+<tr><td width="100%" colspan="2">
+<B><font size="2"><%:WPS Setup information%></font></B>
+</td></tr>
+<input type="hidden" name="apply" value="apply">
+<input type="hidden" name="wps_function" value="wps_onoff">
+</form>
+<!--reset wps settings-->
+<form id="form_wps_configure_reset" name="form_wps_configure_reset">
+<tr>
+<td width="35%" class="background">
+<font size="2"><%:WPS Information%>:&nbsp;</font></td>
+<td width="65%" ><font size="2">
+<%
+--MBA Sean, check if WPS is configured or unConfigured
+local wps_configured_uci = uci.get("wireless", dev_2G, "wsc_confstatus")
+local wps_congigured = "1"
+if wps_configured_uci then
+	if wps_configured_uci == "2" then
+		wps_congigured = "1"
+	else
+		wps_congigured = "0"
+	end
+end
+%>
+<% if wps_congigured == "1" then%>
+	<%:Configured%>&nbsp;&nbsp;
+	<input type="button" id="wps_configure_reset" name="wps_configure_reset" value="<%:Reset WPS Settings%>">
+	<input type="hidden" name="apply" value="apply">
+	<input type="hidden" name="wps_function" value="wps_configure_reset">
+<%else%>
+	<%:unConfigured%>
+<%end%>
+</font>
+</td>
+</tr>
+</form>
+
+<!--Start WPS PBC-->
+<form id="form_wps_push_button" name="form_wps_push_button">
+<tr><td width="100%" colspan="2"> <BR>
+<B><font size="2"><%:If there is a button on the device to be connected , you can either click on the button below , press the [WPS] button on the body to the WPS lamp blinks , please press the button of the device to be connected .%></font></B>
+</td></tr>
+<tr>
+<td width="34%" class="background"><font size="2">
+<%:WPS PBC Settings%>: </font></td>
+<td height="18" > 
+<input type="button" id="wps_push_button" name="wps_push_button" value="<%:Setup%>" >
+<input type="hidden" name="apply" value="apply">
+<input type="hidden" name="wps_function" value="wps_push_button">
+</td></tr>
+</form>
+
+<form id="form_wps_pin_connect" name="form_wps_pin_connect">
+<tr><td width="100%" colspan="2"> <BR>
+<B><font size="2"><%:If the equipment to be connected there is a PIN code , enter the PIN code below ,and please click on the [ connection ] button .%></font></B>
+</td></tr>
+<!--WPS pincode-->
+<tr>
+</script>
+<td width="34%" class="background"><font size="2">
+<%:WPS Pin Code Settings%>: </font></td>
+<td width="63%" height="21" ><font size="2">			
+</font><input type="text" name="wps_pin_code" id="wps_pin_code" size="15" maxlength="8">
+<input type="button" id="wps_pin_connect" name="wps_pin_connect" value="<%:Connect%>" ></td></tr>
+<input type="hidden" name="apply" value="apply">
+<input type="hidden" name="wps_function" value="wps_pin_connect">
+</form>
+<tr><td width="100%" colspan="2"> <BR>
+<B><font size="2"><%:if you want to enter the PIN code in the device, please enter the PIN code below%></font></B>
+</td></tr>
+<!--pincode-->
+<tr>
+<td class="background"><font size="2">
+<%:Pin Code%>:&nbsp;</font></td>
+<td ><font size="2"><%=wps_vendor_pincode%></font></td>
+</tr>
+</table>
+
+</blockquote>
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+</div>
+
+<%+footer%>

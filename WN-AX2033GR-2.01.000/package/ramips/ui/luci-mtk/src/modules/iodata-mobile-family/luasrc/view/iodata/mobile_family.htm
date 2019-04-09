@@ -1,0 +1,422 @@
+<html lang="<%=luci.i18n.context.lang%>">
+<head><title><%=luci.sys.hostname() %></title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0" />
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Cache-Control" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<script language="javascript" src="<%=media%>/iobbtxt_mobile.txt"></script>
+<link href="<%=media%>/smart.html" type="text/css" rel="stylesheet">
+<link rel="stylesheet" href="<%=media%>/css2.html">
+<script type="text/javascript" src="<%=media%>/js/jquery-1.12.1.min.js"></script>
+<script type="text/javascript" src="<%=media%>/js/baseJS.js"></script>
+<script language="JavaScript" src="<%=media%>/functionjs.html"></script>
+
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+<script type="text/javascript">
+
+var url ="<%=controller%>/mobile/mobile_family"; //current page url
+
+function chkMacRegistered(address){
+	var ret = true;
+	$("#ruleTable tr[name='ruleData']").each(function(){
+		 if ( $(this).find("td:eq(2) font").html().replace(/ /g, "").replace(/:/g, "") == address )
+			ret = false;
+	});
+
+	return ret;
+}
+
+function addClick() {
+	var f = document.time_limit;
+	var dataNum = parseInt($("#listDataNum").val(),10) + 1;
+
+	if ( f.rule_desc.value.replace(/ /g, "") == "" ) {
+		alert("<%:Description is empty.%>");
+		return false;
+	}
+
+	if ( f.rule_mac.value.replace(/ /g, "") == "" ) {
+		alert("<%:MAC address is empty.%>");
+		return false;
+	}
+
+	var newDesc = f.rule_desc.value.replace(/ /g, "");
+
+	var tmpMac = f.rule_mac.value.toUpperCase().replace(/ /g, "");
+	var mac_regex = /^([0-9A-F]{2}){5}([0-9A-F]{2})$/;
+
+	/* Check Rule is correct*/
+	if ( !mac_regex.test(tmpMac) ) {
+		alert("<%:MAC address is not correct.%>");
+		return false;
+	}
+
+	if ( !chkMacRegistered(tmpMac) ) {
+		alert("<%:MAC address is already registered.%>");
+		return false;
+	}
+
+	var i = 0;
+	var newMac = "";
+	while( i < tmpMac.length ) {
+		if ( newMac != "" )
+			newMac += ":" ;
+
+		newMac += tmpMac.substring(i,i+2);
+		i = i+2;
+	}
+
+	var newTimeStart = f.rule_time_start.value.replace(/ /g, "");
+	var newTimeEnd = f.rule_time_end.value.replace(/ /g, "");
+	var compTimeStart = "2000/01/01 " + newTimeStart + ":00";
+	var compTimeEnd = "2000/01/01 " + newTimeEnd + ":00";
+
+	if ( Date.parse(compTimeStart).valueOf() >= Date.parse(compTimeEnd).valueOf() ) {
+		alert("<%:The end time is larger than start time.%>");
+		return false;
+	}
+
+	var newRow = "<tr name=\"ruleData\">";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"1\">" + dataNum + "</td>";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"1\">" + htmlEncode(newDesc) + "</td>";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"1\">" + newMac + "</td>";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"1\">" + newTimeStart + "</td>";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"1\">～</td>";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"1\">" + newTimeEnd + "</td>";
+	newRow += "<td align=\"center\" class=\"table2\"><input type=\"checkbox\" name=\"select\" value=\"" + dataNum + "\"/></td>";
+	newRow += "</tr>";
+	$("#ruleTable tr:last").after(newRow)
+	$("#listDataNum").val(dataNum);
+
+	f.rule_desc.value = "";
+	f.rule_mac.value = "";
+	f.rule_time_start.selectedIndex = "0";
+	f.rule_time_end.selectedIndex = "23";
+	//f.listDynPCMac.selectedIndex = "0";
+	ruleDataChange();
+	return true;
+}
+
+function clearTextbox() {
+	var f = document.time_limit;
+	f.rule_desc.value = "";
+	f.rule_mac.value = "";
+	f.rule_time_start.selectedIndex = "0";
+	f.rule_time_end.selectedIndex = "0";
+}
+
+function ruleDataChange(){
+	if ( $("input[name='select']").length == 0 ) {
+		$("input[name='deleteSelRule']").prop( "disabled", true );
+		$("input[name='deleteAllRule']").prop( "disabled", true );
+	}
+	else {
+		$("input[name='deleteSelRule']").prop( "disabled", false );
+		$("input[name='deleteAllRule']").prop( "disabled", false );
+	}
+
+	if ( $("input[name='select']").length >= 10 ) {
+		$("input[name='addTimeLimit']").prop( "disabled", true );
+		$("input[name='reset']").prop( "disabled", true );
+	}
+	else {
+		$("input[name='addTimeLimit']").prop( "disabled", false );
+		$("input[name='reset']").prop( "disabled", false );
+	}
+}
+
+function clearSelect(){
+	$("input[name='select']").prop("checked", false);
+}
+
+function deleteAllClick(){
+	$("#ruleTable tr[name='ruleData']").each(function(){
+		$(this).remove();
+	});
+	$("#listDataNum").val("0");
+	ruleDataChange();
+}
+
+function deleteSelClick(){
+	var i = 0;
+	$("#ruleTable tr[name='ruleData']").each(function(){
+		if ( $(this).find("input[name='select']").prop("checked") == true ) {
+			$(this).remove();
+		}
+	});
+
+	$("#ruleTable tr[name='ruleData']").each(function(){
+		i++;
+		$(this).find("td:first font").html(i);
+	});
+	$("#listDataNum").val(i);
+	ruleDataChange();
+}
+
+function copyMacFromList(){
+	var f = document.time_limit;
+	var macVal = $("select[name='listDynPCMac']").val();
+	f.rule_mac.value = macVal.replace(/:/g,"");
+}
+
+function btnApply()
+{
+	var dataCnt = 0;
+	var dataDesc = "";
+	var dataMac = "";
+	var dataTimeStart = "";
+	var dataTimeEnd = "";
+	var dataStr = "";
+
+	$("#ruleTable tr[name='ruleData']").each(function(){
+		dataDesc = $(this).find("td:eq(1) font").html().replace(/ /g, "");
+		dataMac = $(this).find("td:eq(2) font").html().replace(/ /g, "");
+
+		//var dateTimeSplit = $(this).find("td:eq(3) font").html().replace(/ /g, "");
+		dataTimeStart = $(this).find("td:eq(3) font").html().replace(/ /g, "");
+		dataTimeEnd = $(this).find("td:eq(5) font").html().replace(/ /g, "");
+
+		if ( dataStr != "" )
+			dataStr += ">";
+
+		dataStr += dataDesc + "<" + dataMac + "<" + dataTimeStart + "<" + dataTimeEnd;
+		dataCnt++;
+	});
+
+	if ( dataCnt > 10 ) {
+		alert("<%:It has been registered up to the maximum number of entries%>");
+		return false;
+	}
+	$("#tlRuleDataStr").val(dataStr);
+
+	if ( $("#enableTimeLimit").prop("checked") == true ) {
+		$("#tlEnableStr").val("1");
+	}
+	else {
+		$("#tlEnableStr").val("0");
+	}
+
+	//MBA Sean, show the waiting page & hide the original content
+	//document.getElementById("top_menu").style.display = 'none';
+	document.getElementById("content").style.display = 'none';
+	document.getElementById("waiting").style.display = 'block';
+	//MBA Sean, start to countdown.
+	waiting();
+
+	//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+	$.ajax({
+		type:"POST",
+		url: url,
+		data: $("#content_send").serialize(),// serializes the form's elements.
+	});
+
+	return false;
+}
+
+<%
+	--MBA Sean, get the waiting time, default is 30 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+	local waiting_time_uci = uci_t.get("web", "gui_config", "network_apply_waiting_time")
+	local waiting_time = 30;
+
+	if waiting_time_uci then
+		waiting_time = waiting_time_uci
+	end
+
+	uci_t.set_confdir(original_confdir)
+%>
+
+var seconds=15;
+function waiting()
+{
+	(seconds <= 0) ? seconds=0 : seconds-=1;
+	document.getElementById("wait_time").value = seconds;
+
+	if(seconds == 0){
+		location.href = url;
+		return true;
+	}
+
+	setTimeout('waiting()',1000);
+}
+
+function frmLoad() {
+	ruleDataChange();
+}
+
+function backSmartIndexPage(){
+	return window.location.href='<%=controller%>/mobile';
+}
+</script>
+<%+csrf%>
+</head>
+<body onLoad="frmLoad()">
+<div id="content">
+<form id="content_send" name="time_limit" method="post">
+<table border="0" width="100%">
+<tr>
+	<td width="100%" colspan="2" style="text-align:center" ><a onClick="return backSmartIndexPage()"><img src="<%=media%>/image/iodata.gif"></a></td>
+</tr>
+</table>
+<blockquote style="display:block;width:350px">
+<%
+local enable_time_limit = uci.get("parentalcontrol", "config", "enable_time_limit")
+local enableCheckedStr = ""
+if enable_time_limit and enable_time_limit == "1" then
+    enableCheckedStr = "checked"
+end
+%>
+<p class="title"><input type="checkbox" id="enableTimeLimit" name="enableTimeLimit" <%=enableCheckedStr%>/><font size="1"><%:Enable Time Limit function.%></font></p>
+<table border="0" width="100%">
+	<tbody>
+		<tr>
+			<td width="100%" class="background" style="text-align:left"><font size="1"><%:Description%>:</font></td>
+			<td colspan="2"><input type="text" name="rule_desc" size="20" maxlength="16"/></td>
+		</tr>
+		<tr>
+			<td width="55%" class="background" style="text-align:left"><font size="1"><%:MAC address of limited device%>:</font></td>
+			<td width="45%"><input type="text" name="rule_mac" size="20" maxlength="12"/></td>
+			<!--td width="40%" align="left">
+				<input type="button" value="<" onclick="copyMacFromList()"/>
+				<select name="listDynPCMac">
+						<option value=""><font size="1"><%:Computer Selection%></font></option>
+						<%
+						luci.sys.net.arptable(function(x)
+							if (x["Device"] == "br-lan") and (x["Flags"] ~= "0x0") then
+						%>
+							<option value="<%=x["HW address"]%>"><font size="1"><%=x["HW address"]%></font></option>
+						<%
+							end
+						end)
+						%>
+				</select>
+			</td-->
+		</tr>
+		<tr>
+			<td width="50%" class="background" style="text-align:left"><font size="1"><%:Time that can be used%>:</font></td>
+			<td colspan="2">
+				<select name="rule_time_start">
+					<option value="00:00" selected='true'>00:00</option>
+					<option value="01:00">01:00</option>
+					<option value="02:00">02:00</option>
+					<option value="03:00">03:00</option>
+					<option value="04:00">04:00</option>
+					<option value="05:00">05:00</option>
+					<option value="06:00">06:00</option>
+					<option value="07:00">07:00</option>
+					<option value="08:00">08:00</option>
+					<option value="09:00">09:00</option>
+					<option value="10:00">10:00</option>
+					<option value="11:00">11:00</option>
+					<option value="12:00">12:00</option>
+					<option value="13:00">13:00</option>
+					<option value="14:00">14:00</option>
+					<option value="15:00">15:00</option>
+					<option value="16:00">16:00</option>
+					<option value="17:00">17:00</option>
+					<option value="18:00">18:00</option>
+					<option value="19:00">19:00</option>
+					<option value="20:00">20:00</option>
+					<option value="21:00">21:00</option>
+					<option value="22:00">22:00</option>
+					<option value="23:00">23:00</option>
+				</select>
+				<font size="1">～</font>
+				<select name="rule_time_end">
+					<option value="01:00">01:00</option>
+					<option value="02:00">02:00</option>
+					<option value="03:00">03:00</option>
+					<option value="04:00">04:00</option>
+					<option value="05:00">05:00</option>
+					<option value="06:00">06:00</option>
+					<option value="07:00">07:00</option>
+					<option value="08:00">08:00</option>
+					<option value="09:00">09:00</option>
+					<option value="10:00">10:00</option>
+					<option value="11:00">11:00</option>
+					<option value="12:00">12:00</option>
+					<option value="13:00">13:00</option>
+					<option value="14:00">14:00</option>
+					<option value="15:00">15:00</option>
+					<option value="16:00">16:00</option>
+					<option value="17:00">17:00</option>
+					<option value="18:00">18:00</option>
+					<option value="19:00">19:00</option>
+					<option value="20:00">20:00</option>
+					<option value="21:00">21:00</option>
+					<option value="22:00">22:00</option>
+					<option value="23:00">23:00</option>
+					<option value="24:00" selected='true'>24:00</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3">
+				<p>
+					<input type="button" value="<%:Add%>" name="addTimeLimit" onClick="return addClick()"/>&nbsp;&nbsp;
+					<input type="button" value="<%:Reset%>" name="reset" onClick="return clearTextbox();"/>
+				</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<br>
+<table border="0" id="ruleTable" style="display:block;width:350px">
+	<tbody>
+		<tr>
+			<td colspan="4"><b><font size="1"><%:Parental Control List%>:</font></b></td>
+		</tr>
+		<tr>
+			<td width="5%" class="background" style="text-align:center"><font size="1"><%:NO.%></font></td>
+			<td width="10%" class="background" style="text-align:center"><font size="1"><%:Description%></font></td>
+			<td width="25%" class="background" style="text-align:center"><font size="1"><%:MAC address%></font></td>
+			<td width="25%" class="background" style="text-align:center"><font size="1"><%:Start time%></font></td>
+			<td width="5%" class="background" style="text-align:center"><font size="1"><%: %></font></td>
+			<td width="25%" class="background" style="text-align:center"><font size="1"><%:End Time%></font></td>
+			<td width="5%" class="background" style="text-align:center"><font size="1"><%:Select%></font></td>
+		</tr>
+		<%
+			local cnt = 0
+			uci.foreach("parentalcontrol", "time_limit",
+			function(s)
+				cnt = cnt + 1
+				print("<tr name=\"ruleData\">")
+				print("<td class=\"table2\" align=\"center\"><font size=\"1\">" .. cnt .. "</td>")
+				print("<td class=\"table2\" align=\"center\"><font size=\"1\">" .. luci.http.htmlencode(s.desc) .. "</td>")
+				print("<td class=\"table2\" align=\"center\"><font size=\"1\">" .. s.mac .. "</td>")
+				print("<td class=\"table2\" align=\"center\"><font size=\"1\">" .. s.start_time .. "</td>")
+				print("<td class=\"table2\" align=\"center\"><font size=\"1\">～</td>")
+				print("<td class=\"table2\" align=\"center\"><font size=\"1\">" .. s.end_time .. "</td>")
+				print("<td align=\"center\" class=\"table2\"><input type=\"checkbox\" name=\"select\" value=\"" .. cnt .. "\"/></td>")
+				print("</tr>")
+			end)
+		%>
+	</tbody>
+</table>
+<br/>
+<input type="hidden" id="listDataNum" value="<%=cnt%>">
+<input type="button" value="<%:Delete selected%>" name="deleteSelRule" onClick="deleteSelClick()" />&nbsp;&nbsp;
+<input type="button" value="<%:Delete all%>" name="deleteAllRule" onClick="deleteAllClick()" />&nbsp;&nbsp;&nbsp;
+<input type="button" value="<%:Reset%>" name="reset" onclick="return clearSelect();" />
+<table width="100%" border="0" cellspacing="0" cellpadding="0" align="right">
+	<tr>
+		<td align="right">
+			<input type="submit" value="<%:Apply%>" onClick="return btnApply()" width="100%" height="30" border="0"/>
+			<input type="reset" value="<%:Cancel%>" onclick="window.location.reload()"/>
+			<input type="hidden" value="" id="tlEnableStr" name="tlEnableStr"/>
+			<input type="hidden" value="" id="tlRuleDataStr" name="tlRuleDataStr"/>
+			<input type="hidden" value="1" name="isApply"/>
+		</td>
+	</tr>
+</table>
+</blockquote>
+</form>
+</div>
+<div id="waiting" style="display:none">
+<a><%:Applying the settings. Please wait a moment%><input type="text" id="wait_time" size="3" maxlength="3" readonly> </input><%:Seconds%></a>
+</div>
+</body>
+<%+footer%>

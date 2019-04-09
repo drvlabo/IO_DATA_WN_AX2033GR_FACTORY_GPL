@@ -1,0 +1,137 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "ASCII (13 characters)"
+msgstr "ASCII (13 文字)"
+
+msgid "ASCII (5 characters)"
+msgstr "ASCII (5 文字)"
+
+msgid "Apply"
+msgstr "設定"
+
+msgid "Authentication Type:"
+msgstr "認証方式："
+
+msgid "Auto"
+msgstr "自動"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "Channel"
+msgstr "チャンネル"
+
+msgid "Connect"
+msgstr "接続"
+
+msgid "Connection Band:"
+msgstr "接続先帯域："
+
+msgid "Connection Settings"
+msgstr "接続設定"
+
+msgid "Connection Target:"
+msgstr "接続先："
+
+msgid "Default Key:"
+msgstr "デフォルトキー："
+
+msgid "HEX (10 characters)"
+msgstr "HEX (10 文字)"
+
+msgid "HEX (26 characters)"
+msgstr "HEX (26 文字)"
+
+msgid "Invalid Pre-Shared Key."
+msgstr "無効なPre-Shared Keyです。"
+
+msgid "Key"
+msgstr "キー"
+
+msgid "Key Length"
+msgstr "キーの長さ"
+
+msgid "Key Type"
+msgstr "キーの種類"
+
+msgid "Manual Setup"
+msgstr "手動設定"
+
+msgid "Repeater_list_none"
+msgstr "なし"
+
+msgid "Not support"
+msgstr "利用不可"
+
+msgid "Please choose one site to connect."
+msgstr "SSIDを選択せずに[接続]ボタンをクリックした場合"
+
+msgid "Please select a SSID."
+msgstr "選択してください。"
+
+msgid "Please enter SSID."
+msgstr "SSIDを入力してください。"
+
+msgid "Refresh"
+msgstr "更新"
+
+msgid "Searching for access point..."
+msgstr "アクセスポイントを検索しています...."
+
+msgid "Security"
+msgstr "暗号化"
+
+msgid "Security Key:"
+msgstr "暗号化キー："
+
+msgid "Security:"
+msgstr "暗号化："
+
+msgid "Select"
+msgstr "選択"
+
+msgid "Setting for Connection Target"
+msgstr "接続先設定"
+
+msgid "Setting for connecting with root AP"
+msgstr "親機との接続設定をおこないます"
+
+msgid "Fix band connecting with root AP"
+msgstr "親機と接続する帯域を固定することができます。"
+
+msgid "Signal Strength(%)"
+msgstr "電波強度(%)"
+
+msgid "Site Survey"
+msgstr "接続先検索"
+
+msgid ""
+"The AP with not supported security is selected. Please choose the other root "
+"AP."
+msgstr "利用できない暗号化が設定されています。他の親機を選択してください。"
+
+msgid "The connection settings of the wireless LAN"
+msgstr "無線LANの接続設定をおこないます"
+
+msgid "The security of the wireless LAN is NONE or WEP."
+msgstr "無線LANの暗号化機能が設定されていないかWEPに設定されています。"
+
+msgid "WEP key is not HEX numbers!"
+msgstr "正しい暗号キーを入力してください。"
+
+msgid "WEP key length is wrong!"
+msgstr "暗号キーの文字数が正しくありません。"
+
+msgid "WPA Type:"
+msgstr "WPAの種類："
+
+msgid "WPA-PSK is strongly recommended."
+msgstr "安全にご使用いただくためにWPA-PSKに設定することを強くお勧めします。"
+
+msgid "Security_repeater"
+msgstr "暗号化"
+
+
+msgid "None_repeater"
+msgstr "なし"

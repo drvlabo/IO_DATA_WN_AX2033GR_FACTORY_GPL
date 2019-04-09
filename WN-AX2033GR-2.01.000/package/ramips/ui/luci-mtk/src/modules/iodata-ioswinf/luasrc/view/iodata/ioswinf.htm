@@ -1,0 +1,54 @@
+<%+header%>
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+<script type="text/javascript">
+<%
+	local fw_version = (luci.sys.exec("cat /etc/openwrt_release | grep DISTRIB_RELEASE | awk -F '\"' '{print $2}'"):match("^([^%s]+)"))
+	local bc_version = (luci.sys.exec("sys atsh | grep 'Boot Version' | awk -F ':' '{print $2}' | awk -F '|' '{print $1}'"))
+	local nf_license = (luci.sys.exec("fw_printenv nfLicense | awk -F '=' '{print $2}'"):match("^([^%s]+)"))
+	
+	local serialnum = (luci.sys.exec("fw_printenv serialnum | awk -F '=' '{print $2}'"):match("^([^%s]+)"))
+	local ethaddr = (luci.sys.exec("fw_printenv ethaddr | awk -F '=' '{print $2}'"):match("^([^%s]+)"))
+	local wifi1ssid1 = (luci.sys.exec("fw_printenv wifi1ssid1 | awk -F '=' '{print $2}'"):match("^([^%s]+)"))
+	local wifi1ssid2 = (luci.sys.exec("fw_printenv wifi1ssid2 | awk -F '=' '{print $2}'"):match("^([^%s]+)"))
+	local wifi2ssid1 = (luci.sys.exec("fw_printenv wifi2ssid1 | awk -F '=' '{print $2}'"):match("^([^%s]+)"))
+	local wifiwpapsk = (luci.sys.exec("fw_printenv wifiwpapsk | awk -F '=' '{print $2}'"):match("^([^%s]+)"))
+	local wifiwpspin = (luci.sys.exec("fw_printenv wifiwpspin | awk -F '=' '{print $2}'"):match("^([^%s]+)"))
+%>
+
+function btnApply()
+{
+
+}
+
+function frmLoad()
+{
+
+}
+</script>
+
+<div id="content">
+<form id="content_send" name="ioswinf">
+<blockquote>
+<p class="title">
+<table border="0" width="70%">
+	<tbody>
+		<tr>
+			<td width="35%" class="background" style="text-align:left"><font size="5">Firmware Version:</font></td>
+			<td width="65%"><font size="5"><%=fw_version%></font></td>
+		</tr>
+		<tr>
+			<td width="35%" class="background" style="text-align:left"><font size="5">Bootcode Version:</font></td>
+			<td width="65%"><font size="5"><%=bc_version%></font></td>
+		</tr>
+		<tr>
+			<td width="35%" class="background" style="text-align:left"><font size="5">License of NetFiltering:</font></td>
+			<td width="65%"><font size="5"><%=nf_license%></font></td>
+		</tr>
+	</tbody>
+</table>
+
+</blockquote>
+</form> 
+</div>
+
+<%+footer%>

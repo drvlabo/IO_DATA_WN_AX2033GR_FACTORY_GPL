@@ -1,0 +1,77 @@
+Index: linux-3.10.14/net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c
+===================================================================
+--- linux-3.10.14.orig/net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c	2016-01-08 14:07:06.000000000 +0800
++++ linux-3.10.14/net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c	2017-11-28 11:12:57.843242200 +0800
+@@ -70,11 +70,57 @@
+ 			  tuple->src.u3.ip6, tuple->dst.u3.ip6);
+ }
+ 
++//Add by Customer for IPv4 over IPv6
++static int nf_ct_ipv6_skip_frghdr(const struct sk_buff *skb, int start, u8 *nexthdrp,
++				  int len)
++{
++	u8 nexthdr = *nexthdrp;
++	int fragment_flag = 0;
++	int tmp_start = start;
++
++	while (ipv6_ext_hdr(nexthdr)) {
++		struct ipv6_opt_hdr hdr;
++		int hdrlen;
++
++		if (len < (int)sizeof(struct ipv6_opt_hdr))
++			return -1;
++		if (nexthdr == NEXTHDR_NONE)
++			break;
++		if (nexthdr == NEXTHDR_FRAGMENT) {
++			fragment_flag = 1;
++			tmp_start = start;
++		}
++		if (skb_copy_bits(skb, start, &hdr, sizeof(hdr)))
++			BUG();
++		if (nexthdr == NEXTHDR_AUTH)
++			hdrlen = (hdr.hdrlen+2)<<2;
++		else
++			hdrlen = ipv6_optlen(&hdr);
++
++		nexthdr = hdr.nexthdr;
++		len -= hdrlen;
++		start += hdrlen;
++	}
++
++	/* XXX: if packet is fragment only, return FRAGMENT */
++	if (nexthdr == NEXTHDR_NONE && fragment_flag == 1) {
++		nexthdr = NEXTHDR_FRAGMENT;
++		start = tmp_start;
++	}
++
++	*nexthdrp = nexthdr;
++	return start;
++}
++//End add
++
+ static int ipv6_get_l4proto(const struct sk_buff *skb, unsigned int nhoff,
+ 			    unsigned int *dataoff, u_int8_t *protonum)
+ {
+ 	unsigned int extoff = nhoff + sizeof(struct ipv6hdr);
+-	__be16 frag_off;
++//Exchange by Customer for IPv4 over IPv6
++//	__be16 frag_off;
++	__be16 frag_off = 0;
++//End exchange
+ 	int protoff;
+ 	u8 nexthdr;
+ 
+@@ -83,7 +129,13 @@
+ 		pr_debug("ip6_conntrack_core: can't get nexthdr\n");
+ 		return -NF_ACCEPT;
+ 	}
++//Exchange by Customer for IPv4 over IPv6
++#if 0
+ 	protoff = ipv6_skip_exthdr(skb, extoff, &nexthdr, &frag_off);
++#else
++	protoff = nf_ct_ipv6_skip_frghdr(skb, extoff, &nexthdr, skb->len - extoff);
++#endif
++//End exchange
+ 	/*
+ 	 * (protoff == skb->len) means the packet has not data, just
+ 	 * IPv6 and possibly extensions headers, but it is tracked anyway

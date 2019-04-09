@@ -1,0 +1,9 @@
+msgid "Make NAT Accelerator settings."
+msgstr "Make NAT Accelerator settings."
+
+msgid "Enable NAT Accelerator"
+msgstr "Enable NAT Accelerator"
+
+msgid "When enable NAT Accelerator, the following function is not work."
+msgstr "When enable NAT Accelerator, the following function is not work."
+

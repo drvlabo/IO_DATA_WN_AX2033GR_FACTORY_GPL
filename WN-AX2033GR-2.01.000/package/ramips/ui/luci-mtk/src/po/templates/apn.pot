@@ -1,0 +1,47 @@
+msgid "APN"
+msgstr ""
+
+msgid "APN_Error_1"
+msgstr ""
+
+msgid "APN_Error_2"
+msgstr ""
+
+msgid "APN_Name"
+msgstr ""
+
+msgid "APN_Setup"
+msgstr ""
+
+msgid "Auto_APN"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "IPv6_IPv4_Mode"
+msgstr ""
+
+msgid "LAN"
+msgstr ""
+
+msgid "LTE"
+msgstr ""
+
+msgid "Modify"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Off"
+msgstr ""
+
+msgid "On"
+msgstr ""
+
+msgid "lan_ipv6"
+msgstr ""
+
+msgid "msg_config"
+msgstr ""

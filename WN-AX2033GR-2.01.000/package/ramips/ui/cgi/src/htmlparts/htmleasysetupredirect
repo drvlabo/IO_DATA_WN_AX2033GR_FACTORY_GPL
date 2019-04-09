@@ -1,0 +1,21 @@
+<form name="easysetup" method="POST" action="/cgi-bin/sec/easysetup.cgi">
+<table width="500" border="1" align="center" cellpadding="5" cellspacing="0" >
+<tr>
+<td align="left" >
+<font size="2">
+インターネットにアクセスできませんでした。<br><br>
+[かんたん接続]ボタンで設定を行ってください。<br>
+<br><br><br><br><br><br><br><br>
+</font>
+</td>
+</tr>
+<tr>
+<td align="right" >
+<input type="hidden" name="ottforcsrf">
+<input type="button" name="gotohome" value="設定画面へ" onclick="location.href='/cgi-bin/sec/mainwindow.cgi'">&nbsp;
+<input type="submit" name="EasySetup" value="かんたん接続">
+</td>
+</tr>
+</table>
+</form>
+

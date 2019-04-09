@@ -1,0 +1,40 @@
+Index: lighttpd-1.4.38/src/http_auth.c
+===================================================================
+--- lighttpd-1.4.38.orig/src/http_auth.c	2015-11-23 06:25:42.000000000 +0800
++++ lighttpd-1.4.38/src/http_auth.c	2016-05-12 18:43:06.785981500 +0800
+@@ -93,7 +93,26 @@
+ 			 *
+ 			 * user:realm:md5(user:realm:password)
+ 			 */
++#if 1 /* __MSTC__, Vincent: Fix can't login problem if username include ":" wording */
++			if (NULL == (f_pwd = memrchr(f_user, ':', f.size - (f_user - f.start) ))) {
++				log_error_write(srv, __FILE__, __LINE__, "sbs",
++						"parsed error in", p->conf.auth_htdigest_userfile,
++						"expected 'username:realm:hashed password'");
++
++				stream_close(&f);
++
++				return -1;
++			}
++			if (NULL == (f_realm = memrchr(f_user, ':', (f_pwd - f.start)))) {
++				log_error_write(srv, __FILE__, __LINE__, "sbs",
++						"parsed error in", p->conf.auth_htdigest_userfile,
++						"expected 'username:realm:hashed password'");
++
++				stream_close(&f);
+ 
++				return -1;
++			}
++#else
+ 			if (NULL == (f_realm = memchr(f_user, ':', f.size - (f_user - f.start) ))) {
+ 				log_error_write(srv, __FILE__, __LINE__, "sbs",
+ 						"parsed error in", p->conf.auth_htdigest_userfile,
+@@ -113,7 +132,7 @@
+ 
+ 				return -1;
+ 			}
+-
++#endif
+ 			/* get pointers to the fields */
+ 			u_len = f_realm - f_user;
+ 			f_realm++;

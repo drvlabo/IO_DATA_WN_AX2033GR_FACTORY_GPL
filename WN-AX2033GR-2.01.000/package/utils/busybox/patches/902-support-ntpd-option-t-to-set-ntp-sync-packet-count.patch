@@ -1,0 +1,107 @@
+Index: busybox-1.22.1/networking/ntpd.c
+===================================================================
+--- busybox-1.22.1.orig/networking/ntpd.c	2016-11-28 18:55:03.569997692 +0800
++++ busybox-1.22.1/networking/ntpd.c	2016-11-28 19:02:04.000000000 +0800
+@@ -36,6 +36,7 @@
+ //usage:     "\n	-n	Do not daemonize"
+ //usage:     "\n	-q	Quit after clock is set"
+ //usage:     "\n	-N	Run at high priority"
++//usage:     "\n	-t TIMES Set samples times"
+ //usage:     "\n	-w	Do not set time (only query peers), implies -n"
+ //usage:	IF_FEATURE_NTPD_SERVER(
+ //usage:     "\n	-l	Run as server on port 123"
+@@ -271,12 +272,13 @@
+ 	OPT_q = (1 << 1),
+ 	OPT_N = (1 << 2),
+ 	OPT_x = (1 << 3),
++	OPT_t = (1 << 4),
+ 	/* Insert new options above this line. */
+ 	/* Non-compat options: */
+-	OPT_w = (1 << 4),
+-	OPT_p = (1 << 5),
+-	OPT_S = (1 << 6),
+-	OPT_l = (1 << 7) * ENABLE_FEATURE_NTPD_SERVER,
++	OPT_w = (1 << 5),
++	OPT_p = (1 << 6),
++	OPT_S = (1 << 7),
++	OPT_l = (1 << 8) * ENABLE_FEATURE_NTPD_SERVER,
+ 	/* We hijack some bits for other purposes */
+ 	OPT_qq = (1 << 31),
+ };
+@@ -373,6 +375,7 @@
+ 	/* Maybe conditionally calculate wander? it's used only for logging */
+ 	double   discipline_wander;     // c.wander
+ #endif
++	unsigned int samples_times;
+ };
+ #define G (*ptr_to_globals)
+ 
+@@ -746,6 +749,9 @@
+ 	p->p_xmt_msg.m_status = MODE_CLIENT | (NTP_VERSION << 3);
+ 	p->next_action_time = G.cur_time; /* = set_next(p, 0); */
+ 	reset_peer_stats(p, 16 * STEP_THRESHOLD);
++	
++	if (option_mask32 & OPT_t)
++		p->lastpkt_delay = 0.25;
+ 
+ 	llist_add_to(&G.ntp_peers, p);
+ 	G.peer_cnt++;
+@@ -1079,9 +1085,11 @@
+ 		p = (peer_t *) item->data;
+ 		rd = root_distance(p);
+ 		offset = p->filter_offset;
+-		if (!fit(p, rd)) {
+-			item = item->link;
+-			continue;
++		if (!(option_mask32 & OPT_t)) {
++			if (!fit(p, rd)) {
++				item = item->link;
++				continue;
++			}
+ 		}
+ 
+ 		VERB5 bb_error_msg("interval: [%f %f %f] %s",
+@@ -2100,6 +2108,7 @@
+ {
+ 	unsigned opts;
+ 	llist_t *peers;
++	char *samples_times;
+ 
+ 	srandom(getpid());
+ 
+@@ -2117,10 +2126,10 @@
+ 	opt_complementary = "dd:p::wn"; /* d: counter; p: list; -w implies -n */
+ 	opts = getopt32(argv,
+ 			"nqNx" /* compat */
+-			"wp:S:"IF_FEATURE_NTPD_SERVER("l") /* NOT compat */
++			"t:wp:S:"IF_FEATURE_NTPD_SERVER("l") /* NOT compat */
+ 			"d" /* compat */
+ 			"46aAbgL", /* compat, ignored */
+-			&peers, &G.script_name, &G.verbose);
++			&samples_times, &peers, &G.script_name, &G.verbose);
+ 	if (!(opts & (OPT_p|OPT_l)))
+ 		bb_show_usage();
+ //	if (opts & OPT_x) /* disable stepping, only slew is allowed */
+@@ -2173,6 +2182,10 @@
+ 		| (1 << SIGCHLD)
+ 		, SIG_IGN
+ 	);
++
++	if (opts & OPT_t) {
++		G.samples_times = atoi(samples_times);
++	}
+ }
+ 
+ int ntpd_main(int argc UNUSED_PARAM, char **argv) MAIN_EXTERNALLY_VISIBLE;
+@@ -2201,7 +2214,10 @@
+ 	 * NB2: sync usually happens using INITIAL_SAMPLES packets,
+ 	 * since last reply does not come back instantaneously.
+ 	 */
+-	cnt = G.peer_cnt * (INITIAL_SAMPLES + 1);
++	if (option_mask32 & OPT_t)
++		cnt = G.peer_cnt * G.samples_times;
++	else
++		cnt = G.peer_cnt * (INITIAL_SAMPLES + 1);
+ 
+ 	write_pidfile(CONFIG_PID_FILE_PATH "/ntpd.pid");
+ 

@@ -1,0 +1,177 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"  />
+<title>.::Welcome to the APN Configurator::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script language="JavaScript" type="text/javascript">
+
+function checkSubmit()
+{
+
+		var cid_Name_rule = /^[\x20-\x21\x24-\x25\x27-\x2a\x2d-\x3a\x3c-\x3e\x40-\x5b\x5d-\x7e]+$/;
+		if (!cid_Name_rule.test(document.APN_APP_EDIT.cid_Name.value)){
+				alert("<%:APN_Error_1%>");
+				document.APN_APP_EDIT.cid_Name.focus();
+				return false;
+		}
+
+ 
+		var APN_rule = /^[\x2d-\x2e\x30-\x39\x41-\x5a\x5f\x61-\x7a]+$/;
+		if (!APN_rule.test(document.APN_APP_EDIT.apn.value) && document.APN_APP_EDIT.apn.value.length != 0){
+				alert("<%:APN_Error_2%>");
+				document.APN_APP_EDIT.apn.focus();
+				return false;
+		}
+
+		if (document.APN_APP_EDIT.apn.value.length == 0){
+			document.forms[0]._auto_apn.value = 1;
+		}else{
+			document.forms[0]._auto_apn.value = 0;
+		}
+		
+		document.forms[0]._apn_type.value = document.forms[0].apn_type.value;
+		document.forms[0]._auth.value = document.forms[0].auth.value;
+			
+		if(document.forms[0].enabled0[0].checked == true){
+			document.forms[0].APNenabled.value =  1;
+		}
+		else{
+			document.forms[0].APNenabled.value =  0;
+		}
+		
+		showWebMessage( 1 , "<%:Message%>" , "<%:msg_config%>" );
+		
+		document.forms[0].APNSubmit.value="1";
+
+}
+
+</script>
+</head>
+<body >
+<form onSubmit="return checkSubmit()" method="post" name="APN_APP_EDIT" action="<%=controller%>/expert/configuration/lte/APN/apn_edit">
+
+<div id="table">
+  <ul>
+    <li class="table_top"></li><li class="table_content">
+        <div class="data">
+        <ul>
+		<input name="_auto_apn" type="hidden" value="0"/>
+		<div class="w_text">
+              <ul>
+				<% local enabled = luci.http.formvalue("enabled")%>
+				<% local rules = luci.http.formvalue("rules")%>
+				
+                <li class="left_table"><%:APN%> :</li>
+							
+                <li class="right_table"> 
+				<input name="enabled0" id="radio" type="radio" value="1" <%if enabled == "1" then%>  checked="checked" <%end%> /> <%:Enable%> 			
+				<input name="enabled0" id="radio2" type="radio" <%if rules == "1"  then%>style="display:none;" <%end%> value="0" <%if enabled == "0" then%> checked="checked" <%end%>/><%if rules ~= "1"  then%> <%:Disable%><%end%>				
+				</li>
+				
+				<input name="APNenabled" type="hidden" value="0"/> 
+              </ul>
+            </div>
+		<div class="w_text">
+            <ul>
+              <li class="left_table"><%:Name%> :</li>
+              <li class="right_table">			
+				<%local cid_name = luci.http.formvalue("cid_name")%>
+                <input name="cid_Name" size="31" maxlength="31" <%if cid_name then%>value="<%=cid_name%>"<%end%> type="text" />
+				
+              </li>
+            </ul>
+          </div>
+		  <div class="w_text">
+            <ul>
+				<%local apn_type = luci.http.formvalue("apn_type")%>
+              <li class="left_table"><%:IPv6_IPv4_Mode%> : </li>
+              <li class="right_table"> 
+				<select name="apn_type" size="1" >
+                  <option value="v4" <% if apn_type == "v4" then %>selected="selected"<% end %> >IPv4 </option>
+				  
+                  <option value="v6" <% if apn_type == "v6" then %>selected="selected"<% end %> >IPv6 </option>
+				  
+				  <option value="v4v6" <% if apn_type == "v4v6" then %>selected="selected"<% end %> >IPv4/IPv6 </option>
+				  
+                </select>
+				<input name="_apn_type" type="hidden" value="0"/> 
+            </ul>
+          </div>
+		  
+          <div class="w_text">
+            <ul>
+			  <%local apn = luci.http.formvalue("apn")%>	
+              <li class="left_table"><%:APN_Name%> : </li>
+              <li class="right_table">
+                <input name="apn" size="15" maxlength="15" <%if apn and apn ~= "na" then%>value="<%=apn%>"<%end%> type="text"/>
+              </li>
+            </ul>
+          </div>
+          <div class="w_text">
+            <ul>
+			  <%local username = luci.http.formvalue("username")%>	
+              <li class="left_table"><%:Username%> : </li>
+              <li class="right_table">
+                <input name="username" size="15" maxlength="15" <%if username and username ~= "na" then%>value="<%=username%>"<%end%> type="text"/>
+              </li>
+            </ul>
+          </div>
+		  
+          <div class="w_text">
+            <ul>
+			  <%local password = luci.http.formvalue("password")%>	
+              <li class="left_table"><%:Password%> : </li>
+              <li class="right_table">
+                <input name="password" size="15" maxlength="15" <%if password and password ~= "na" then%>value="<%=password%>"<%end%> type="password"/>
+              </li>
+            </ul>
+          </div>
+		  
+          <div class="w_text">
+            <ul>
+			  <%local auth = luci.http.formvalue("auth")%>	
+              <li class="left_table"><%:Authentication_Method%> : </li>
+              <li class="right_table">
+                <select name="auth" size="1" >
+                  <option value="0" <% if auth == "0" then %>selected="selected"<% end %> >None </option>
+                  <option value="1" <% if auth == "1" then %>selected="selected"<% end %> >PAP </option>
+				  <option value="2" <% if auth == "2" then %>selected="selected"<% end %> >CHAP </option>
+				  <option value="3" <% if auth == "3" then %>selected="selected"<% end %> >PAP/CHAP </option>
+                </select>
+				<input name="_auth" type="hidden" value="0"/>
+              </li>
+            </ul>
+          </div>		  
+		  <div class="spaceair"></div>
+        </ul>
+      </div>
+    </li>
+    <li class="table_button">
+      <div class="button">
+        <center>
+          <input name="Back" type="submit" id="Back" onclick="MM_goToURL('parent.frames[\'mainFrame\']','<%=controller%>/expert/configuration/lte/APN');return document.MM_returnValue"value="Back" />
+          &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+		  <input id="APNSubmit" name="APNSubmit" type="hidden"/>
+          <input name="apply" value="<%:Apply%>" type="submit"/>
+          &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+          <input name="Cancel" value="<%:Cancel%>" type="reset" onclick="window.location.href=window.location.href" />	  
+		  
+		  <% local rules = luci.http.formvalue("rules")%>
+		  <input name="rules" <%if rules then%> value="<%=rules%>"<%end%>  type="hidden" />
+		  
+        </center>
+      </div>
+    </li>
+  </ul>
+</div>
+
+</form>
+</body>
+<script language="JavaScript">
+	showFullPath(' LTE > APN Edit');
+	showWebMessage( 0 , '<%:Message%>' , '<%:Ready%>' );
+</script>
+</html>

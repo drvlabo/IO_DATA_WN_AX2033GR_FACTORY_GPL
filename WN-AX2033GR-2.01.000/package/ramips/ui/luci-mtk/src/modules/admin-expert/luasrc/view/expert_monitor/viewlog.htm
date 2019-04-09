@@ -1,0 +1,221 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: header.htm 4891 2009-06-22 10:23:21Z jow $
+
+-%>
+<%
+--require("luci.i18n").loadc("default")
+local i18n = require("luci.i18n")
+require("luci.http").prepare_content("application/xhtml+xml")
+local uci = require("luci.model.uci").cursor()
+local lang = uci:get("luci","main","lang")
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+
+function convertMsg2Display( msg )
+	local result = msg
+	result = result:gsub( [=[&]=], [=[&amp;]=] )
+	result = result:gsub( [=["]=], [=[&quot;]=] )
+	result = result:gsub( [=[<]=], [=[&lt;]=] )
+	result = result:gsub( [=[>]=], [=[&gt;]=] )
+	result = result:gsub( [=[']=], [=[&apos;]=] )
+	return result
+end
+-%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"  />
+<title>.::<%:welcome_title_message%>::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+</head>
+<%
+   local logList = {}
+   local display = "AllLogs"
+
+	table.insert( logList, { i18n.translate("log_SysEmergency"),"SysEmergency" } )
+	table.insert( logList, { i18n.translate("log_SysAlert"),"SysAlert"} )
+	table.insert( logList, { i18n.translate("log_SysCritical"),"SysCritical"} )
+	table.insert( logList, { i18n.translate("log_SysError"),"SysError"} )
+	table.insert( logList, { i18n.translate("log_SysWarning"),"SysWarning"} )
+	table.insert( logList, { i18n.translate("log_SysNotice"),"SysNotice"} )
+	table.insert( logList, { i18n.translate("log_SysInfo"),"SysInfo" } )
+	table.insert( logList, { i18n.translate("log_SysDebug"),"SysDebug"} )
+   
+   for row = 1, math.max( #logList) do
+	value = uci:get( "syslogd", "setting", "log" .. logList[row][2] )
+	if not ( nill == value ) and tonumber(value) > 0 then
+		logList[row][3] = true
+         if tonumber(value) > 1 then
+            display = logList[row][2]
+         end
+      else
+         logList[row][3] = false
+      end
+   end		
+   
+   local logMsgFileNane = "/tmp/logMsgs"
+   local luaLogMsgs = {}
+   local msgFile = io.open( logMsgFileNane, "r" )
+   local viewLvType;
+   
+   if not ( nill == msgFile ) then
+      for msgLine in msgFile:lines() do
+         table.insert( luaLogMsgs, {
+            [ "Date" ] = msgLine:sub( 1, 15 ),
+            [ "Msg"  ] = msgLine:sub( 16, msgLine:len() )
+         } )
+      end
+   end
+%>
+<script type="text/javascript">
+//<![CDATA[
+
+function init()
+{
+   var display = "<%= display %>";
+   var viewType = document.getElementsByName( "ViewLogType" )[0];
+   
+   for( var i = 0; i < viewType.length; i++ )
+   {
+      if ( display == viewType.options[i].value )
+      {
+         viewType.selectedIndex = i;
+         return;
+      }
+   }
+}
+
+
+function submitData()
+{
+   showWebMessage( 2, '<%:Message%>', '<%:msg_config%>' );
+   return true;
+}
+
+function changed(theselect) {
+	alert(theselect.value)
+}
+
+//]]>
+
+function path_msg_init(){
+   showFullPath(' <%:monitor%> > <%:log%> > <%:view_log%>');
+   showWebMessage( 0, '<%:Message%>', '<%:Ready%>' );
+}
+</script>
+<body onload="path_msg_init();init();">
+<div id="tabs" onsubmit="return submitData()">
+  <ul>
+    <li class="hightline"><a title="<%:view_log%>"><span><%:view_log%></span></a></li>
+<!-- MSTC, Sharon, mark logsettings
+    <li><a href="<%=controller%>/expert/monitor/log/logsettings" title="<%:log_setting%>"><span><%:log_setting%></span></a></li>
+-->
+  </ul>
+  <br class="clearfloat" />
+</div>
+<form name="ViewLogForm">
+  <div id="table">
+    <ul>
+      <li class="table_top"></li>
+      <li class="table_content">
+        <div class="data">
+          <ul>
+            <div class="w_text">
+              <ul>
+                <li class="left_table"><%:log_display%> :
+                  <select name="ViewLogType" onchange="submitData(); document.forms[0].submit();" size="1" >
+                    <option value="AllLogs"><%:all_logs%></option>
+
+                    <%
+					for row = 1, math.max( #logList) do  
+						if logList[row][3] then
+                    %>
+					<option value="<%= logList[row][2] %>"><%= logList[row][1] %></option>
+                    <%  
+						end
+                    end
+                    %>	
+
+                  </select>
+                </li>
+                <li class="right_table">
+                  <input name="ViewLogSubmitType" value="<%:log_refresh%>" onclick="return submitData();" type="submit" />
+                  <input name="ViewLogSubmitType" value="<%:log_clear%>" onclick="return submitData();" type="submit" />
+                </li>
+              </ul>
+            </div>
+            <div class="tableframe" >
+              <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0" class="table_frame">
+                <tr>
+                  <td>
+                    <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td>
+                          <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td>
+                                <table name="ViewLogTable" width="100%" cellpadding="0" cellspacing="0" >
+                                  <tr>
+                                    <td height="26" colspan="7">
+                                      <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                          <td height="26" class="table_title"> <%:log_summary%> </td>
+                                        </tr>
+                                      </table>
+                                    </td>
+                                  </tr>
+                                  <tr class="top_font" align="center">
+                                    <td width="5%">#</td>
+                                    <td width="15%">
+                                      <%:log_summary_time%>
+                                    </td>
+                                    <td width="80%"><%:log_summary_msg%></td>
+                                  </tr>
+                                  <%
+                                  for i = #luaLogMsgs, 1, -1 do
+                                  %>
+                                  <tr class="table_font" align="center">
+                                    <td><%= #luaLogMsgs - i + 1 %></td>
+                                    <td><%= luaLogMsgs[i].Date %></td>
+                                    <td align="left"><%= convertMsg2Display( luaLogMsgs[i].Msg ) %></td>
+                                  </tr>
+                                  <%
+                                  end
+                                  %>
+                                </table>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="spaceair"></div>
+          </ul>
+        </div>
+      </li>
+      <li class="table_button">
+        <div class="button" align="center">
+        &nbsp;
+        </div>
+      </li>
+    </ul>
+  </div>
+</form>
+</body>
+</html>

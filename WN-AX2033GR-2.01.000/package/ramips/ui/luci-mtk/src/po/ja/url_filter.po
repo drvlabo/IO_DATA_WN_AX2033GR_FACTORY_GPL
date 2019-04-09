@@ -1,0 +1,57 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-03-30 17:00+0200\n"
+"PO-Revision-Date: 2012-11-14 17:32+0200\n"
+"Last-Translator: Kentaro <kentaro.matsuyama@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Pootle 2.0.6\n"
+
+
+msgid "URL filter"
+msgstr "URLフィルター"
+
+msgid "Use the URL filter"
+msgstr "URLフィルターを利用する"
+
+msgid "Allow"
+msgstr "許可"
+
+msgid "URL Filter Add"
+msgstr "追加"
+
+msgid "URL Filter Reset"
+msgstr "リセット"
+
+msgid "Filter List"
+msgstr "フィルターリスト"
+
+msgid "URL Status"
+msgstr "処理"
+
+msgid "URL Select"
+msgstr "選択"
+
+msgid "Denial"
+msgstr "拒否"
+
+msgid "URL is incorrect."
+msgstr "URLが正しくありません。"
+
+msgid "You can not add."
+msgstr "追加できません。"
+
+msgid "URL is incorrect. URL Please enter 3 or more characters."
+msgstr "URLが正しくありません。URLは3文字以上入力してください。"
+
+msgid "URL address is duplicated."
+msgstr "URLアドレスが重複しています。"
+
+msgid "Add"
+msgstr "追加"

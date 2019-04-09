@@ -1,0 +1,11 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "DoS"
+msgstr "DoS"
+
+msgid "DoS attack defense setting."
+msgstr "DoS攻撃防御を設定します。"
+
+msgid "DoS attack defense"
+msgstr "DoS攻撃防御"

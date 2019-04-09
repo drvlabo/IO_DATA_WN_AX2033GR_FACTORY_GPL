@@ -1,0 +1,35 @@
+msgid "clear"
+msgstr ""
+
+msgid "oled_0_sec"
+msgstr ""
+
+msgid "oled_300_sec"
+msgstr ""
+
+msgid "oled_30_sec"
+msgstr ""
+
+msgid "oled_600_sec"
+msgstr ""
+
+msgid "oled_60_sec"
+msgstr ""
+
+msgid "oled_clear_wan_count"
+msgstr ""
+
+msgid "oled_clear_wan_count_warn"
+msgstr ""
+
+msgid "oled_display"
+msgstr ""
+
+msgid "oled_display_time_sel"
+msgstr ""
+
+msgid "oled_note"
+msgstr ""
+
+msgid "oled_note_1"
+msgstr ""

@@ -1,0 +1,85 @@
+;;DeviceMode
+;; 1 : Wireless Access Point
+;; 5 : Wireless Access Point with Router
+;; 6 : Wireless Access Point without Router
+;; 7 : NAS
+;; 16 : Wireless Access Point (Advanced)
+;; 17 : Wireless Router (Advanced)
+;; 18 : Wireless Converter (Advanced)
+;; 19 : Wireless Repeater (Advanced)
+;; 20 : Wired Router (Advanced)
+;; 21 : NAS (Advanced)
+;; 22 : IP Camera (Advanced)
+;; 23 : STB (Advanced)
+;; 24 : IP Tunner (Advanced)
+DeviceMode=1
+
+;;EncryptMode
+;; 0 : No encrypt
+;; 1 : BASE64
+EncryptMode=1
+
+;;PortNum
+;; 0 : 65
+;; 1 : 51065
+PortNum=1
+
+;;NICPort
+;; NIC Port ex)br-lan eth0,wlan0
+NICPort=br-lan
+
+;;MACNICPort
+;; NIC Port for MAC address ex)eth0,wlan0
+MACNICPort=br-lan
+
+;;APFSupportVersion
+;; AirPort Finder Function Support Version
+APFSupportVersion=1.1
+
+;;APFIPSettingApplication
+;; AirPort Finder network config application place
+APFIPSettingApplication=/usr/sbin/APFNetCfg
+
+;;APFIPSettingInfoFile
+;; IP Address Setting Infomation File
+APFIPSettingInfoFile=/tmp/apfipcfg
+
+;;APFPasswdApplication
+;; AirPort Finder password config application place
+APFPasswdApplication=/usr/sbin/APFPasswd
+
+;;APFPasswdFile
+;; Password Infomation File
+APFPasswdFile=/tmp/apfpasswd
+
+;;Supoort Function
+;; AdvancedFunctionEnabled
+;; 1 : Enabled
+;; 0 : Disabled
+AdvancedFunctionEnabled=0
+
+;; AdvancedTimeFunctionEnabled
+;; 1 : Enabled
+;; 0 : Disabled
+AdvancedTimeFunctionEnabled=1
+
+;;AdvancedTimeApplication
+;; AirPort Finder Time config application place
+AdvancedTimeApplication=/usr/sbin/APFTimeCfg
+
+;; AdvancedTimeConfigFile
+;; Advanced Time Infomation File
+AdvancedTimeConfigFile=/tmp/advtmecfg
+
+;; AdvancedVersionFunctionEnabled
+;; 1 : Enabled
+;; 0 : Disabled
+AdvancedVersionFunctionEnabled=1
+
+;;AdvancedVersionApplication
+;; AirPort Finder Version config application place
+AdvancedVersionApplication=/usr/sbin/APFVerCfg
+
+;; AdvancedVersionConfigFile
+;; Advanced Version Infomation File
+AdvancedVersionConfigFile=/tmp/advvercfg

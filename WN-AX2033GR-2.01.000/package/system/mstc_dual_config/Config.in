@@ -1,0 +1,10 @@
+if PACKAGE_mstc_dual_config		
+	menu"mstc dual config features"
+ 		
+	config MSTC_DUAL_CONFIG
+ 	bool "mstc dual config"
+	select PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
+ 	default n
+
+	endmenu
+endif

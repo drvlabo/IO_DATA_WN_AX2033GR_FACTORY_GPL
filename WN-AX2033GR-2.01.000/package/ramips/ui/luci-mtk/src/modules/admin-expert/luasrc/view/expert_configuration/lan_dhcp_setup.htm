@@ -1,0 +1,339 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: header.htm 4891 2009-06-22 10:23:21Z jow $
+
+-%>
+<%
+require("luci.http").prepare_content("application/xhtml+xml")
+local uci = require("luci.model.uci").cursor()
+local i18n = require("luci.i18n")
+local lang = uci:get("luci","main","lang") 
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+-%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"  />
+<title>.::Welcome to the Web-Based Configurator::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script language="JavaScript" type="text/javascript"> 
+//<![CDATA[
+<%local lan_ipaddr = uci.get("network","lan","ipaddr")%>
+<%local lan_mask = uci.get("network","lan","netmask")%>
+
+function getDHCPEndIP(startip,poolsize)
+{
+		var IP = startip;        
+        IP = IP.replace(/ /g, "");
+        var IPsplit = IP.split(".");
+		ipend = parseInt(IPsplit[3], 10) + parseInt(poolsize,10) -1;
+		if (ipend < 255)
+		{
+			return IPsplit[0]+"."+IPsplit[1]+"."+IPsplit[2]+"."+ipend
+		}
+		else
+		{
+			alert("<%:DHCP_PoolSizes_Error_1%>");
+			return false;
+		}
+			
+}
+
+function chkIP(address) { 
+        
+		var IP = address;        
+        IP = IP.replace(/ /g, "");
+        //address.value = IP;
+        var IPsplit = IP.split(".");
+        if(IPsplit.length != 4) {
+            alert("<%:IP_Error_3%>");
+            return false;
+        }
+        //check first,and last byte is zero
+        if((IPsplit[0] == "0") || (IPsplit[3] == "0")){
+            alert("<%:IP_Error_3%>");
+                return false;
+        }
+        for(i = 0; i < 4; i++)
+            if((isNaN(IPsplit[i])) || (IPsplit[i] == undefined) || (IPsplit[i] == "")) {
+                alert("<%:IP_Error_3%>");
+                return false;
+        } else
+        if((parseInt(IPsplit[i], 10) > 255) || (parseInt(IPsplit[i], 10) < 0)) {
+                    alert("<%:IP_Error_3%>");
+                    return false;
+        }
+		
+		LAN_IP="<%=lan_ipaddr%>";
+		if(IP==LAN_IP){
+			alert("<%:IP_Error_4%>");
+			return false;
+		}
+		
+		
+        return true;
+        
+}
+
+function chkPoolsize(object){
+    if(object.value==""){
+            //ShowError('##MLG_PortFormatError_JS##');
+			alert("<%:DHCP_PoolSizes_Error_2%>");
+            object.focus();
+            return false;
+    }
+    if(isNaN(object.value)){
+            //ShowError('##MLG_PortFormatError_JS##');
+			alert("<%:DHCP_PoolSizes_Error_3%>");
+            object.focus();
+            return false;
+    }
+    if( parseInt(object.value )==0){
+            //ShowError('##MLG_PortFormatError_JS##');
+			alert("<%:DHCP_PoolSizes_Error_4%>");
+            object.focus();
+            return false;
+    }
+        return true;
+}
+
+function ip2uint(ip)
+{
+	var ip_num = 0;
+	ip = ip.split(".");
+	for (var i = 0; i < 4; i++) {
+		ip_num += parseInt(ip[i]) << ((ip.length - 1 - i) * 8);
+	}
+	if (ip_num < 0) {
+		ip_num += Math.pow(2, 32);
+	}
+	return ip_num;
+}
+
+function uint2ip(ip_num)
+{
+	var ip = '';
+	for (var i = 0; i < 4; i++) {
+		ip_tmp = (ip_num & 0xff);
+		ip_num >>= 8;
+		if(i == 0) {
+			ip = ip_tmp;
+		} else {
+			ip = ip_tmp + "." + ip;
+		}
+	}
+	return ip;
+}
+
+function insideLanCheck(ip, lanIp, lanMask)
+{
+	if ((ip2uint(lanIp) & ip2uint(lanMask)) ^ (ip2uint(ip) & ip2uint(lanMask))) {
+		return false;
+	}
+	return true;
+}
+
+function insideDHCPRangeCheck(ip, dhcpStartIp, dhcpEndIp)
+{
+	ip = ip2uint(ip);
+	dhcpStartIp = ip2uint(dhcpStartIp);
+	dhcpEndIp = ip2uint(dhcpEndIp);
+	if (dhcpStartIp > dhcpEndIp) {
+		var tmpIp = dhcpStartIp;
+		dhcpStartIp = dhcpEndIp;
+		dhcpEndIp = tmpIp;
+	}
+	if ((ip >= dhcpStartIp) && (ip <= dhcpEndIp)) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+function getLanStartIPNum(lanIp, lanMask)
+{
+	var lanStartIP = (ip2uint(lanIp) & ip2uint(lanMask)) + 1;
+	if (lanStartIP < 0) {
+		lanStartIP += Math.pow(2, 32);
+	}
+	return lanStartIP;
+}
+
+function getLanEndIPNum(lanIp, lanMask)
+{
+	var lanEndIP = (ip2uint(lanIp) | (~ip2uint(lanMask))) - 1;
+	if (lanEndIP < 0) {
+		lanEndIP += Math.pow(2, 32);
+	}
+	return lanEndIP;
+}
+
+function hostIDCheck(ip, lanMask)
+{
+	if ((ip2uint(ip) & (~ip2uint(lanMask))) == 0) {
+		return false;
+	}
+	if (~(ip2uint(ip) | ip2uint(lanMask)) == 0) {
+		return false;
+	}
+	return true;
+}
+
+function chkDHCPformat()
+{
+	var lanIp = "<%=lan_ipaddr%>";
+	var lanMask = "<%=lan_mask%>";
+	var lanStartIP = uint2ip(getLanStartIPNum(lanIp, lanMask));
+	var lanEndIP = uint2ip(getLanEndIPNum(lanIp, lanMask));
+	
+	//alert("It should be between "+lanStartIP+" and"+lanEndIP +".");
+	
+	with (document.forms[0]){
+	
+	//if (!hostIDCheck(startAdd.value, lanMask)) {
+	//	alert("Start IP Address : "+startAdd.value+" is not a valid IP address." );
+	//	return false;
+	//}
+	//if (!hostIDCheck(getDHCPEndIP(startAdd.value,poolSize.value), lanMask)) {
+	//	alert("End IP Address : "+getDHCPEndIP(startAdd.value,poolSize.value)+" is not a valid IP address." );
+	//	return false;
+	//}
+	if (!insideLanCheck(startAdd.value ,lanIp, lanMask)) {
+		alert("<%:DHCP_Error_4%>"+lanStartIP+"~"+lanEndIP);
+		return false;
+	}
+	if (!insideLanCheck(getDHCPEndIP(startAdd.value,poolSize.value), lanIp, lanMask)) {
+		alert("<%:DHCP_Error_5%>"+lanStartIP+"~"+lanEndIP);
+		return false;
+	}
+	if (insideDHCPRangeCheck(lanIp,startAdd.value, getDHCPEndIP(startAdd.value,poolSize.value))) {
+		alert("<%:DHCP_Error_6%>");
+		return false;
+	}
+	
+	return true;
+
+	}	
+}
+
+function submitData()
+{
+	with (document.forms[0]){
+		
+		//alert(ip2uint(startAdd.value));
+		//alert(uint2ip(ip2uint(startAdd.value)));
+		if(chkIP( startAdd.value ) && chkPoolsize(poolSize) && getDHCPEndIP(startAdd.value,poolSize.value)!=false && chkDHCPformat())
+		{
+			showWebMessage( 2, '<%:Message%>', '<%:msg_config%>' );
+			return true;
+		}
+		
+	}
+   
+   return false;
+
+}
+
+function checkSubmit()
+{
+    var verifyFlag = submitData();
+    if (verifyFlag)
+	{
+		document.forms[0].DHCPSubmit.value="1";
+		document.forms[0].submit();
+	}
+
+}
+
+function CheckValue()
+{
+
+	//showWebMessage( 1 , "<%:Message%>" , "<%:msg_config%>" );
+
+	return true; 
+}
+
+function path_msg_init(){
+	showFullPath('<%:Network%> > <%:DHCP_Server%> > <%:General%>');
+	showWebMessage( 0, '<%:Message%>', '<%:Ready%>');
+}
+//]]>
+</script>
+</head>
+<body onload="path_msg_init();">
+<form method="post" name="DHCP_APP" action="<%=controller%>/expert/configuration/network/dhcpserver" onSubmit="return CheckValue();">
+<div id="tabs">
+  <ul>
+    <li class="hightline"><a title="<%:General%>"><span><%:General%> </span></a></li>
+<!-- MSTC, Sharon, mark advanced and client list
+    <li><a href="<%=controller%>/expert/configuration/network/dhcpserver/ipstatic" title="<%:Advanced%>"><span><%:Advanced%></span></a></li>
+    <li><a href="<%=controller%>/expert/configuration/network/dhcpserver/dhcptbl" title="<%:Client_List%>"><span><%:Client_List%></span></a></li>
+-->
+  </ul>
+  <br class="clearfloat" />
+</div>
+<!-- Tab --> 
+<div id="table">
+  <ul>
+    <li class="table_top"></li>
+    <li class="table_content">
+        <div class="data">
+          <ul><div class="w_text">
+  <ul>
+<%local ignore = uci.get("dhcp","lan","ignore")%>
+    <li class="left_table"><%:DHCP_Server%>   :</li>
+    <li class="right_table">
+          <input name="ssid_state" id="radio" type="radio" value="0" <%if ignore =="0" then%> checked="checked" <%end%> />
+      <%:Enable%>
+      <input name="ssid_state" id="radio2" type="radio" value="1"  <%if ignore == "1" then%> checked="checked" <%end%> />
+      <%:Disable%></li>
+          </ul>
+         </div>
+<%local startIp = uci.get("network","lan","ipaddr")%>
+<%local start = uci.get("dhcp","lan","start")%>
+<%local startIp = string.match(startIp,"(%d+.%d+.%d+.)%d+") %>
+<%startIp = startIp .. start %>
+        <%local poolSize = uci.get("dhcp","lan","limit")%>
+            <div class="w_text"><ul><li class="left_table"><%:IP_Pool_Starting_Address%> :</li><li class="right_table"><input  maxlength="15" size="15" value="<%=startIp%>" name="startAdd" /></li></ul></div>
+       
+			<div class="w_text"><ul><li class="left_table"><%:Pool_Size%> :</li><li class="right_table"><input  maxlength="15" size="5" <%if poolSize then%>value="<%=poolSize%>" <%else%>value="32"<%end%> name="poolSize" /></li></ul>
+			</div>
+            <div class="spaceair"></div>	
+          </ul>
+      </div>
+    </li>
+   <li class="table_button">
+      <div class="button">
+        <center>
+		  <input id="DHCPSubmit" name="DHCPSubmit" type="hidden"/>
+		  <input name="sysSubmit" value="<%:Apply%>" type="button" onclick="return checkSubmit();"/>
+          &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+          <input name="Cancel" value="<%:Cancel%>" type="reset" />
+        </center>
+      </div>
+    </li>
+  </ul>
+</div>
+<%
+	local code = luci.http.formvalue("rt")
+	local msg = luci.http.formvalue("errmsg")
+	if not code then
+		code = 0
+	end
+	if not msg then
+	end
+-%>
+</form>
+</body>
+</html>

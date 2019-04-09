@@ -1,0 +1,188 @@
+<%+header%>
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+<script type="text/javascript">
+<%
+local lan_ip = uci.get("network", "lan", "ipaddr")
+%>
+
+var url ="<%=controller%>/content/security/dmz"; //current page url
+
+function chkIP(address) { 
+	var IP = address.replace(/ /g, "");
+	var IPsplit = IP.split(".");
+	if ( IPsplit.length != 4 ) {
+		return false;
+	}
+	
+	//check first,and last byte is zero
+	if((IPsplit[0] == "0") || (IPsplit[3] == "0")) {
+		return false;
+	}
+	for(i = 0; i < 4; i++) {
+		if((isNaN(IPsplit[i])) || (IPsplit[i] == undefined) || (IPsplit[i] == "")) {
+			return false;
+		} else if((parseInt(IPsplit[i], 10) >= 255) || (parseInt(IPsplit[i], 10) < 0)) {
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+function copyPcIpFromList(){
+	var f = document.dmz;
+	var ipVal = $("select[name='listPcIp']").val();
+	f.ip.value = ipVal;
+}
+
+function verifySubmitData()
+{
+	with(document.dmz){
+		if ( ip.value.replace(/ /g, "") != "" ) {
+			if( !chkIP(ip.value.replace(/ /g, "")) ) {
+				alert("<%:IP address is not correct.%>");
+				return false;
+			}
+			if ( ! checkInvalidIP(ip.value.replace(/ /g, "")) ) {
+				alert("<%:IP address is not correct.%>");
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+//MBA Sean, Cancel Button script
+function btnCancel()
+{
+	location.href=url;
+	return true;
+}
+
+//MBA Sean, Apply Button script
+function btnApply()
+{
+	var verifyFlag = verifySubmitData();
+	
+	if(verifyFlag){
+		$("#dmzRuleDataStr").val(document.dmz.ip.value.replace(/ /g, ""));
+	
+		//MBA Sean, show the waiting page & hide the original content
+		document.getElementById("top_menu").style.display = 'none';
+		document.getElementById("content").style.display = 'none';
+		document.getElementById("waiting").style.display = 'block';
+		//MBA Sean, start to countdown.
+		waiting();
+
+		//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+        $.ajax({
+			type:"POST",
+			url: url,
+			data: $("#content_send").serialize(),// serializes the form's elements.
+        });
+	}
+	
+	return false;
+}
+
+<%
+	--MBA Sean, get the waiting time, default is 30 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+	local waiting_time_uci = uci_t.get("web", "gui_config", "network_apply_waiting_time")
+	local waiting_time = 5;
+	
+	uci_t.set_confdir(original_confdir)
+%>
+
+var seconds=<%=waiting_time%>;
+function waiting()
+{
+	(seconds <= 0) ? seconds=0 : seconds-=1;
+	document.getElementById("wait_time").value = seconds;
+
+	if(seconds == 0){
+		location.href = url;
+		return true;
+	}
+	
+	setTimeout('waiting()',1000);
+}
+
+function frmLoad(){
+}
+
+</script>
+
+<div id="content">
+<form id="content_send" name="dmz">
+<blockquote>
+<p class="title"><%:DMZ Description.%></p>
+<table border="0" width="90%">
+	<tbody>
+		<tr align="center">			   
+			<td width="30%" class="background" style="text-align:center"><%:Local IP address%>:</td>
+<%
+local getDmzIp = ""
+uci.foreach("firewall", "redirect",
+function(s)
+	if s.rule_type == "dmz" then
+		getDmzIp = s.dest_ip
+	end
+end)
+%>
+			<td width="30%"><input type="text" name="ip" size="25" maxlength="15" value="<%=getDmzIp%>"/></td>
+			<td width="40%" align="left">
+				<input type="button" value="<" onclick="copyPcIpFromList()"/>
+				<select name="listPcIp">
+						<option value=""><%:Computer Selection%></option>
+					<% 
+					luci.sys.net.arptable(function(x) 
+						if (x["Device"] == "br-lan") and (x["Flags"] ~= "0x0") then
+					%>
+						<option value="<%=x["IP address"]%>"><%=x["IP address"]%></option>
+					<%
+						end
+					end) 
+					%>
+					<%
+						uci.foreach("dhcp", "host",
+						function(s)
+							print("<option value=\"" .. s.ip .. "\">" .. s.ip .. "</option>")
+						end)
+					%>
+				</select>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<br/>
+<table width="300" border="0" cellspacing="0" cellpadding="0" align="right">
+	<tr>
+		<td align="right">
+			<input type="submit" value="<%:Apply%>" onClick="return btnApply()" width="105" height="30" border="0"/>
+			<input type="reset" value="<%:Cancel%>" onclick="window.location.reload()"/>
+<%
+local getPfRule = ""
+uci.foreach("firewall", "redirect",
+function(s)
+	if s.rule_type == "port_forwarding" then
+		if getPfRule ~= "" then
+			getPfRule = getPfRule .. ";"
+		end
+		getPfRule = getPfRule .. s.rule_name .. "," .. s.dest_ip .. "," .. s.proto .. "," .. s.dest_port .. "," .. s.src_dport
+	end
+end)
+%>
+			<input type="hidden" value="<%=getPfRule%>" id="pfRuleDataStr" name="pfRuleDataStr"/>
+			<input type="hidden" value="" id="dmzRuleDataStr" name="dmzRuleDataStr"/>
+			<input type="hidden" value="1" name="isApply"/>
+		</td>
+	</tr>
+</table>
+</blockquote>
+</form> 
+</div>
+
+<%+footer%>

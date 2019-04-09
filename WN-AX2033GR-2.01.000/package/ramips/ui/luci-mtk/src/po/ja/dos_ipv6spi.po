@@ -1,0 +1,14 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "DoS"
+msgstr "DoS"
+
+msgid "IPv6 SPI"
+msgstr "IPv6 SPI"
+
+msgid "DoS attack defense setting, IPv6 SPI setting."
+msgstr "DoS攻撃防御、IPv6 SPIを設定します。"
+
+msgid "DoS attack defense"
+msgstr "DoS攻撃防御"

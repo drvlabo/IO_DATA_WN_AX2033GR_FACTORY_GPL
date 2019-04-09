@@ -1,0 +1,87 @@
+Index: miniupnpd-2.0.20161216/miniupnpd.c
+===================================================================
+--- miniupnpd-2.0.20161216.orig/miniupnpd.c	2016-12-16 17:23:43.000000000 +0800
++++ miniupnpd-2.0.20161216/miniupnpd.c	2017-01-24 18:21:11.398535089 +0800
+@@ -1290,6 +1290,11 @@
+ 				lease_file = ary_options[i].value;
+ 				break;
+ #endif	/* ENABLE_LEASEFILE */
++#if 1	// Terence, MSTC, Limit maximum port forwarding rule count, 0 is un-limit.
++			case UPNPLIMITMAXRULESCOUNT:
++				limit_max_rules_count = atoi(ary_options[i].value);
++				break;
++#endif
+ 			case UPNPMINISSDPDSOCKET:
+ 				minissdpdsocketpath = ary_options[i].value;
+ 				break;
+Index: miniupnpd-2.0.20161216/options.c
+===================================================================
+--- miniupnpd-2.0.20161216.orig/options.c	2016-02-09 17:39:00.000000000 +0800
++++ miniupnpd-2.0.20161216/options.c	2017-01-24 18:22:08.098524063 +0800
+@@ -83,6 +83,9 @@
+ #ifdef ENABLE_LEASEFILE
+ 	{ UPNPLEASEFILE, "lease_file"},
+ #endif
++#if 1	// Terence, MSTC, Limit maximum port forwarding rule count, 0 is un-limit.
++	{ UPNPLIMITMAXRULESCOUNT, "limit_max_rules_count"},	
++#endif
+ 	{ UPNPMINISSDPDSOCKET, "minissdpdsocket"},
+ 	{ UPNPSECUREMODE, "secure_mode"}
+ };
+Index: miniupnpd-2.0.20161216/options.h
+===================================================================
+--- miniupnpd-2.0.20161216.orig/options.h	2016-02-09 17:39:00.000000000 +0800
++++ miniupnpd-2.0.20161216/options.h	2017-01-24 18:22:53.502258848 +0800
+@@ -65,6 +65,9 @@
+ #ifdef ENABLE_LEASEFILE
+ 	UPNPLEASEFILE,			/* lease_file */
+ #endif
++#if 1	// Terence, MSTC, Limit maximum port forwarding rule count, 0 is un-limit.
++	UPNPLIMITMAXRULESCOUNT,
++#endif
+ 	UPNPMINISSDPDSOCKET,	/* minissdpdsocket */
+ 	UPNPENABLE				/* enable_upnp */
+ };
+Index: miniupnpd-2.0.20161216/upnpglobalvars.c
+===================================================================
+--- miniupnpd-2.0.20161216.orig/upnpglobalvars.c	2017-01-24 18:16:16.589529749 +0800
++++ miniupnpd-2.0.20161216/upnpglobalvars.c	2017-01-24 18:24:12.850476865 +0800
+@@ -162,3 +162,7 @@
+  * SCPD = Service Control Protocol Description */
+ unsigned int upnp_configid = 1337; /* CONFIGID.UPNP.ORG */
+ 
++#if 1	// Terence, MSTC, Limit maximum port forwarding rule count, 0 is un-limit.
++int limit_max_rules_count = 0;
++#endif
++
+Index: miniupnpd-2.0.20161216/upnpglobalvars.h
+===================================================================
+--- miniupnpd-2.0.20161216.orig/upnpglobalvars.h	2016-02-09 17:39:00.000000000 +0800
++++ miniupnpd-2.0.20161216/upnpglobalvars.h	2017-01-24 18:24:35.551437911 +0800
+@@ -152,5 +152,8 @@
+ extern unsigned int upnp_bootid;
+ extern unsigned int upnp_configid;
+ 
++#if 1	// Terence, MSTC, Limit maximum port forwarding rule count, 0 is un-limit.
++extern int limit_max_rules_count;
+ #endif
+ 
++#endif
+Index: miniupnpd-2.0.20161216/upnpredirect.c
+===================================================================
+--- miniupnpd-2.0.20161216.orig/upnpredirect.c	2016-02-16 20:15:11.000000000 +0800
++++ miniupnpd-2.0.20161216/upnpredirect.c	2017-01-24 18:26:17.495976632 +0800
+@@ -304,6 +304,13 @@
+ 		return -1;
+ 	}
+ 
++#if 1	// Terence, MSTC, Limit maximum port forwarding rule count, 0 is un-limit.	
++	if ( limit_max_rules_count != 0 && upnp_get_portmapping_number_of_entries() >= limit_max_rules_count ) {
++		syslog(LOG_ERR, "port mapping rule count over maximum (%d)", limit_max_rules_count);
++		return -1;
++	}
++#endif
++
+ 	if(!check_upnp_rule_against_permissions(upnppermlist, num_upnpperm,
+ 	                                        eport, address, iport)) {
+ 		syslog(LOG_INFO, "redirection permission check failed for "

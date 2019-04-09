@@ -1,0 +1,22 @@
+<form name="CountDown">
+<table width="100%" height="97%" border="0" cellpadding="1" cellspacing="1">
+<tbody><tr>
+	<td align="center" valign="center">
+<table width="500" border="1" align="center" cellpadding="5" cellspacing="0" >
+<tr>
+<td align="left">
+<font size="2">
+設定を変更しています。<br><table border="0">
+しばらくお待ちください。完了まで
+<input name="CD" type="text" value="35" size="3" disabled="disabled">
+秒です。
+</tr>
+</table>
+完了後、ブラウザを閉じ、お使いの機器が有線接続のパソコンの場合は再起動してください。<br>
+無線接続の機器の場合は再度ブラウザを開き、インターネットをお楽しみください。<br>
+<br><br><br>
+</table>
+</td>
+</tr></tbody>
+</table>
+</form>

@@ -1,0 +1,26 @@
+Index: linux-3.10.14/net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c
+===================================================================
+--- linux-3.10.14.orig/net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c	2017-10-10 17:52:18.795888905 +0800
++++ linux-3.10.14/net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c	2017-10-10 17:49:43.869900900 +0800
+@@ -163,8 +163,21 @@
+ 
+ 	/* This is where we call the helper: as the packet goes out. */
+ 	ct = nf_ct_get(skb, &ctinfo);
++	/* add a line*/
++	if( ct < 0x80000000 && ct != 0 ){
++		/* printk("wrong address ct =%x, %p\n",ct, ct); */
++		skb->nfct=0;
++		ct=0;
++		
++	}
++
+ 	if (!ct || ctinfo == IP_CT_RELATED_REPLY)
+ 		return NF_ACCEPT;
++	/* add a line*/
++	if(ct->ext < 0x80000000 && ct->ext != 0 ){
++		/* printk("wrong address ct->ext =%x, %p\n",ct->ext,ct->ext); */
++		ct->ext=0;
++	}
+ 
+ 	help = nfct_help(ct);
+ 	if (!help)

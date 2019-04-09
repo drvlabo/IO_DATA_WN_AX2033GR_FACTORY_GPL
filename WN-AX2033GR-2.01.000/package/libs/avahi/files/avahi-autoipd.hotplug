@@ -1,0 +1,6 @@
+#!/bin/sh
+
+if [ "$ACTION" = "add" ]; then
+	/etc/init.d/avahi-autoipd start
+fi
+

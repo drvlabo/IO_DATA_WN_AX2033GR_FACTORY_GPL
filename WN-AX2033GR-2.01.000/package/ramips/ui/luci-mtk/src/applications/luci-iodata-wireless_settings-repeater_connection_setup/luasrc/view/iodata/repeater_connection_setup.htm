@@ -1,0 +1,593 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+Copyright 2012 David Menting <david@nut-bolt.nl>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+-%>
+<%
+	math.randomseed(os.time())
+	local sys  = require "luci.sys"
+	local http = require "luci.http"
+	local disp = require "luci.dispatcher"
+	local uci = require("luci.model.uci").cursor()
+
+	local hostname = sys.hostname()
+%>
+
+
+<!DOCTYPE html>
+<html lang="<%=luci.i18n.context.lang%>">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Expires" content="0">
+  <title><%=striptags( hostname ) %></title>
+  <!--[if lt IE 9]><script src="<%=media%>/html5.js"></script><![endif]-->
+  <meta name="viewport" content="initial-scale=1.0">
+  <link rel="stylesheet" href="<%=media%>/setcss.css">
+  <link rel="stylesheet" media="only screen and (max-device-width: 854px)" href="<%=media%>/mobile.css" type="text/css" />
+  <link rel="shortcut icon" href="<%=media%>/favicon.ico">
+  <% if node and node.css then %><link rel="stylesheet" href="<%=resource%>/<%=node.css%>">
+  <% end -%>
+  <% if css then %><style title="text/css">
+  <%-= css %>
+  </style>
+  <% end -%>
+  <script src="<%=resource%>/xhr.js"></script>
+  <script type="text/javascript" src="<%=media%>/js/jquery-1.12.1.min.js"></script>
+  <script type="text/javascript" src="<%=media%>/js/baseJS.js?rndstr=<%=math.random(10000,99999)%>" ></script>
+</head>
+<body onLoad="frmLoad()" bgcolor=white LINK=#ffffff VLINK=#ffffff ALINK=#FFfffff leftmargin=0 topmargin=5 class="lang_<%=luci.i18n.context.lang%> <%- if node then %><%= striptags( node.title ) %><%- end %>">
+
+<!-- MSTC MBA SW2 Sean, add csrf token in the page, each page will generate csrf token when loaded -->
+<script type="text/javascript">
+<%local csrf = require("luci.csrf")%>
+var csrf_token = "<%=csrf.get_token()%>";
+$.ajaxPrefilter(function(options, originalOptions, jqXHR){
+    if (options.type.toLowerCase() === "post") {
+		
+		// initialize `data` to empty string if it does not exist
+        options.data = options.data || "";
+
+        // add leading ampersand if `data` is non-empty
+        options.data += options.data?"&":"";
+
+        // add _token entry
+        options.data += "csrf_token=" + csrf_token;
+    }
+});
+
+</script>
+<!-- MSTC Sean, waiting page -->
+<div id="waiting" style="display:none">
+<a><%:Applying the settings. Please wait a moment%>     <input type="text" id="wait_time" size="3" maxlength="3" readonly> </input><%:Seconds%></a>
+</div>
+<div id="dfs_msg" style="display:none">
+<%:DFS is working. Please wait a moment%>
+</div>
+<br/>
+<br/>
+
+
+<!---->
+<%
+function get_client_ifce_name(target_band)
+	local ifce={};
+	ifce_num = 1;
+    uci.foreach("wireless", "wifi-iface", 
+	function(s)
+        if (s.device == "mt7620" or s.device == "mt7602e" or s.device == "mt7603e" or s.device == "mt7628" or s.device == "mt7688" or s.device == "mt7615e2") then 
+			if target_band == "2g" and s.mode == "client" then
+            ifce[ifce_num] = s[".name"]
+			ifce_num = ifce_num+1
+        end
+end
+
+        if ( s.device == "mt7615e5" or s.device == "mt7610e" or s.device == "mt7612e" ) then 
+			if target_band == "5g" and s.mode == "client" then
+            ifce[ifce_num] = s[".name"]
+			ifce_num = ifce_num+1
+        end
+        end
+    end)
+	if #ifce > 0 then
+		return ifce[1]
+	else
+		return nil
+	end
+end
+
+local key_id = 1;
+local wepkey = "";
+local psk = "";
+
+if from_sitesurvey == 0 then -- manual config, try load last setting from uci if existing
+	ifce_name = get_client_ifce_name("2g");
+	--[[
+	local ifce_2g = get_client_ifce_name("2g");
+	local ifce_5g = get_client_ifce_name("5g");
+	local ifce_name;
+	local band_select = uci.get("wireless","repeater","band");
+	if not band_select then band_select = "0"; end
+	local apcli_enable_2g = uci.get("wireless", ifce_2g, "apcli_enable");
+	local apcli_enable_5g = uci.get("wireless", ifce_5g, "apcli_enable");
+
+	if (band_select ~= "2" and apcli_enable_2g and apcli_enable_2g == "1") then
+		ifce_name = ifce_2g;
+	elseif (band_select ~= "1" and apcli_enable_5g and apcli_enable_5g == "1") then
+		ifce_name = ifce_5g;
+	end
+	]]
+
+	if ifce_name then
+		TargetSSID = uci.get("wireless", ifce_name, "ssid");
+		security = uci.get("wireless", ifce_name, "encryption");
+		if security then
+			if security == "none" then
+				TargetEnc = "NONE";
+				TargetAuth = "OPEN";
+			elseif security == "wep-auto" then
+				TargetEnc = "WEP";
+				TargetAuth = "WEPAUTO";
+			elseif security == "psk2+ccmp" then
+				TargetEnc = "AES";
+				TargetAuth = "WPA2PSK";
+			elseif security == "psk+ccmp" then
+				TargetEnc = "AES";
+				TargetAuth = "WPAPSK";
+			elseif security == "psk+tkip" then
+				TargetEnc = "TKIP";
+				TargetAuth = "WPAPSK";
+			end
+		end
+		
+		if security == "wep-auto" then
+			key_id = uci.get("wireless", ifce_name, "key"); 
+		if key_id then
+				local uciname = "key" .. key_id; 
+				wepkey = uci.get("wireless", ifce_name, uciname);
+			end
+		elseif security == "psk2+ccmp" or security == "psk+ccmp" or security == "psk+tkip" then
+			psk = uci.get("wireless", ifce_name, "key");
+		end
+	end
+	-- keep bssid clean and set channel to auto when manual config 
+	TargetChannel = "auto";
+end
+%>
+
+<script type="text/javascript">
+var from_sitesurvey=<%=from_sitesurvey%>
+
+
+function check_wep_key(key, type, length) {
+	
+	var ascii_length = 5;
+	var hex_length = 10;
+	var hex_key_rule;
+		
+	if ( length == "64" ) {
+		ascii_length = 5;
+		hex_length = 10;
+		hex_key_rule = /^[a-fA-F0-9]{10}$/;
+	}
+	else if ( length == "128" ) {
+		ascii_length = 13;
+		hex_length = 26;
+		hex_key_rule = /^[a-fA-F0-9]{26}$/;
+	}
+
+	if ( type =="hex" ) {
+		if ( key.length != hex_length) {
+			alert("<%:WEP key length is wrong!%>");
+			return false;
+		}
+		
+		if (!hex_key_rule.test(key)){
+			alert("<%:WEP key is not HEX numbers!%>");
+			return false;
+		}		
+		else
+			return true;
+	}
+	else if ( type == "ascii" ){
+		if ( key.length != ascii_length) {
+			alert("<%:WEP key length is wrong!%>");
+			return false;
+		} else if ( !key.match(available_char_64) ){
+			alert("<%:WEP key is not HEX numbers!%>");
+			return false;
+		}
+		else
+			return true;
+	}
+}
+
+function updateWepFormat()
+{
+	var f=document.wlSiteSetting;
+
+	if (f.length.value == 64) {
+		f.format.options[0].text = '<%:ASCII (5 characters)%>';
+		f.format.options[1].text = '<%:HEX (10 characters)%>';
+	}
+	else if (f.length.value == 128){
+		f.format.options[0].text = '<%:ASCII (13 characters)%>';
+		f.format.options[1].text = '<%:HEX (26 characters)%>';
+	}
+	
+	f.format.value = f.format.value;
+	setWepKeyMaxLength();
+}
+
+function setWepKeyMaxLength()
+{
+	var f=document.wlSiteSetting;
+	if (f.length.value == 64) { // 64-bit
+		if ( f.format.value == "ascii") {
+			f.wepkey.maxLength = 5;
+		}
+		else { // hex
+			f.wepkey.maxLength = 10;
+		}
+	}
+	else if (f.length.value == 128) { // 128-bit
+		if ( f.format.value == "ascii") {
+			f.wepkey.maxLength = 13;
+		}
+		else { // hex
+			f.wepkey.maxLength = 26;
+		}
+	}
+}
+
+
+function check_wpa_key(str)
+{
+	var len = str.length;
+
+	if ( len == 64 ){
+		re=/^[a-fA-F0-9]{64}$/;
+		if (re.test(str)) {
+			return true;
+		}
+	}
+	else if ( (len >= 8) && (len < 64) ){	
+		re=/^[\x00-\x7F]*$/;
+		if (re.test(str)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+function btnCancel()
+{
+	// close this window
+	window.self.close();
+}
+
+
+function saveChanges()
+{
+	var keyLen;
+	var f=document.wlSiteSetting;
+	var security = f.security.value;
+
+	f.csrf_token.value = csrf_token;
+	
+	if (f.ssid.value=="") {
+		alert("<%:Please enter SSID.%>");
+		f.ssid.focus();
+		return false;
+	}
+	f.TargetSSID.value = f.ssid.value;
+	window.opener.document.getElementById("TargetSSID").value = f.ssid.value;
+
+	if (security == "none") {
+		f.TargetAuth.value = "OPEN";
+		f.TargetEnc.value = "NONE";
+		
+		window.opener.document.getElementById("TargetAuth").value = "OPEN";
+		window.opener.document.getElementById("TargetEnc").value = "NONE";
+	}
+	else if ( security == "wepauto") {
+		if (check_wep_key(f.wepkey.value, f.format.value, f.length.value)==0) {
+			f.wepkey.focus();
+			return false;
+		}
+		f.TargetAuth.value = "WEPAUTO";
+		f.TargetEnc.value = "WEP";
+		
+		window.opener.document.getElementById("TargetAuth").value = "WEPAUTO";
+		window.opener.document.getElementById("TargetEnc").value = "WEP";
+		window.opener.document.getElementById("wepkey").value = f.wepkey.value;
+		window.opener.document.getElementById("wepkeyId").value = f.wepkeyId.value;
+	}
+	else if (security=="wpapsk") {
+		if (!check_wpa_key(f.pskValue.value)) {
+			alert("<%:Invalid Pre-Shared Key.%>");
+			f.pskValue.focus();
+			return false;
+		}
+		if (document.getElementById("wpatkip").checked) {
+			f.TargetAuth.value = "WPAPSK";
+			f.TargetEnc.value = "TKIP";
+			
+			window.opener.document.getElementById("TargetAuth").value = "WPAPSK";
+			window.opener.document.getElementById("TargetEnc").value = "TKIP";
+			window.opener.document.getElementById("pskValue").value = f.pskValue.value;
+		}
+		else if (document.getElementById("wpaaes").checked) {
+			f.TargetAuth.value = "WPAPSK";
+			f.TargetEnc.value = "AES";
+			
+			window.opener.document.getElementById("TargetAuth").value = "WPAPSK";
+			window.opener.document.getElementById("TargetEnc").value = "AES";
+			window.opener.document.getElementById("pskValue").value = f.pskValue.value;
+		}
+		else if (document.getElementById("wpa2aes").checked) {
+			f.TargetAuth.value = "WPA2PSK";
+			f.TargetEnc.value = "AES";
+			
+			window.opener.document.getElementById("TargetAuth").value = "WPA2PSK";
+			window.opener.document.getElementById("TargetEnc").value = "AES";
+			window.opener.document.getElementById("pskValue").value = f.pskValue.value;
+		}
+	}
+	
+	window.opener.save_connection_settings();
+	
+	window.self.close();
+	//f.submit();
+	return true;
+}
+
+
+function wepLengthChange()
+{
+	updateWepFormat();
+}
+
+
+function change_security(security)
+{	
+	// block all first
+	document.getElementById('wepId').style.display = 'none';
+	document.getElementById('wpaId').style.display = 'none';
+	document.getElementById('pskId').style.display = 'none';
+	
+	if ( security == "wepauto") {
+		document.getElementById('wepId').style.display = 'block';
+	}
+	else if (security == "wpapsk") {
+		document.getElementById('wpaId').style.display = 'block';
+		document.getElementById('pskId').style.display = 'block';
+	}
+
+	document.getElementById('security').value  = security;
+}
+
+
+function frmLoad()
+{
+	document.getElementById("content").style.display = 'block';
+	document.getElementById("waiting").style.display = 'none';
+	
+	var f=document.wlSiteSetting;
+	var selectIndex;
+	var wpaCheckedIndex;
+	
+	// Fill in value from site survey selection or uci
+	f.ssid.value = "<%=TargetSSID%>";
+	
+	f.TargetBSSID.value = "<%=TargetBSSID%>";
+	window.opener.document.getElementById("TargetBSSID").value = f.TargetBSSID.value;
+	
+	f.TargetChannel.value = "<%=TargetChannel%>";
+	window.opener.document.getElementById("TargetChannel").value = f.TargetChannel.value;
+	
+
+	<% if TargetAuth == "OPEN" then %>
+		change_security("none");
+	<% elseif TargetAuth == "WEPAUTO" or TargetAuth == "WEP" then %>
+		change_security("wepauto");
+		var wepkey = "<%=wepkey%>";
+		if ( wepkey.length == 5) {
+			f.length.value  = 64;
+			f.format.value  = "ascii";
+		}
+		else if (wepkey.length == 13) {
+			f.length.value  = 128;
+			f.format.value  = "ascii";
+		}
+		else {
+			if (wepkey.length == 10) {
+				f.length.value  = 64;
+			}
+			else { // 26 or others
+				f.length.value  = 128;
+			}
+			f.format.value  = "hex";
+		}
+		document.getElementById("wepkeyId").value  = <%=key_id%>;
+		document.getElementById("wepkey").value  = wepkey;
+		updateWepFormat();
+	<% elseif TargetAuth == "WPAPSK" or TargetAuth == "WPA1PSK" then %>
+		change_security("wpapsk");
+		document.getElementById("pskValue").value  = "<%=psk%>";
+		<% if TargetEnc == "AES" then %>
+			document.getElementById("wpaaes").checked  = true;
+		<% else %>
+			document.getElementById("wpatkip").checked  = true;
+		<% end %>
+	<% elseif TargetAuth == "WPA2PSK" or TargetAuth == "WPA1PSKWPA2PSK" or TargetAuth == "WPAPSKWPA2PSK"  then %>
+		change_security("wpapsk");
+		document.getElementById("pskValue").value  = "<%=psk%>";
+		document.getElementById("wpa2aes").checked  = true;
+	<% end %>
+
+	// if comes from site survey, SSID and security cannot be edited
+	f.ssid.disabled = true;
+	f.security.disabled = true;
+	<% if from_sitesurvey == 0 then %>
+		f.ssid.disabled = false;
+		f.security.disabled = false;
+	<% end %>
+	
+	if (f.ssid.value=="") {
+		f.ssid.disabled = false;
+	}
+
+	// add event listener:
+	document.getElementById("security").addEventListener("change", function() {
+		change_security(document.getElementById("security").value);
+	}, false);
+}
+</script>
+
+
+<div id="content">
+
+<table width="650px" bgcolor="white" border="0" cellpadding="0" cellspacing="0">
+</table><br><br>
+
+<blockquote>
+<p><%:The connection settings of the wireless LAN%></p>
+<form name="wlSiteSetting" method="post" action="<%=controller%>/content/wireless_settings/repeater_connection_settings/repeater_connection_save"> 	 
+<input name="TargetBSSID" value="" type="hidden">
+<input name="TargetChannel" value="auto" type="hidden">
+<input name="TargetAuth" type="hidden">
+<input name="TargetSSID" type="hidden">
+<input name="TargetEnc" type="hidden">
+<input type="hidden" name="csrf_token" value="0" />
+
+<ul>
+
+<!-- SSID -->
+<table width="540" border="0" cellspacing="3"><tbody>
+	<tr>
+		<td colspan="4" style="font-weight:bold;"><font size="4"><%:Setting for Connection Target%></font></td>
+	</tr>
+	<tr>
+		<td class="background" width="35%">SSID:</td>
+		<td class="table2" width="65%"><font size="2">&nbsp;<input value="" disabled="disabled" name="ssid" size="32" maxlength="32" type="text"></font></td>
+	</tr>
+</tbody></table>
+
+<!-- Security -->
+<table width="540" border="0" cellspacing="3"><tbody>
+	<tr>
+		<td class="background" width="35%"><%:Security:%></td>
+		<td class="table2" width="65%"><font size="2">&nbsp;
+			<select disabled="disabled" size="1" name="security" id="security">
+			<option value="none"><%:None_repeater%></option>
+			<option value="wepauto">WEP</option>
+			<option value="wpapsk">WPA-PSK</option>
+			</select>
+		</font></td>
+	</tr>
+</tbody></table>
+
+<!-- WEP -->
+<span style="display: none;" id="wepId">
+	<table width="540" border="0" cellspacing="3"><tbody>
+		<tr>
+			<td class="background" width="35%"><%:Authentication Type:%>&nbsp;</td>
+			<td class="table2" width="65%"><font size="2">&nbsp;
+			<input name="authType" value="1" checked="checked" type="radio"><%:Auto%>&nbsp;&nbsp;
+			</font></td>
+		</tr>
+	</tbody></table>
+	<table width="540" border="0" cellspacing="3"><tbody>
+		<tr>
+			<td class="background" width="35%"><%:Key Length%>&nbsp;</td>
+			<td class="table2" width="65%"><font size="2">&nbsp;
+			<select size="1" name="length" onchange="wepLengthChange()">
+				<option value="64">64bit</option>
+				<option selected="selected" value="128">128bit</option>
+			</select>
+			</font></td>
+		</tr>
+	</tbody></table>
+	<table width="540" border="0" cellspacing="3"><tbody>
+		<tr>
+			<td class="background" width="35%"><%:Key Type%>&nbsp;</td>
+			<td class="table2" width="65%"><font size="2">&nbsp;
+			<select size="1" name="format" onchange="setWepKeyMaxLength()">
+				<option selected="selected" value="ascii"><%:ASCII (13 characters)%></option>
+				<option value="hex"><%:HEX (26 characters)%></option>
+			</select>
+			</font></td>
+		</tr>
+	</tbody></table>
+	<table width="540" border="0" cellspacing="3"><tbody>
+		<tr>
+			<td class="background" width="35%"><%:Default Key:%>&nbsp;</td>
+			<td class="table2" width="65%">&nbsp;
+			<select size="1" name="wepkeyId" id="wepkeyId">
+				<option selected="selected" value="1"><%:Key%> 1</option>
+				<option value="2"><%:Key%> 2</option>
+				<option value="3"><%:Key%> 3</option>
+				<option value="4"><%:Key%> 4</option>
+			</select>
+			</td>
+		</tr>
+	</tbody></table>
+	<table width="540" border="0" cellspacing="3"><tbody>
+		<tr>
+			<td class="background" width="35%"><%:Security Key:%>&nbsp;</td>
+			<td class="table2" width="65%"><font size="2">&nbsp;<input name="wepkey" id="wepkey" size="32" maxlength="13" type="text"></font></td>
+		</tr>
+	</tbody></table>
+</span>
+
+<!-- WPA -->
+<span id="wpaId" style="display: block;">
+	<table width="540" border="0" cellspacing="3"><tbody>
+	<tr>
+		<td class="background" width="35%"><%:WPA Type:%>&nbsp;</td>
+		<td class="table2" width="65%"><font size="2">&nbsp;
+			<input name="wpatype" id="wpatkip" value="wpatkip" type="radio">WPA(TKIP)&nbsp;&nbsp;
+			<input name="wpatype" id="wpaaes" value="wpaaes" type="radio">WPA(AES)&nbsp;&nbsp;
+			<input checked="checked" name="wpatype" id="wpa2aes" value="wpa2aes" type="radio">WPA2(AES)&nbsp;&nbsp;
+		</font></td>
+	</tr>
+	</tbody></table>
+</span>
+
+<!-- PSK -->
+<span style="display: block;" id="pskId">
+	<table width="540" border="0" cellspacing="3"><tbody>
+	<tr>
+		<td class="background" width="35%"><%:Security Key:%>&nbsp;</td>
+		<td class="table2" width="65%"><font size="2">&nbsp;<input name="pskValue" id="pskValue" size="32" maxlength="64" type="text"></font></td>
+	</tr>
+	</tbody></table>
+</span>
+
+<table width="300" align="right" border="0" cellpadding="0" cellspacing="0"><tbody>
+	<tr>
+		<td><div align="right">
+		<input value="<%:Apply%>" onclick="return saveChanges()" type="button" width="105">
+		<input value="<%:Cancel%>" onclick="btnCancel()" type="button" width="105">
+		</div></td>
+	</tr>
+</tbody></table>
+</ul>
+</form>
+</blockquote>
+
+</div>
+
+<%+footer%>

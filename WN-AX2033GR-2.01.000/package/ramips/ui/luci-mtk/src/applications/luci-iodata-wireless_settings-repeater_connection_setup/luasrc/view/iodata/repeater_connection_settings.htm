@@ -1,0 +1,188 @@
+<%+header%>
+
+<script type="text/javascript">
+var url ="<%=controller%>/content/wireless_settings/repeater_connection_settings"; //current page url
+
+
+function btnCancel()
+{
+	location.href=url;
+	return true;
+}
+
+
+function btnApply()
+{	
+	//MBA Sean, show the waiting page & hide the original content
+	document.getElementById("top_menu").style.display = 'none';
+	document.getElementById("content").style.display = 'none';
+	document.getElementById("waiting").style.display = 'block';
+	//MBA Sean, start to countdown.
+	waiting();
+
+	//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+	$.ajax({
+	type:"POST",
+	url: url,
+	data: $("#content_send").serialize(),// serializes the form's elements.
+	});
+	return false;
+}
+
+function save_connection_settings()
+{	
+	//MBA Sean, show the waiting page & hide the original content
+	document.getElementById("top_menu").style.display = 'none';
+	document.getElementById("content").style.display = 'none';
+	document.getElementById("waiting").style.display = 'block';
+	//MBA Sean, start to countdown.
+	waiting();
+	
+	var url_repeater_connection_save = "<%=controller%>/content/wireless_settings/repeater_connection_settings/repeater_connection_save";
+	
+	//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+	$.ajax({
+	type:"POST",
+	url: url_repeater_connection_save,
+	data: $("#save_connection_settings").serialize(),// serializes the form's elements.
+	});
+	return false;
+}
+
+<%
+	--MBA Sean, get the waiting time, default is 30 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+	local waiting_time_uci = uci_t.get("web", "gui_config", "network_apply_waiting_time")
+	local waiting_time = 30;
+	
+	if waiting_time_uci then
+		waiting_time = waiting_time_uci
+	end
+	
+	uci_t.set_confdir(original_confdir)
+%>
+
+var seconds=<%=waiting_time%>;
+function waiting()
+{
+	(seconds<=0)?seconds=0:seconds-=1;
+	document.getElementById("wait_time").value=seconds;
+	if(seconds==0)
+	{
+		location.href=url;
+		return true;
+	};
+	setTimeout('waiting()',1000);
+} 
+
+
+function openWindow(url, windowName)
+{
+	var wide=715;
+	var high=420;
+	if (document.all) {
+		var xMax = screen.width, yMax = screen.height;
+	}
+	else if (document.layers) {
+		var xMax = window.outerWidth, yMax = window.outerHeight;
+	}
+	else {
+		var xMax = 640, yMax=500;
+	}
+	var xOffset = (xMax - wide)/2;
+	var yOffset = (yMax - high)/3;
+	var settings = 'width='+wide+',height='+high+',screenX='+xOffset+',screenY='+yOffset+',top='+yOffset+',left='+xOffset+', resizable=yes, toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes';
+	window.open( url, windowName, settings );
+}
+
+function showManualSetup()
+{
+	openWindow("<%=controller%>/content/wireless_settings/repeater_connection_settings/repeater_connection_setup", '' );
+}
+
+function showSiteSurvey() 
+{
+	openWindow("<%=controller%>/content/wireless_settings/repeater_connection_settings/repeater_sitesurvey", '' );
+}
+
+
+<%
+local band = uci.get("wireless", "repeater", "band");
+if not band then
+	band = 0; -- auto
+end
+%>
+
+function frmLoad()
+{
+	var f = document.connect_setting;
+	<% if band == "1" then %>
+		f.band_select[1].checked = true; // 2.4G
+	<% elseif band == "2" then %>
+		f.band_select[2].checked = true; // 5G
+	<% else %>
+		f.band_select[0].checked = true; // auto
+	<% end %>
+}
+</script>
+
+<div id="content">
+<!--START: MBA Sean hidden form for save repeater connection settings -->
+<form name="save_connection_settings" id="save_connection_settings">
+<input name="TargetBSSID" id="TargetBSSID" value="" type="hidden">
+<input name="TargetChannel" id="TargetChannel" value="auto" type="hidden">
+<input name="TargetAuth" id="TargetAuth" type="hidden">
+<input name="TargetSSID" id="TargetSSID" type="hidden">
+<input name="TargetEnc" id="TargetEnc" type="hidden">
+<input name="wepkeyId" id="wepkeyId" type="hidden">
+<input name="wepkey" id="wepkey" size="32" maxlength="13" type="hidden">
+<input name="pskValue" id="pskValue" size="32" maxlength="64" type="hidden">
+</form>
+<!--END: MBA Sean hidden form for save repeater connection settings -->
+
+<form name="connect_setting" id="content_send">
+<blockquote>
+<p><%:Setting for connecting with root AP%></p>
+
+<table width="470" border="0" cellspacing="3"><tbody>
+	<tr>
+		<td class="background" width="35%"><%:Connection Target:%></td>
+		<td width="65%">&nbsp;
+			<input value="<%:Site Survey%>" name="selSurvey" onclick="showSiteSurvey()" type="button">
+			<input value="<%:Manual Setup%>" name="menuSet" onclick="showManualSetup()" type="button">
+		</td>
+	</tr>
+</tbody></table>
+
+<p><%:Fix band connecting with root AP%></p>
+<table width="470" border="0" cellspacing="3"><tbody>
+	<tr>
+		<td class="background" width="35%"><%:Connection Band:%></td>
+		<td width="65%">
+			<input checked="checked" name="band_select" value="0" type="radio"><%:Auto%>&nbsp;&nbsp;
+			<input name="band_select" value="1" type="radio">2.4GHz&nbsp;&nbsp;
+			<input name="band_select" value="2" type="radio">5GHz
+		</td>
+	</tr>
+</tbody></table>
+
+<br>
+<table width="100%" align="right" border="0" cellpadding="0" cellspacing="0"><tbody>
+	<tr>
+		<td>
+			<div align="right">
+			<input value="<%:Apply%>" onclick="btnApply()" type="button" width="105">
+			<input type="hidden" name="apply" value="apply">
+			<input value="<%:Cancel%>" onclick="btnCancel()" type="button" width="105">
+			</div>
+		</td>
+	</tr>
+</tbody></table>
+
+</blockquote>
+</form>
+</div>
+
+<%+footer%>

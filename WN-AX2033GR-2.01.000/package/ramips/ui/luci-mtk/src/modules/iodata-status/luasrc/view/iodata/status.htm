@@ -1,0 +1,1091 @@
+<html>
+
+<head>
+<link rel="stylesheet" href="<%=media%>/setcss.css">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Expires" content="0">
+<title>Access Point Status</title>
+<script type="text/javascript" src="<%=media%>/js/jquery-1.12.1.min.js"></script>
+</head>
+
+<%
+	local uci = require("luci.model.uci").cursor()
+	local sys = require("luci.sys")
+	local ntm = require "luci.model.network".init()
+	local wan = ntm:get_wannet()
+
+function get_client_ifce_id(target_band)
+	local ifce={};
+    uci.foreach("wireless", "wifi-iface", 
+	function(s)
+        if (s.device == "mt7620" or s.device == "mt7602e" or s.device == "mt7603e" or s.device == "mt7628" or s.device == "mt7688" or s.device == "mt7615e2") then 
+			if target_band == "2g" and s.mode == "client" then
+				ifce[#ifce+1] = s[".name"]
+			end
+        end
+        if ( s.device == "mt7615e5" or s.device == "mt7610e" or s.device == "mt7612e" ) then 
+			if target_band == "5g" and s.mode == "client" then
+				ifce[#ifce+1] = s[".name"]
+			end
+        end
+    end)
+
+	if #ifce > 0 then
+		return ifce[1]
+	else
+		return nil
+	end
+end
+
+function isodd(wan_link_stat)
+        if (wan_link_stat == "1") then
+                return 1;
+        elseif (wan_link_stat == "3") then
+                return 1;
+        elseif (wan_link_stat == "5") then
+                return 1;
+        elseif (wan_link_stat == "7") then
+                return 1;
+        elseif (wan_link_stat == "9") then
+                return 1;
+        elseif (wan_link_stat == "b") then
+                return 1;
+        elseif (wan_link_stat == "d") then
+                return 1;
+        elseif (wan_link_stat == "f") then
+                return 1;
+        else
+                return 0;
+        end
+end
+
+function BitOR(a,b)--Bitwise or
+    local p,c=1,0
+    while a+b>0 do
+        local ra,rb=a%2,b%2
+        if ra+rb>0 then c=c+p end
+        a,b,p=(a-ra)/2,(b-rb)/2,p*2
+    end
+    return c
+end
+
+function BitAND(a,b)--Bitwise and
+    local p,c=1,0
+    while a>0 and b>0 do
+        local ra,rb=a%2,b%2
+        if ra+rb>1 then c=c+p end
+        a,b,p=(a-ra)/2,(b-rb)/2,p*2
+    end
+    return c
+end
+
+	local wan_proto = uci.get("network", "wan", "proto")
+	local wan_mode = uci.get("network", "wan", "mode") 
+	
+	local wan_ip = ""
+	local wan_subnet_mask = ""
+	local wan_gw = ""
+	local wan_dns = {}
+	
+	if wan then
+		wan_ip = wan:ipaddr()
+		wan_subnet_mask = wan:netmask()
+		wan_gw = wan:gwaddr()
+		wan_dns = wan:dnsaddrs()
+	end
+	
+	--======= MBA Sean, Read all MAC ================
+	
+	file = io.open("/sys/class/net/ra0/address", "r")
+	local ssid1_mac = ""
+	if file then 
+		ssid1_mac = file:read()
+		io.close(file)
+	end 
+	
+	file = io.open("/sys/class/net/ra1/address", "r")
+	local ssid3_mac = ""
+	if file then 
+		ssid3_mac = file:read()
+		io.close(file)
+	end 
+	if ssid3_mac == "00:00:00:00:00:00" then
+		byte0 = tonumber(string.sub(ssid1_mac, 1, 2), 16)
+		byte3 = tonumber(string.sub(ssid1_mac, 10, 11), 16)
+		byte0 = BitOR(byte0, 0x02)
+		byte3 = BitOR(BitAND(byte3, 0xCF), 0x10)
+		ssid3_mac = string.format("%x%s%x%s", byte0, string.sub(ssid1_mac, 3, 9), byte3, string.sub(ssid1_mac, 12, 17))
+	end
+	
+	file = io.open("/sys/class/net/ra2/address", "r")
+	local copy_ssid2g_mac ="--"
+	if file then 
+		copy_ssid2g_mac = file:read()
+		io.close(file)
+	end
+	if copy_ssid2g_mac == "00:00:00:00:00:00" then
+		byte0 = tonumber(string.sub(ssid1_mac, 1, 2), 16)
+		byte3 = tonumber(string.sub(ssid1_mac, 10, 11), 16)
+		byte0 = BitOR(byte0, 0x02)
+		byte3 = BitOR(BitAND(byte3, 0xCF), 0x20)
+		copy_ssid2g_mac = string.format("%x%s%x%s", byte0, string.sub(ssid1_mac, 3, 9), byte3, string.sub(ssid1_mac, 12, 17))
+	end
+	
+	file = io.open("/sys/class/net/rai0/address", "r")
+	local ssid2_mac = "--"
+	if file then 
+		ssid2_mac = file:read()
+		io.close(file)
+	end
+	
+	file = io.open("/sys/class/net/rai1/address", "r")
+	local copy_ssid5g_mac = "--"
+	if file then 
+		copy_ssid5g_mac = file:read()
+		io.close(file)
+	end
+	if copy_ssid5g_mac == "00:00:00:00:00:00" then
+		byte0 = tonumber(string.sub(ssid2_mac, 1, 2), 16)
+		byte3 = tonumber(string.sub(ssid2_mac, 10, 11), 16)
+		byte0 = BitOR(byte0, 0x02)
+		byte3 = BitOR(BitAND(byte3, 0xEF), 0x10)
+		copy_ssid5g_mac = string.format("%x%s%x%s", byte0, string.sub(ssid2_mac, 3, 9), byte3, string.sub(ssid2_mac, 12, 17))
+	end
+	
+	file = io.open("/sys/class/net/br-lan/address", "r")
+	local lan_mac = "--"
+	if file then 
+		lan_mac = file:read()
+		io.close(file)
+	end
+	
+	file = io.open("/sys/class/net/eth1/address", "r")
+	local wan_mac = "--"
+	if file then 
+		wan_mac = file:read()
+		io.close(file)
+	end
+	
+	local repeater_2g_mac = "--"
+	local repeater_5g_mac = "--"
+	if wan_mode == "repeater" then
+		file = io.open("/sys/class/net/apcli0/address", "r")
+		if file then 
+			repeater_2g_mac = file:read()
+			io.close(file)
+		end
+		file = io.open("/sys/class/net/apclii0/address", "r")
+		if file then 
+			repeater_5g_mac = file:read()
+			io.close(file)
+		end
+	end
+	
+
+	--==========MBA Sean read Firmware version & product name:=========
+	file = io.open("/etc/openwrt_release", "r")
+	local firmware_verison = ""
+	local product_name = ""
+	if file then
+        for line in file:lines() do
+            local name, value = line:match("(.+)=%p(.+)%p")
+            if name == "DISTRIB_PRODUCT" then
+                    product_name = value
+            end
+			if name == "DISTRIB_RELEASE" then
+                    firmware_verison = value
+            end
+		end
+		io.close(file)
+	end
+	
+	--==========MBA Sean read Bootcode version ========
+	
+	local bootcode_version = ""
+	file = io.popen("sys atsh | grep \'Boot Version\'", 'r')
+	if file then
+		local data_raw = file:read()
+		if data_raw then
+			bootcode_version = data_raw:match(".+:%s(.+)%s|.+")
+		end
+		io.close(file)
+	end
+	
+	--=========MBA Sean parse the actual channel from iwconfig==========
+
+	local channel_2g = "--"
+	local channel_5g = "--"
+	
+	file = io.popen("iwconfig ra0 | grep Channel", 'r')
+	if file then
+        local data_raw = file:read()
+        if data_raw then
+                channel_2g = data_raw:match(".+Channel=(%d+).+")
+        end
+		io.close(file)
+	end
+	
+	file = io.popen("iwconfig rai0 | grep Channel", 'r')
+	if file then
+        local data_raw = file:read()
+        if data_raw then
+                channel_5g = data_raw:match(".+Channel=(%d+).+")
+        end
+		io.close(file)
+	end
+	
+	--=========MBA Sean, parse the actual br-lan ip from ifconfig===========
+	
+	local lan_ipaddr = "--"
+	
+	file = io.popen("ifconfig br-lan | grep \'inet addr\'", 'r')
+	if file then
+        local data_raw = file:read()
+        if data_raw then
+                lan_ipaddr = data_raw:match(".+inet addr:(%d+%p%d+%p%d+%p%d+).+")
+        end
+		io.close(file)
+	end
+
+	
+	--=============== MBA Sean, Get all wifi information ===============
+	
+	--get all wireless parameter here
+	
+	--MSTC MBA Sean, need to get all wifi-device
+	local device_2g;
+	local device_5g;
+	local ifcename_ssid1 = ""
+	local ifcename_ssid3 = ""
+	local ifcename_copyssid_2g = ""
+	
+	local ifcename_ssid2 = ""
+	local ifcename_copyssid_5g = ""
+
+	--MSTC MBA Sean, get all chip device, each grequence should be only one chip. 
+    uci.foreach("wireless", "wifi-iface", function(s)
+        if s.device == "mt7620" or s.device == "mt7602e" or s.device == "mt7603e" or s.device == "mt7628" or s.device == "mt7688" or s.device == "mt7615e2" then 
+
+			if s.ifname == "ra0" then
+				ifcename_ssid1 = s[".name"]
+			end
+			if s.ifname == "ra1" then
+				ifcename_ssid3 = s[".name"]
+			end
+			if s.ifname == "ra2" then
+				ifcename_copyssid_2g = s[".name"]
+			end
+			
+			device_2g = s.device
+        end
+		if s.device == "mt7610e"  or s.device == "mt7612e" or s.device == "mt7615e5" then 
+			
+			if s.ifname == "rai0" then
+				ifcename_ssid2 = s[".name"]
+			end
+			if s.ifname == "rai1" then
+				ifcename_copyssid_5g = s[".name"]
+			end
+			
+			device_5g = s.device
+        end
+    end)
+	
+	local ssid1_security = uci.get("wireless", ifcename_ssid1, "encryption")
+	local ssid3_security = uci.get("wireless", ifcename_ssid3, "encryption")
+	--local copyssid_2g_security = uci.get("wireless", ifcename_copyssid_2g, "encryption")
+	
+	local ssid2_security = uci.get("wireless", ifcename_ssid2, "encryption")
+	--local copyssid_5g_security = uci.get("wireless", ifcename_copyssid_5g, "encryption")
+
+	local copy_ssid_2g_enable = "0"
+	-- MBA sean check copy ssid is enable or not
+	local copy_ssid_2g_disabled = uci.get("wireless", device_2g, "copy_ssid_disabled")
+	--MBA Sean, check if it is nil or not before compare, or the lua will crash
+	if copy_ssid_2g_disabled then 
+		if copy_ssid_2g_disabled == "0" then
+			copy_ssid_2g_enable = "1"
+		else
+			copy_ssid_2g_enable ="0"
+		end
+	else
+		copy_ssid_2g_enable ="0"
+	end
+
+	local copy_ssid_5g_enable = "0"
+	-- MBA sean check copy ssid is enable or not
+	local copy_ssid_5g_disabled = uci.get("wireless", device_5g, "copy_ssid_disabled")
+	--MBA Sean, check if it is nil or not before compare, or the lua will crash
+	if copy_ssid_5g_disabled then 
+		if copy_ssid_5g_disabled == "0" then
+			copy_ssid_5g_enable = "1"
+		else
+			copy_ssid_5g_enable ="0"
+		end
+	else
+		copy_ssid_5g_enable ="0"
+	end
+	
+	--MBA Sean, get ssid 1, 2, 3 
+	--ssid1
+	local ssid1_ssid = uci.get("wireless", ifcename_ssid1, "ssid")
+	--MBA Sean only get ssid from dat if dat exist and value exist
+	local file = io.popen("cat /etc/wireless/" .. device_2g .. "/" .. device_2g .. ".dat | grep SSID1", 'r')
+	if file then
+        local data_raw = file:read()
+        if data_raw then
+                local ssid_tmp = data_raw:match("SSID1=(.+)")
+				-- if value is exist, get the value
+				if ssid_tmp then
+					ssid1_ssid = ssid_tmp
+				end
+        end
+		io.close(file)
+	end
+	
+	--ssid3
+	local ssid3_ssid = uci.get("wireless", ifcename_ssid3, "ssid")
+	--MBA Sean only get ssid from dat if dat exist and value exist
+	local file = io.popen("cat /etc/wireless/" .. device_2g .. "/" .. device_2g .. ".dat | grep SSID2", 'r')
+	if file then
+        local data_raw = file:read()
+        if data_raw then
+                local ssid_tmp = data_raw:match("SSID2=(.+)")
+				-- if value is exist, get the value
+				if ssid_tmp then
+					ssid3_ssid = ssid_tmp
+				end
+        end
+		io.close(file)
+	end
+	
+	--ssid2
+	local ssid2_ssid = uci.get("wireless", ifcename_ssid2, "ssid")
+	--MBA Sean only get ssid from dat if dat exist and value exist
+	local file = io.popen("cat /etc/wireless/" .. device_5g .. "/" .. device_5g .. ".dat | grep SSID1", 'r')
+	if file then
+        local data_raw = file:read()
+        if data_raw then
+                local ssid_tmp = data_raw:match("SSID1=(.+)")
+				-- if value is exist, get the value
+				if ssid_tmp then
+					ssid2_ssid = ssid_tmp
+				end
+        end
+		io.close(file)
+	end
+	
+	-- repeater connection status
+	local rootap_ssid;
+	local rootap_security;
+	local rootap_channel;
+	local rootap_bssid;
+	local rootap_conn_status;
+	if wan_mode == "repeater" then
+		client_2g = get_client_ifce_id("2g");
+		client_5g = get_client_ifce_id("5g");
+		local rootap_enable_2g = uci.get("wireless", client_2g, "apcli_enable");
+		local rootap_enable_5g = uci.get("wireless", client_5g, "apcli_enable");
+		local repeater_ifce_id;
+		local repeater_ifce_name;
+		local status_cmd;
+		if rootap_enable_2g and rootap_enable_2g == "1" then
+			repeater_ifce_id = client_2g;
+			repeater_ifce_name = uci.get("wireless", client_2g, "ifname");
+			rootap_channel = channel_2g;
+		elseif rootap_enable_5g and rootap_enable_5g == "1" then
+			repeater_ifce_id = client_5g;
+			repeater_ifce_name = uci.get("wireless", client_5g, "ifname");
+			rootap_channel = channel_5g;
+		end
+			
+		if repeater_ifce_id then
+			status_cmd = "/usr/sbin/repeater_status " .. repeater_ifce_name;
+			local file = io.popen(status_cmd, 'r');
+			if file then
+				local data_raw = file:read()
+				if data_raw and data_raw == "CONNECTED" then
+					rootap_conn_status = "connected";
+				end
+				io.close(file);
+			end
+		end
+		if not rootap_conn_status then
+			rootap_conn_status = "disconnected";
+		end
+
+		if rootap_conn_status == "connected" then
+			rootap_ssid = uci.get("wireless", repeater_ifce_id, "ssid");
+			rootap_bssid = uci.get("wireless", repeater_ifce_id, "apcli_bssid");
+			rootap_security = uci.get("wireless", repeater_ifce_id, "encryption");
+		else
+			rootap_ssid = "--";
+			rootap_security = "--";
+			rootap_channel = "--";
+			rootap_bssid  = "--";
+			channel_2g = "--";
+			channel_5g = "--";
+		end
+	end
+	
+	
+	htmlcode = ""
+	
+	if ssid1_ssid then
+		htmlcode = luci.http.htmlencode(ssid1_ssid);
+		ssid1_ssid = htmlcode;
+	end
+	if ssid2_ssid then
+		htmlcode = luci.http.htmlencode(ssid2_ssid);
+		ssid2_ssid = htmlcode;
+	end
+	if ssid3_ssid then
+		htmlcode = luci.http.htmlencode(ssid3_ssid);
+		ssid3_ssid = htmlcode;
+	end
+	if rootap_ssid then
+		htmlcode = luci.http.htmlencode(rootap_ssid);
+		rootap_ssid = htmlcode;
+	end
+--MSTC, Olivia parsing value for v6 plus and transix mode use.	
+-- v6 env: transix or v6 plue
+	local wan_port_link_stat = sys.exec("switch reg r 3008 | sed 's/^.*=//g' | awk '{print substr($0, length($0), length($0))}'")
+	conn = isodd(string.sub(wan_port_link_stat,1,1))
+	local v6_IPv4_addr = "--"
+	local v6_IPv4_avlb_port = "--"
+	local v6_IPv6_addr_EC = "--"
+	local v6_IPv6_addr_global = "--"
+	local v6_IPv6_addr_link_local = "--"
+	local v6_IPv6_mac_addr = "--"
+	local v6_IPv6_DNS = "--"
+	local v6_IPv6_GW = "--"
+	
+	if conn ~= 0 then
+		v6_IPv4_addr = sys.exec("map-e-config -g | grep IPv4: | awk '{print $2}'")
+		v6_IPv4_avlb_port = sys.exec("map-e-config -g | grep port | awk -F : '{print $2}'")
+		v6_IPv6_addr_EC = sys.exec("ifconfig ip4ov6jp0 | grep \'inet6 addr\' | awk '{print $3}'")
+		if wan_mode == "v6plus" then
+				v6_IPv6_addr_global = sys.exec("ifconfig eth1 | grep Scope:Global | awk '{print $3}' | awk 'NR==2{print}'")
+		else
+				v6_IPv6_addr_global = sys.exec("ifconfig eth1 | grep Scope:Global | awk '{print $3}'")
+		end
+		v6_IPv6_addr_link_local = sys.exec("ifconfig eth1 | grep Scope:Link | awk '{print $3}'")
+		v6_IPv6_mac_addr = string.lower(sys.exec("ifconfig eth1 | grep HWaddr | awk '{print $5}'"))
+		v6_IPv6_DNS = sys.exec("cat /tmp/resolv.conf.auto | grep 'nameserver' | awk '{print $2}'")
+		v6_IPv6_GW = sys.exec("ip -6 route | grep 'default' | awk '{print $3}'")
+	end
+%>
+
+<script language="JavaScript">
+
+var ssid1_security = "<%=ssid1_security%>";
+var ssid3_security = "<%=ssid3_security%>";
+//var copyssid_2g_security = "<%=copyssid_2g_security%>";
+var ssid2_security = "<%=ssid2_security%>";
+//var copyssid_5g_security = "<%=copyssid_5g_security%>";
+
+var encryption_WPA2_aes_name = "<%:WPA2-PSK(AES)%>";
+var encryption_WPA2_aestkip_name = "<%:WPA2-PSK(TKIP/AES)%>"
+var encryption_WPA_mixed_name = "<%:WPA-PSK/WPA2-PSK (AES)%>";
+var encryption_WEP_auto_name = "<%:WEP%>";
+var encryption_OPEN_name = "<%:none%>";
+var encryption_WPA_aes_name = "<%:WAP-PSK(AES)%>";
+var encryption_WPA_tkip_name = "<%:WAP-PSK(TKIP)%>";
+
+function print_encryption( id, security)
+{
+	if ( security == "psk2+ccmp" )
+		document.getElementById( id ).innerHTML = encryption_WPA2_aes_name;
+	else if ( security == "psk-mixed+tkip+ccmp" )
+		document.getElementById( id ).innerHTML = encryption_WPA_mixed_name;
+	else if ( security == "wep-auto" || security =="wep" )
+		document.getElementById( id ).innerHTML = encryption_WEP_auto_name;
+	else if ( security == "psk2")
+		document.getElementById( id ).innerHTML = encryption_WPA2_aestkip_name;
+	else if ( security == "psk+tkip" )
+		document.getElementById( id ).innerHTML = encryption_WPA_tkip_name;
+	else if ( security == "psk+ccmp" )
+		document.getElementById( id ).innerHTML = encryption_WPA_aes_name;
+	else if (security == "---" )
+		document.getElementById( id ).innerHTML = security;
+	else
+		document.getElementById( id ).innerHTML = encryption_OPEN_name;
+}
+
+var sysDate = Date.parse("<%=os.date("%Y/%m/%d %T")%>");
+
+function updatetime()
+{
+nowT=new Date(sysDate);
+if(document.all)
+document.all.timer.innerHTML=Timef(nowT);
+else if(document.getElementById)
+document.getElementById("timer").innerHTML=Timef(nowT);
+else
+dw(Timef(nowT));
+setTimeout("updatetime();sysDate+=1000;",1000);
+}
+function Timef(DT)
+{
+yr=DT.getFullYear()
+mm=DT.getMonth()+1
+mo=mm<10?"0"+mm:mm
+da=DT.getDate()<10?"0"+DT.getDate():DT.getDate()
+ho=DT.getHours()<10?"0"+DT.getHours():DT.getHours()
+mi=DT.getMinutes()<10?"0"+DT.getMinutes():DT.getMinutes()
+se=DT.getSeconds()<10?"0"+DT.getSeconds():DT.getSeconds()
+return yr+"/"+mo+"/"+da+" "+ho+":"+mi+":"+se
+}
+
+function frm_onload()
+{
+	<% if wan_mode == "repeater" then %>
+		rootap_security = "<%=rootap_security%>"
+		print_encryption("rootap_security", rootap_security);
+		print_encryption("ssid1_security", ssid1_security);
+		print_encryption("ssid2_security", ssid2_security);
+	<% else %>
+		print_encryption("ssid1_security", ssid1_security);
+		print_encryption("ssid3_security", ssid3_security);
+		//print_encryption("copyssid_2g_security", copyssid_2g_security);
+		print_encryption("ssid2_security", ssid2_security);
+		//print_encryption("copyssid_5g_security", copyssid_5g_security);
+	<% end %>
+}
+</script>
+<body onLoad="frm_onload()" bgcolor=white  LINK="#000000" VLINK="#000000" ALINK="#000000" leftmargin=0 topmargin=5>
+<br><br><br><br>
+<blockquote>
+<!--Notification-->
+<span id="states_nor">
+	<table width="250" border="0" cellspacing=8>
+		<tr><td class="background">
+			&nbsp;<%:Notice Message%>
+		</td></tr>
+	</table>
+</span>
+<span id="wan_information">
+	<table width="500" border="0" cellspacing=8>
+		<tr>
+			<td>
+			<% local new_fw
+			   local file_url = io.open("/tmp/new_fw_url", "r")
+			   if file_url then
+				new_fw = file_url:read()
+				io.close(file_url)
+			   end
+			   local count = 0
+			   local wan_link_stat = sys.exec("switch reg r 3008 | sed 's/^.*=//g' | awk '{print substr($0, length($0), length($0))}'")
+			   
+			   --[[ get site block status start ]]--
+			   local uci_t = require("luci.model.uci").cursor()
+			   local original_confdir = uci_t.get_confdir()
+			   uci_t.set_confdir("/tmp/siteblock")
+			   local state_available = uci_t.get("certificate_stat", "state", "available")
+			   uci_t.set_confdir(original_confdir)
+			   if not state_available then
+					state_available = ""
+			   end
+			   --[[ get site block status end ]]--
+
+				if (wan_mode) and (wan_mode == "router" or wan_mode == "v6plus" or wan_mode == "transix") then
+					conn = isodd(string.sub(wan_link_stat,1,1))
+					
+					if conn == 0 then count = 1 %>
+						<%:Internet side does not Link. Please check the connection%>
+					<%else					
+							local f = io.open("/tmp/cnt_status_chk","r")
+														
+							if f then
+								wan_cnt_status = f:read()
+								io.close(f)
+							end
+							if ( not wan_cnt_status) or (wan_cnt_status ~= "1") then count = 1 %>
+								<%:Internet is not connected. Please check the connections and settings%>
+							<%else%>
+								<%if new_fw then count = 1 %>
+									<br><%:The new firmware is provided.%><a href="<%=new_fw%>" target="_blank"><%:here%></a><%:Please update to download the firmware and click the%></br>
+									<br><%:Firmware updates can be done from the System Settings on the left side of the screen.%></br>
+									<br><%:Please check detailed instructions by clicking on the see on the screen Manual at the lower left of the screen.%></br>
+								<%end%>
+							<%end%>
+						<%end%>
+				<%else%>
+					<%if new_fw then count = 1 %>
+						<br><%:The new firmware is provided.%><a href="<%=new_fw%>" target="_blank"><%:here%></a><%:Please update to download the firmware and click the%></br>
+						<br><%:Firmware updates can be done from the System Settings on the left side of the screen.%></br>
+						<br><%:Please check detailed instructions by clicking on the see on the screen Manual at the lower left of the screen.%></br>
+					<%end%>
+				<%end%>
+				<%if state_available == "2" then%>
+					<%if count ~= 0 then%>
+						<br>
+					<%end%>
+					<%:Expiration date of the Net filtering has expired. Please update your license.%>
+					<%count = 1%>
+				<%end%>
+				<%if count == 0 then%>
+					<%:There are no announcements.%>
+				<%end%>
+			</td>
+		</tr>
+	</table>
+</span>
+<!--Notification End-->
+<p>
+<table width="500" border="0" cellspacing=8>
+	<tr>
+		<td width="50%" class="background">	&nbsp;<%:System%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right"><%:Model%>&nbsp;</td>
+		<td width="50%"><%=product_name%></td>
+	</tr>
+	<tr>
+		<td align="right"><%:Current Time%>&nbsp;</td>
+		<td class="dispDate"><span id="timer"><script language=javascript>updatetime()</script></span></td>
+	</tr>
+	<tr>
+		<td align="right"><%:Firmware Version%>&nbsp;</td>
+		<td><%=firmware_verison%></td>
+	</tr>
+	<tr>
+		<td align="right"><%:Bootcode Version%>&nbsp;</td>
+		<td><%=bootcode_version%></td>
+	</tr>
+</table>
+
+<!--Internet sector start, MBA SW Sean only show Internet sector in router mode-->
+<%if wan_mode == "router" then%>
+<span id="wansetId">
+	<table width="500" border="0" cellspacing=8>
+		<tr>
+			<td width="50%" class="background">
+			<%:Internet Settings%></td>
+		</tr>
+		<tr>
+			<td width=50% align="right"><%:Connection Type%>&nbsp;</td>
+			<td width=50>
+			<% if wan_proto == "static" then %>
+				<%:Set Static IP Address%>
+			<% elseif wan_proto == "pppoe" then %>
+				<%:PPPoE Authentication%>
+			<% else %>
+				<%:Obtain IP Address Automatically%>
+			<% end %>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><%:IP Address%> &nbsp;</td>
+			<td id="ip">
+			<%if wan_ip == "" then%>
+				--
+			<%else%>
+				<%=wan_ip%>
+			<%end%>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><%:Subnet Mask%> &nbsp;</td>
+			<td id="mask">
+			<%if wan_subnet_mask == "" then%>
+				--
+			<%else%>
+				<%=wan_subnet_mask%>
+			<%end%>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><%:Default Gateway%> &nbsp;</td>
+			<td id="gw">
+			<%if wan_gw == "" then%>
+				--
+			<%else%>
+				<%=wan_gw%>
+			<%end%>
+			</td>
+		</tr>
+		<tr>
+		</script><td align="right"><%:MAC Address%> &nbsp;</td>
+		<td><%=wan_mac%></td>
+		</tr>
+		<tr>
+			<td align="right"><%:DNS%> &nbsp;</td>
+			<td id="dns1">
+			<%if #wan_dns == 0 then %>
+				--
+			<%end%>
+			<%if #wan_dns >= 1 then %>
+				<%=wan_dns[1]%>
+			<%end%>
+			<%if #wan_dns == 2 then %>
+				<%:, %>
+				<%=wan_dns[2]%>
+			<%end%>
+			</td>
+		</tr>
+	</table>
+</span>
+<!--Internet sector end, MBA SW Sean only show Internet sector in router mode-->
+<%end%>
+
+<!--OLIVIA status for iodata v6 plus-->
+<%if wan_mode == "v6plus" then%>
+<span id="wansetId">
+	<table width="500" border="0" cellspacing=8>
+		<tr>
+			<td width="50%" class="background">
+			<%:Internet Settings%></td>
+		</tr>
+		<tr>
+			<td width=50% align="right"><%:Connection Type%>&nbsp;</td>
+			<td width=50>
+				<%:V6 Plus, and IPv6 option%>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><%:IP Address%> &nbsp;</td>
+			<td id="ip">
+			<%=v6_IPv4_addr%>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><%:Available port%> &nbsp;</td>
+			<td id="mode">
+				<%=v6_IPv4_avlb_port%>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><%:IPv6 address (EC)%> &nbsp;</td>
+			<td id="mode">
+				<%=v6_IPv6_addr_EC%>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><%:IPv6 address (global)%> &nbsp;</td>
+			<td id="mode">
+				<%=v6_IPv6_addr_global%>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><%:IPv6 address (link local)%> &nbsp;</td>
+			<td id="mode">
+				<%=v6_IPv6_addr_link_local%>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><%:MAC Address%> &nbsp;</td>
+			<td id="mode">
+				<%=v6_IPv6_mac_addr%>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><%:DNS(IPv6)%> &nbsp;</td>
+			<td id="mask">
+			<%=v6_IPv6_DNS%>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><%:Default gateway (IPv6)%> &nbsp;</td>
+			<td id="gw">
+			<%=v6_IPv6_GW%>
+			</td>
+		</tr>
+	</table>
+</span>
+<%end%>
+<!--end-->
+<!--OLIVIA status for iodata transix-->
+<%if wan_mode == "transix" then%>
+<span id="wansetId">
+	<table width="500" border="0" cellspacing=8>
+		<tr>
+			<td width="50%" class="background">
+			<%:Internet Settings%></td>
+		</tr>
+		<tr>
+			<td width=50% align="right"><%:Connection Type%>&nbsp;</td>
+			<td width=50>
+					<%:transix%>
+			</td>
+		</tr>
+		<!--?œds-lite-config ?“g??to get transix info-->
+		<tr>
+			<td align="right"><%:IPv6 address (global)%> &nbsp;</td>
+			<td id="mode">
+				<%=v6_IPv6_addr_global%>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><%:IPv6 address (link local)%> &nbsp;</td>
+			<td id="mode">
+				<%=v6_IPv6_addr_link_local%>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><%:MAC Address%> &nbsp;</td>
+			<td id="mode">
+				<%=v6_IPv6_mac_addr%>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><%:DNS(IPv6)%> &nbsp;</td>
+			<td id="mask">
+			<%=v6_IPv6_DNS%>
+			</td>
+		</tr>
+		<tr>
+			<td align="right"><%:Default gateway (IPv6)%> &nbsp;</td>
+			<td id="gw">
+			<%=v6_IPv6_GW%>
+			</td>
+		</tr>
+	</table>
+</span>
+<%end%>
+<!--end-->
+<table width="500" border="0" cellspacing=8>
+	<tr>
+		<td width="50%" class="background"><%:LAN Settings%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:IP Address%></td>
+		<td><%=lan_ipaddr%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:Subnet Mask%></td>
+		<td><%=uci.get("network", "lan", "netmask")%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp<%:DHCP Server%></td>
+		<td>
+			<% uci.foreach("dhcp", "dnsmasq", function(s)
+				  if s.enabled then
+				   dhcp_ser_st = s.enabled
+				  end
+			  end)
+			local dhcp_disable = uci.get("dhcp", "lan", "ignore")
+			if dhcp_ser_st then
+				if dhcp_ser_st == "0" or dhcp_disable == "1" then%>
+				   <%:Disable%>
+				<%else%>
+				   <%:Enable%>
+				<%end%>
+			<%else%>
+			   <%:Enable%>
+			<%end%>
+		</td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:MAC Address%></td>
+		<td><%=lan_mac%></td>
+	</tr>
+</table>
+
+<!--Wireless Sector start-->
+
+<table width="500" border="0" cellspacing="8" >
+<% if wan_mode == "repeater" then%>
+<!--MBA Sean, Repeater mode-->
+	<tr><td width="50%" class="background"><%:Wireless LAN Settings%></td></tr>
+	<tr><td width=50% align="right">&nbsp;<%:Status%></td>
+		<td>
+		<% if rootap_conn_status == "connected" then %>
+		<%:Connected%>
+		<% else %>
+		<%:Disconnected%>
+		<% end %>
+		</td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:Connected MAC Address%></td>
+		<td width=50%><%=rootap_bssid%></td>
+	</tr>
+	<tr><td width=50% align="right">&nbsp;<%:Channel%></td>
+		<td width=50%><%=rootap_channel%></td>
+	</tr>
+	<tr><td width=50% align="right">&nbsp;<%:SSID%></td>
+		<td width=50%><%=rootap_ssid%></td>
+	</tr>
+	<tr><td width=50% align="right">&nbsp;<%:Security%></td>
+		<td width=50%><div id="rootap_security" ></div></td>
+	</tr>
+	<tr><td width=50% align="right">&nbsp;<%:Client MAC Address (2.4G)%></td>
+		<td width=50%><%=repeater_2g_mac%></td>
+	</tr>
+	<tr><td width=50% align="right">&nbsp;<%:Client MAC Address (5G)%></td>
+		<td width=50%><%=repeater_5g_mac%></td>
+	</tr>
+
+	<tr>
+		<td class="background2" style="text-align:center"><%:SSID (2.4G)%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:Channel%></td>
+		<td><%=channel_2g%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:SSID%></td>
+		<td><%=ssid1_ssid%></td>
+	</tr>
+	<tr><td width=50% align="right">&nbsp;<%:Security%></td>
+		<td width=50%><div id ="ssid1_security" ></div></td>
+	</tr>
+	<tr><td width=50% align="right">&nbsp;<%:MAC Address%></td>
+		<td><%=ssid1_mac%></td>
+	</tr>
+
+	<tr>
+		<td class="background2" style="text-align:center"><%:SSID (5G)%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:Channel%></td>
+		<td><%=channel_5g%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:SSID%></td>
+		<td><%=ssid2_ssid%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:Security%></td>
+		<td width=50%><div id ="ssid2_security" ></div></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:MAC Address%></td>
+		<td><%=ssid2_mac%></td>
+	</tr>
+<% else %> <!--MBA SW Sean, ap or router mode-->
+	<tr>
+		<td width="50%" class="background"><%:Wireless LAN Settings%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:Channel(2.4G)%></td>
+		<td><%=channel_2g%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:Channel(5G)%></td>
+		<td width=50%><%=channel_5g%></td>
+	</tr>
+	<tr>
+		<td class="background2" style="text-align:center"><%:SSID1 (2.4G)%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:SSID%></td>
+		<td><%=ssid1_ssid%></td>
+	</tr>
+	<tr><td width=50% align="right">&nbsp;<%:Security%></td>
+		<td width=50%><div id ="ssid1_security" ></div></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:MAC Address%></td>
+		<td><%=ssid1_mac%></td>
+	</tr>
+
+	<tr>
+		<td class="background2" style="text-align:center"><%:SSID2 (5G)%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:SSID%></td>
+		<td><%=ssid2_ssid%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:Security%></td>
+		<td width=50%><div id ="ssid2_security" ></div></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:MAC Address%></td>
+		<td><%=ssid2_mac%></td>
+	</tr>
+
+	<tr>
+		<td class="background2" style="text-align:center"><%:SSID3 (2.4G)%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:SSID%></td>
+		<td><%=ssid3_ssid%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:Security%></td>
+		<td width=50%><div id ="ssid3_security" ></div></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:MAC Address%></td>
+		<td><%=ssid3_mac%></td>
+	</tr>
+	<tr>
+		<td class="background2" style="text-align:center"><%:Copy SSID (2.4G)%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:Function%></td>
+		<td>
+		<%if (not copy_ssid_2g_enable) or ( copy_ssid_2g_enable == "0" ) then %>
+			<%:Disable%>
+		<%else%>
+			<%:Enable%>
+		<%end%>
+		</td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:SSID%></td>
+		<td>
+		<% 
+		local copy_ssid2g = uci.get("wireless", ifcename_copyssid_2g, "ssid")
+		if copy_ssid2g then
+			htmlcode = luci.http.htmlencode(copy_ssid2g);
+			copy_ssid2g = htmlcode;
+		end
+		if copy_ssid2g then%>
+			<%=copy_ssid2g%>
+		<%else%>
+			--
+		<%end%>
+		</td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:MAC Address%></td>
+		<td><%=copy_ssid2g_mac%></td>
+	</tr>
+
+	<tr>
+		<td class="background2" style="text-align:center"><%:Copy SSID (5G)%></td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:Function%></td>
+		<td>
+		<%if (not copy_ssid_5g_enable) or ( copy_ssid_5g_enable == "0" ) then %>
+			<%:Disable%>
+		<%else%>
+			<%:Enable%>
+		<%end%>
+		</td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:SSID%></td>
+		<td>
+		<%copy_ssid5g=uci.get("wireless", ifcename_copyssid_5g, "ssid")
+		if copy_ssid5g then
+			htmlcode = luci.http.htmlencode(copy_ssid5g);
+			copy_ssid5g = htmlcode;
+		end
+		if copy_ssid5g then%>
+			<%=copy_ssid5g%>
+		<%else%>
+			--
+		<%end%>
+		</td>
+	</tr>
+	<tr>
+		<td width=50% align="right">&nbsp;<%:MAC Address%></td>
+		<td><%=copy_ssid5g_mac%></td>
+	</tr>
+<% end %>
+</table>
+
+<!--Wireless Sector end-->
+</blockquote>
+</body>
+
+<!-- Mirrored from 192.168.0.1/stainfo.htm by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 24 Feb 2016 01:57:59 GMT -->
+</html>

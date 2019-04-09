@@ -1,0 +1,104 @@
+<%+header%>
+
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+<script type="text/javascript">
+var url ="<%=controller%>/content/system_settings/initialization"; //current page url
+
+function btnApply()
+{
+	//MBA Sean, show the waiting page & hide the original content
+	document.getElementById("top_menu").style.display = 'none';
+	document.getElementById("content").style.display = 'none';
+	document.getElementById("waiting").style.display = 'block';
+	//MBA Sean, start to countdown.
+	waiting();
+
+	//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+	$.ajax({
+		type:"POST",
+		url: url,
+		data: $("#content_send").serialize(),// serializes the form's elements.
+	});
+
+	return false;
+}
+
+<%
+	--MBA Sean, get the waiting time, default is 60 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+	local waiting_time_uci = uci_t.get("web", "gui_config", "reboot_waiting_time")
+	local waiting_time = 60;
+
+	if waiting_time_uci then
+		waiting_time = waiting_time_uci
+	end
+
+	uci_t.set_confdir(original_confdir)
+%>
+
+var seconds=<%=waiting_time%>;
+function waiting()
+{
+	(seconds <= 0) ? seconds=0 : seconds-=1;
+	document.getElementById("wait_time").value = seconds;
+
+	if(seconds == 0){
+		// MBA Sean, when reboot, redirect to Status page (index)
+		top.location.href = "<%=controller%>";
+		return true;
+	}
+
+	setTimeout('waiting()',1000);
+}
+
+function resetClick()
+{
+	var f=document.initialization;
+	if ( !confirm("<%:Return to the factory setting%>") ) {
+		return false;
+	}
+	else{
+		f.functionIndex.value=0;
+		return btnApply();
+	}
+}
+
+function doConfirm()
+{
+	if(confirm("<%:System restart%>")) {
+		alert("<%:It takes a few minutes to reboot. Please do not turn off the power during the restart%>");
+		document.initialization.functionIndex.value=1;
+		return btnApply();
+	}
+	return false;
+}
+
+function frmLoad()
+{
+}
+</script>
+<div id="content">
+<form id="content_send" name="initialization">
+<blockquote>
+<p><%:Return to the factory default settings, please press the factory settings button.%></p>
+<input type="hidden" name="csrfmagic" value="odjbsetntknhdlv">
+<input type="hidden" name="functionIndex">
+<input type="hidden" value="1" name="isApply"/>
+<table width="500" border="0" cellspacing=3>
+<tr>
+<td width="50%" class="background" style="text-align:left">
+<%:Back to the factory setting%> :<br></td>
+<td width="60%"><input type="button" value="<%:Factory setting%>" name="reset" onClick="resetClick()"></td>
+</tr>
+<tr>
+<td width="50%" class="background" style="text-align:left">
+<%:Will reboot the system%> :<br></td>
+<td width="60%"><input type="button" value="<%:Reboot%>" onclick="doConfirm()"></td>
+</tr>
+</table>
+</blockquote>
+</form>
+</div>
+<%+footer%>

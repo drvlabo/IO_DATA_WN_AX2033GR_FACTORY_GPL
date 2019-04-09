@@ -1,0 +1,94 @@
+<%+header%>
+
+<script type="text/javascript">
+
+var url ="<%=controller%>/content/advanced_settings/eee"; //current page url
+
+//MBA Sean, Cancel Button script
+function btnCancel()
+{
+	location.href=url;
+	return true;
+}
+
+//MBA Sean, Apply Button script
+function btnApply()
+{
+	funcEnable = $("input[name='enableEEE']:checked").val();
+	
+	$("#eeeDataStr").val(funcEnable);
+
+	//MBA Sean, show the waiting page & hide the original content
+	document.getElementById("top_menu").style.display = 'none';
+	document.getElementById("content").style.display = 'none';
+	document.getElementById("waiting").style.display = 'block';
+	//MBA Sean, start to countdown.
+	waiting();
+
+	//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+	$.ajax({
+		type:"POST",
+		url: url,
+		data: $("#content_send").serialize(),// serializes the form's elements.
+	});
+
+	return false;
+}
+
+<%
+	local waiting_time = 10;
+%>
+
+var seconds=<%=waiting_time%>;
+function waiting()
+{
+	(seconds <= 0) ? seconds=0 : seconds-=1;
+	document.getElementById("wait_time").value = seconds;
+
+	if(seconds == 0){
+		location.href = url;
+		return true;
+	}
+
+	setTimeout('waiting()',1000);
+}
+
+</script>
+<div id="content">
+<form id="content_send" name="eee">
+<blockquote>
+<table border="0" width="90%">
+	<tbody>
+		<tr align="left">
+			<td width="30%" class="background"><%:EEE title%></td>
+<%
+local enable_eee = uci.get("system", "eee", "enable")
+local enableCheckedStr = ""
+if enable_eee and enable_eee == "1" then
+    enableCheckedStr = "checked"
+else
+    disableCheckedStr = "checked"
+end
+%>
+			<td width="70%">
+				<input type="radio" name="enableEEE" value="1" <%=enableCheckedStr%>/><%:Enable%>
+				<input type="radio" name="enableEEE" value="0" <%=disableCheckedStr%>/><%:Disable%>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<br/>
+<table width="300" border="0" cellspacing="0" cellpadding="0" align="right">
+	<tr>
+		<td align="right">
+			<input type="submit" value="<%:Apply%>" onClick="return btnApply()" width="105" height="30" border="0"/>
+			<input type="reset" value="<%:Cancel%>" onclick="window.location.reload()"/>
+			<input type="hidden" value="" id="eeeDataStr" name="eeeDataStr"/>
+			<input type="hidden" value="1" name="isApply"/>
+		</td>
+	</tr>
+</table>
+</blockquote>
+</form>
+</div>
+<%+footer%>

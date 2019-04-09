@@ -1,0 +1,56 @@
+#!/bin/sh
+
+. /lib/functions/uci-defaults.sh
+. /lib/ramips.sh
+
+LEDS_DIR="/etc/leds.d"
+
+board=$(ramips_board_name)
+
+ucidef_set_mstc_led_default() {
+	local cfg="$1"
+	local name="$2"
+	local sysfs="$3"
+	local default="$4"
+	local delayon="$5"
+	local delayoff="$6"
+	local active_low="$7"
+	local color="$8"
+	local gpio_num="$9"
+	local command="$10"
+	
+	uci -c $LEDS_DIR batch <<EOF
+set leds.$cfg='led'
+set leds.$cfg.name='$name'
+set leds.$cfg.sysfs='$sysfs'
+set leds.$cfg.default='$default'
+set leds.$cfg.delayon='$delayon'
+set leds.$cfg.delayoff='$delayoff'
+set leds.$cfg.active_low='$active_low'
+set leds.$cfg.color='$color'
+set leds.$cfg.gpio_num='$gpio_num'
+set leds.$cfg.command='$command'
+EOF
+}
+
+[ ! -d $LEDS_DIR ] && {
+	mkdir $LEDS_DIR
+	touch $LEDS_DIR/leds
+}
+
+case $board in
+	*)
+	ucidef_set_mstc_led_default "power" \
+                              "power" \
+                              "mstc:green:power:active_low" \
+                              "1" \
+                              "100" \
+                              "100" \
+                              "1" \
+                              "green" \
+                              "0" \
+                              "/usr/bin/gpio"
+
+esac
+
+exit 0

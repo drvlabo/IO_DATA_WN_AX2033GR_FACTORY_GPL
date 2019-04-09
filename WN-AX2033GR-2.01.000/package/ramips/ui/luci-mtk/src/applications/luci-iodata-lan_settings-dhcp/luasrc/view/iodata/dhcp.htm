@@ -1,0 +1,347 @@
+<%+header%>
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+<script type="text/javascript">
+
+var url ="<%=controller%>/content/lan_settings/dhcp"; //current page url
+
+function chkIP(address) { 
+	var IP = address.replace(/ /g, "");
+	var IPsplit = IP.split(".");
+	if ( IPsplit.length != 4 ) {
+		return false;
+	}
+	
+	//check first,and last byte is zero
+	if((IPsplit[0] == "0") || (IPsplit[3] == "0")){
+		return false;
+	}
+	for(i = 0; i < 4; i++) {
+		if((isNaN(IPsplit[i])) || (IPsplit[i] == undefined) || (IPsplit[i] == "")) {
+			return false;
+		} else if((parseInt(IPsplit[i], 10) >= 255) || (parseInt(IPsplit[i], 10) < 0)) {
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+function chkIpRegistered(address){
+	var ret = true;
+	$("#staticClientTable tr[name='staCltData']").each(function(){
+		 if ( $(this).find("td:eq(1) font").html().replace(/ /g, "") == address )
+			ret = false;
+	});
+	
+	return ret;
+}
+
+function chkMacRegistered(address){
+	var ret = true;
+	$("#staticClientTable tr[name='staCltData']").each(function(){
+		 if ( $(this).find("td:eq(2) font").html().replace(/ /g, "").replace(/:/g, "") == address )
+			ret = false;
+	});
+	
+	return ret;
+}
+
+function addClick() {
+	var f = document.dhcp;
+	var dataNum = parseInt($("#staCltDataNum").val(),10) + 1;
+	
+	if ( f.ip.value.replace(/ /g, "") == "" ) {
+		alert("<%:IP address is empty.%>");
+		return false;
+	}
+	
+	if ( f.mac.value.replace(/ /g, "") == "" ) {
+		alert("<%:MAC address is empty.%>");
+		return false;
+	}
+	
+	var newIp = f.ip.value.replace(/ /g, "");
+	var tmpMac = f.mac.value.toUpperCase().replace(/ /g, "");
+	var mac_regex = /^([0-9A-F]{2}){5}([0-9A-F]{2})$/;
+	
+	if ( !chkIP(newIp) ) {
+		alert("<%:IP address is not correct.%>");
+		return false;
+	}
+	
+	if ( ! checkInvalidIP(newIp) ) {
+		alert("<%:IP address is not correct.%>");
+		return false;
+	}
+
+	if ( !chkIpRegistered(newIp) ) {
+		alert("<%:IP address is already registered.%>");
+		return false;
+	}
+	
+	if ( !mac_regex.test(tmpMac) ) {
+		alert("<%:MAC address is not correct.%>");
+		return false;
+	}
+	
+	if ( !chkMacRegistered(tmpMac) ) {
+		alert("<%:MAC address is already registered.%>");
+		return false;
+	}
+	
+	var i = 0;
+	var newMac = "";
+	while( i < tmpMac.length ) {
+		if ( newMac != "" )
+			newMac += ":" ;
+			
+		newMac += tmpMac.substring(i,i+2);
+		i = i+2;
+	}
+	
+	var newRow = "<tr name=\"staCltData\">";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"2\">" + dataNum + "</td>";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"2\">" + newIp + "</td>";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"2\">" + newMac + "</td>";
+	newRow += "<td align=\"center\" class=\"table2\"><input type=\"checkbox\" name=\"select\" value=\"" + dataNum + "\"/></td>";
+	newRow += "</tr>";
+	$("#staticClientTable tr:last").after(newRow)
+	$("#staCltDataNum").val(dataNum);
+	
+	f.ip.value = "";
+	f.mac.value = "";
+	staCltDataChange();
+	return true;
+}
+
+function clearTextbox() {
+	var f = document.dhcp;
+	f.ip.value = "";
+	f.mac.value = "";
+}
+
+function staCltDataChange(){
+	if ( $("input[name='select']").length == 0 ) {
+		$("input[name='deleteSelStDHCP']").prop( "disabled", true );
+		$("input[name='deleteAllStDHCP']").prop( "disabled", true );
+	}
+	else {
+		$("input[name='deleteSelStDHCP']").prop( "disabled", false );
+		$("input[name='deleteAllStDHCP']").prop( "disabled", false );
+	}
+	if ( $("input[name='select']").length >= 10 ) {
+		$("input[name='addPortFw']").prop( "disabled", true );
+		$("input[name='reset']").prop( "disabled", true );
+	}
+	else {
+		$("input[name='addPortFw']").prop( "disabled", false );
+		$("input[name='reset']").prop( "disabled", false );
+	}
+}
+
+function clearSelect(){	
+	$("input[name='select']").prop("checked", false);
+}
+
+function deleteAllClick(){
+	$("#staticClientTable tr[name='staCltData']").each(function(){
+		$(this).remove();
+	});
+	$("#staCltDataNum").val("0");
+	staCltDataChange();
+}
+
+function deleteSelClick(){
+	var i = 0;
+	$("#staticClientTable tr[name='staCltData']").each(function(){
+		if ( $(this).find("input[name='select']").prop("checked") == true ) {
+			$(this).remove();
+		}
+	});
+	
+	$("#staticClientTable tr[name='staCltData']").each(function(){
+		i++;
+		$(this).find("td:first font").html(i);
+	});
+	$("#staCltDataNum").val(i);
+	staCltDataChange();
+}
+
+function copyMacFromList(){
+	var f = document.dhcp;
+	var macVal = $("select[name='listDynPCMac']").val();
+	f.mac.value = macVal.replace(/:/g,"");
+}
+
+function btnApply()
+{
+	var dataCnt = 0;
+	var dataIp = "";
+	var dataMac = "";
+	var dataStr = "";
+	
+	$("#staticClientTable tr[name='staCltData']").each(function(){
+		 dataIp = $(this).find("td:eq(1) font").html().replace(/ /g, "");
+		 dataMac = $(this).find("td:eq(2) font").html().replace(/ /g, "");
+		 
+		 if ( dataStr != "" )
+			dataStr += ";";
+			
+		dataStr += dataIp + "," + dataMac;
+		dataCnt++;
+	});
+	
+	if ( dataCnt > 10 ) {
+		alert("<%:The maximum number of static DHCP entries is limited to 10.%>");
+		return false;
+	}
+
+	$("#strCltDataStr").val(dataStr);
+
+	//MBA Sean, show the waiting page & hide the original content
+	document.getElementById("top_menu").style.display = 'none';
+	document.getElementById("content").style.display = 'none';
+	document.getElementById("waiting").style.display = 'block';
+	//MBA Sean, start to countdown.
+	waiting();
+
+	//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+	$.ajax({
+	type:"POST",
+	url: url,
+	data: $("#content_send").serialize(),// serializes the form's elements.
+	});
+	
+	return false;
+}
+
+<%
+	--MBA Sean, get the waiting time, default is 30 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+	local waiting_time_uci = uci_t.get("web", "gui_config", "network_apply_waiting_time")
+	local waiting_time = 30;
+	
+	if waiting_time_uci then
+		waiting_time = waiting_time_uci
+	end
+	
+	uci_t.set_confdir(original_confdir)
+%>
+
+var seconds=<%=waiting_time%>;
+function waiting()
+{
+	(seconds <= 0) ? seconds=0 : seconds-=1;
+	document.getElementById("wait_time").value = seconds;
+
+	if(seconds == 0){
+		location.href = url;
+		return true;
+	}
+	
+	setTimeout('waiting()',1000);
+} 
+
+function frmLoad() {
+	staCltDataChange();
+}
+
+</script>
+<div id="content">
+<form id="content_send" name="dhcp">
+<blockquote>
+<p class="background"><%:DHCP Client Table%></p>
+<p class="title"><%:DHCP Client Table will display the clients address that ip is assigned by server.%></p>
+<table border="0" width="80%">
+	<tr>
+		<td width="40%" class="background" style="text-align:center"><%:IP Address%></td>
+		<td width="60%" class="background" style="text-align:center"><%:MAC Address%></td>
+	</tr>
+	<% luci.sys.net.dhcp(function(rt) %>
+		<tr>
+			<td class="table2" align="center"><font size="2"><%=rt.ipAdd%></font></td>
+			<td class="table2" align="center"><font size="2"><%=string.upper(rt.macAdd)%></font></td>
+		</tr>
+	<% end) %>
+</table>
+<p><input type="button" value="<%:Update%>" name="refresh" onclick="window.location.reload()"/>&nbsp;&nbsp;</p>
+<p><%:Assign particular MAC for particular IP Address.%></p>
+<table border="0" width="90%">
+	<tbody>
+		<tr>
+			<td width="30%" class="background" style="text-align:center"><%:IP Address%></td>
+			<td width="30%" class="background" style="text-align:center"><%:MAC Address%></td>
+		</tr>
+		<tr align="center">			   
+			<td width="30%"><input type="text" name="ip" size="25" maxlength="15"/></td>
+			<td width="30%"><input type="text" name="mac" size="25" maxlength="12"/></td>
+			<td width="40%" align="left">
+				<input type="button" value="<" onclick="copyMacFromList()"/>
+				<select name="listDynPCMac">
+						<option value=""><%:Computer Selection%></option>
+					<% luci.sys.net.dhcp(function(rt) %>
+						<option value="<%=string.upper(rt.macAdd)%>"><%=string.upper(rt.macAdd)%></option>
+					<% end) %>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3">
+				<p>
+					<input type="button" value="<%:Add%>" name="addPortFw" onClick="return addClick()"/>&nbsp;&nbsp;
+					<input type="button" value="<%:Reset dhcp%>" name="reset" onClick="return clearTextbox();"/>
+				</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<br>
+<table border="0" id="staticClientTable">
+	<tbody>
+		<tr>
+			<td colspan="4"><b><%:Current Static DHCP Table%>:</b></td>
+		</tr>
+		<tr>
+			<td width="5%" class="background" style="text-align:center"><%:NO.%></td>
+			<td width="25%" class="background" style="text-align:center"><%:IP Address%></td>
+			<td width="25%" class="background" style="text-align:center"><%:MAC Address%></td>
+			<td width="5%" class="background" style="text-align:center"><%:Select%></td>
+		</tr>
+		<%	
+			local cnt = 0
+			uci.foreach("dhcp", "host",
+			function(s)
+				cnt = cnt + 1
+				for mac in luci.util.imatch(s.mac) do
+						print("<tr name=\"staCltData\">")
+						print("<td class=\"table2\" align=\"center\"><font size=\"2\">" .. cnt .. "</td>")
+						print("<td class=\"table2\" align=\"center\"><font size=\"2\">" .. s.ip .. "</td>")
+						print("<td class=\"table2\" align=\"center\"><font size=\"2\">" .. mac .. "</td>")
+						print("<td align=\"center\" class=\"table2\"><input type=\"checkbox\" name=\"select\" value=\"" .. cnt .. "\"/></td>")
+						print("</tr>")
+				end
+			end)
+		%>
+	</tbody>
+</table>
+<br/>
+<input type="hidden" id="staCltDataNum" value="<%=cnt%>">
+<input type="button" value="<%:Delete selected%>" name="deleteSelStDHCP" onClick="deleteSelClick()" />&nbsp;&nbsp;
+<input type="button" value="<%:Delete all%>" name="deleteAllStDHCP" onClick="deleteAllClick()" />&nbsp;&nbsp;&nbsp;
+<input type="button" value="<%:Reset dhcp%>" name="reset" onclick="return clearSelect();" />
+<table width="300" border="0" cellspacing="0" cellpadding="0" align="right">
+	<tr>
+		<td align="right">
+			<input type="submit" value="<%:Apply%>" onClick="return btnApply()" width="105" height="30" border="0"/>
+			<input type="reset" value="<%:Cancel%>" onclick="window.location.reload()"/>
+			<input type="hidden" value="1" id="strCltDataStr" name="strCltDataStr"/>
+			<input type="hidden" value="1" name="isApply"/>
+		</td>
+	</tr>
+</table>
+</blockquote>
+</form> 
+</div>
+<%+footer%>

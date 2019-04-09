@@ -1,0 +1,78 @@
+#!/bin/sh /etc/rc.common
+
+START=95
+QUIET=""
+USE_PROCD=1
+
+
+restart() {
+	echo "restart $@"
+	stop 
+	start 	
+}
+
+boot() {
+	echo "start"
+	start 
+}
+
+
+stop_service() {
+	echo "stop"
+	killall IO5GCCRP	
+}
+
+reload_service() {
+	restart
+}
+
+
+start_service() {
+	
+#DFS channel reset
+
+	echo "start daemon $@"  > /dev/console
+	local channel
+	device=mt7615e5
+
+	config_load wireless
+	config_get radio $device radio
+	config_get device_on $device device_on
+	config_get channel $device channel
+	config_get dfs_channel_resetting $device dfs_channel_resetting
+
+	config_load network
+	config_get wanmode wan mode
+
+	echo "ch=$channel"
+	echo "device=$device"
+	
+	if [ "$wanmode" != "repeater" ] && [ "$device_on" == "1" ] && [ "$radio" == "1" ] && [ "$dfs_channel_resetting" == "1" ] && [ "$channel" != "auto" ] ; then
+		killall IO5GCCRP					
+		#restart daemon, only accept W56 channel, use W52,W56 channel the program will terminate
+		if  [ "$channel" == "100" ] || [ "$channel" == "104" ] || [ "$channel" == "108" ] || [ "$channel" == "112" ] || \
+			[ "$channel" == "116" ] || [ "$channel" == "120" ] || [ "$channel" == "124" ] || [ "$channel" == "128" ] || \
+			[ "$channel" == "132" ] || [ "$channel" == "136" ] || [ "$channel" == "140" ] ; then 
+			IO5GCCRP -w56 -ch $channel
+			echo "[IO5GCCRP] start daemon ch=$channel" >>/tmp/wifi.log
+		else
+			echo "[IO5GCCRP] Channel $channel not accept, stop daemon" >>/tmp/wifi.log
+		fi
+    
+	elif [ "$wanmode" == "repeater" ] || [ "$device_on" == "1" ] && [ "$radio" == "1" ] && [ "$dfs_channel_resetting" == "0" ]  ; then
+        killall IO5GCCRP
+		echo "[IO5GCCRP] kill daemon mode=$wanmode dfs_channel_resetting=$dfs_channel_resetting" >>/tmp/wifi.log
+	else
+		killall IO5GCCRP
+		echo "[IO5GCCRP] wifi disable, kill daemon" >>/tmp/wifi.log
+	fi
+	
+}
+
+boot() {
+	# Be silent on boot, firewall might be started by hotplug already,
+	# so don't complain in syslog.
+	#QUIET=-q
+	start
+}
+

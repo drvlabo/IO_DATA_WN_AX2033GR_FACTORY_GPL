@@ -1,0 +1,25 @@
+Index: linux-3.10.14/drivers/mtd/mtdpart.c
+===================================================================
+--- linux-3.10.14.orig/drivers/mtd/mtdpart.c	2016-03-03 16:54:17.156781308 +0800
++++ linux-3.10.14/drivers/mtd/mtdpart.c	2016-03-03 16:57:11.974419000 +0800
+@@ -937,6 +937,8 @@
+ }
+ 
+ #define UBOOT_MAGIC	0x27051956
++// __MSTC__, Ben add to support combo image header 
++#define UBOOT_COMBO_MAGIC		0x434F4D42	/* Combo Image Magic Number		*/
+ 
+ static void split_uimage(struct mtd_info *master, struct mtd_part *part)
+ {
+@@ -958,7 +960,10 @@
+ 		//return;
+ 	}
+ 
+-	if (len != sizeof(hdr) || hdr.magic != cpu_to_be32(UBOOT_MAGIC))
++	// __MSTC__, Ben modify to support combo image (kernel + rootfs) 
++	if (len != sizeof(hdr))
++		return;
++	if ( (hdr.magic != cpu_to_be32(UBOOT_MAGIC)) && (hdr.magic != cpu_to_be32(UBOOT_COMBO_MAGIC)) )
+ 		return;
+ 
+ 	if (hdr.kern_size != 0 && hdr.name[0] == 0)

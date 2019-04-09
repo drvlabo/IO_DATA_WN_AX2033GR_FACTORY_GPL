@@ -1,0 +1,50 @@
+msgid "Advanced"
+msgstr "Advanced"
+
+msgid "Client_List"
+msgstr "Client List"
+
+msgid "DHCP_Error_4"
+msgstr "DHCP Start IP is outside LAN.It should be between"
+
+msgid "DHCP_Error_5"
+msgstr "DHCP End IP is outside LAN.It should be between"
+
+msgid "DHCP_Error_6"
+msgstr "DHCP IP Range should not include Device IP."
+
+msgid "DHCP_PoolSizes_Error_1"
+msgstr "DHCP Pool sizes is outside IP range"
+
+msgid "DHCP_PoolSizes_Error_2"
+msgstr "Pool sizes can not be empty"
+
+msgid "DHCP_PoolSizes_Error_3"
+msgstr "Pool sizes must be number"
+
+msgid "DHCP_PoolSizes_Error_4"
+msgstr "Pool sizes can not be 0"
+
+msgid "DHCP_Server"
+msgstr "DHCP Server"
+
+msgid "General"
+msgstr "General"
+
+msgid "IP_Error_3"
+msgstr "IP adress format error."
+
+msgid "IP_Error_4"
+msgstr "IP can not be LAN IP."
+
+msgid "IP_Pool_Starting_Address"
+msgstr "IP Pool Starting Address"
+
+msgid "Network"
+msgstr "Network"
+
+msgid "Pool_Size"
+msgstr "Pool Size"
+
+msgid "msg_config"
+msgstr "Configuration Update is proceeding. Please Wait..."

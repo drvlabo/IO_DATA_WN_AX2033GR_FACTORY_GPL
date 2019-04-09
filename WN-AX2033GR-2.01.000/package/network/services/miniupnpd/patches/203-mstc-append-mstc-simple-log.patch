@@ -1,0 +1,15 @@
+Index: miniupnpd-2.0.20161216/miniupnpd.c
+===================================================================
+--- miniupnpd-2.0.20161216.orig/miniupnpd.c	2017-01-24 18:21:11.398535089 +0800
++++ miniupnpd-2.0.20161216/miniupnpd.c	2017-01-24 18:28:10.920567077 +0800
+@@ -2670,6 +2670,10 @@
+ #ifndef DISABLE_CONFIG_FILE
+ 	freeoptions();
+ #endif
++#ifdef HAVE_SIMPLE_LOG
++	/* MSTC, Terence, 20160527 Append simple log */
++	system("simple_logrec.sh -w \"UPnP, Stopping\"");
++#endif
+ 
+ 	return 0;
+ }

@@ -1,0 +1,87 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006-2011 OpenWrt.org
+
+SERVICE_USE_PID=1
+
+START=50
+#__MSTC__, Vincent: Support HTTP Authentication enable/disable
+HTDIGEST_PROFILE=/etc/lighttpd/conf.d/20-auth.conf
+HTDIGEST_USRFILE=/etc/lighttpd/lighttpd.user
+
+mstc_loadHttpAuth() {
+	local method
+	local realm
+	local debug
+	local noauthurl	
+	config_get method $1 method
+	config_get realm $1 realm
+	config_get debug $1 debug "0"
+	config_get noauthurl $1 noauthurl "/ezinet_pre.htm|/cgi-bin/luci/unauth*|/luci-static/iodata/image/iodata.gif"
+
+	[ -f $HTDIGEST_PROFILE ] && return
+	
+	[ -n "$method" -a "$method" = "digest" ] && {
+    echo -e 'server.modules += ( "mod_auth" )\n' \
+            'auth.backend = "htdigest"\n' \
+            'auth.backend.htdigest.userfile  = "'$HTDIGEST_USRFILE'"\n' \
+            'auth.debug = '$debug'\n' \
+            '$HTTP["url"] !~ "^('$noauthurl')" {\n' \
+            'auth.require = ( "" =>\n' \
+            '(\n' \
+            '"method"  => "digest",\n' \
+            '"realm"   => "'$realm'",\n' \
+            '"require" => "valid-user"\n' \
+            '),\n' \
+            ')\n' \
+        '}' > $HTDIGEST_PROFILE
+	}
+}
+
+mstc_addHttpAuthUsr() {
+	local user
+	local realm
+	local password
+		
+	config_get user $1 user
+	config_get realm $1 realm
+	config_get password $1 password
+					
+	[ -n "$realm" -a -n "$password" ] && {
+		local command="echo -n '$user:$realm:$password' > $HTDIGEST_USRFILE"
+		eval $command
+	}
+}
+
+start() {
+	user_exists http || user_add http
+	[ -d /var/log/lighttpd ] || {
+		mkdir -m 0775 -p /var/log/lighttpd
+		chgrp www-data /var/log/lighttpd
+	}
+	#__MSTC__, Vincent: Support HTTP Authentication enable/disable
+	config_load account
+	[ -f $HTDIGEST_PROFILE ] && rm -f $HTDIGEST_PROFILE
+	config_foreach mstc_loadHttpAuth http
+	config_foreach mstc_addHttpAuthUsr http
+	
+	# MSTC, Terence, 20160525 append simple log
+	[ -f /sbin/simple_logrec.sh ] && {
+		simple_logrec.sh -w "HTTP, start"
+	}
+	
+	#MSTC, Marco, config http access rule
+        [ -f /usr/sbin/http_access_config.sh ] && {
+		/usr/sbin/http_access_config.sh
+        }
+	
+	service_start /usr/sbin/lighttpd -f /etc/lighttpd/lighttpd.conf
+}
+
+stop() {
+	# MSTC, Terence, 20160525 append simple log
+	[ -f /sbin/simple_logrec.sh ] && {
+		simple_logrec.sh -w "HTTP, stop"
+	}
+	service_stop /usr/sbin/lighttpd
+}
+

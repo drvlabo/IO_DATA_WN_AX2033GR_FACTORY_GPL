@@ -1,0 +1,35 @@
+msgid "clear"
+msgstr "Clear"
+
+msgid "set"
+msgstr "Set"
+
+msgid "keep_screen_turned_on"
+msgstr "Keep Screen turned on"
+
+msgid "oled_30_sec"
+msgstr "30 sec"
+
+msgid "oled_1_min"
+msgstr "1 min"
+
+msgid "oled_5_min"
+msgstr "5 min"
+
+msgid "oled_10_min"
+msgstr "10 min"
+
+msgid "screen_management"
+msgstr "Screen Management"
+
+msgid "oled_clear_wan_count"
+msgstr "Click clear to clear wan traffic count on Panel. After Clear, the"
+
+msgid "oled_clear_wan_count_warn"
+msgstr "traffic count will be reset on Panel"
+
+msgid "oled_display"
+msgstr "OLED Display"
+
+msgid "screen_timeout"
+msgstr "Screen timeout"

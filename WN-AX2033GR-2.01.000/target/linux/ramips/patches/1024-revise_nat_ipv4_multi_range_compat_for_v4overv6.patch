@@ -1,0 +1,24 @@
+Index: linux-3.10.14/include/uapi/linux/netfilter/nf_nat.h
+===================================================================
+--- linux-3.10.14.orig/include/uapi/linux/netfilter/nf_nat.h	2016-01-08 14:07:00.000000000 +0800
++++ linux-3.10.14/include/uapi/linux/netfilter/nf_nat.h	2017-07-25 17:21:30.766938900 +0800
+@@ -8,6 +8,7 @@
+ #define NF_NAT_RANGE_PROTO_SPECIFIED	2
+ #define NF_NAT_RANGE_PROTO_RANDOM	4
+ #define NF_NAT_RANGE_PERSISTENT		8
++#define NF_NAT_RANGE_FULL 16
+ 
+ struct nf_nat_ipv4_range {
+ 	unsigned int			flags;
+@@ -19,7 +20,10 @@
+ 
+ struct nf_nat_ipv4_multi_range_compat {
+ 	unsigned int			rangesize;
+-	struct nf_nat_ipv4_range	range[1];
++//Exchange for support customized IPv4 over IPv6
++	//struct nf_nat_ipv4_range	range[1];
++	struct nf_nat_ipv4_range	range[1024];
++//End exchange
+ };
+ 
+ struct nf_nat_range {

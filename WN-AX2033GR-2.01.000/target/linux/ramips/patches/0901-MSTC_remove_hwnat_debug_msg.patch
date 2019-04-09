@@ -1,0 +1,46 @@
+Index: linux-3.10.14/net/nat/hw_nat/hwnat_ioctl.c
+===================================================================
+--- linux-3.10.14.orig/net/nat/hw_nat/hwnat_ioctl.c	2015-12-31 12:17:12.000000000 +0800
++++ linux-3.10.14/net/nat/hw_nat/hwnat_ioctl.c	2016-05-09 16:23:04.741058400 +0800
+@@ -30,7 +30,11 @@
+ #if defined (CONFIG_RA_HW_NAT_PPTP_L2TP)
+ int DebugLevel = 0;
+ #else
++	#if 1 /* __MSTC__, Vincent: Remove HW NAT runtime debug message print to console */
++int DebugLevel = 0;
++	#else
+ int DebugLevel = 1;
++	#endif
+ #endif
+ extern unsigned int DebugPPP;
+ extern int log_level;
+Index: linux-3.10.14/net/nat/hw_nat/ra_nat.c
+===================================================================
+--- linux-3.10.14.orig/net/nat/hw_nat/ra_nat.c	2016-05-09 16:48:06.418665179 +0800
++++ linux-3.10.14/net/nat/hw_nat/ra_nat.c	2016-05-09 16:40:39.106658900 +0800
+@@ -553,6 +553,7 @@
+ 	}
+ #endif	
+ 	else {
++		if (printk_ratelimit())  /* __MSTC__, Vincent: Remove lot of print */
+ 		printk("HNAT: The interface %s is unknown\n", skb->dev->name);
+ 	}
+ 
+@@ -569,6 +570,7 @@
+ 		}
+ 	}
+ 	if (dev_match == 0){
++		if (printk_ratelimit())  /* __MSTC__, Vincent: Remove lot of print */
+ 		printk("%s UnKnown Interface, VirIfIdx=%x\n", __func__, VirIfIdx);
+ 		return 1;
+ 	}
+@@ -2581,7 +2583,9 @@
+ 	for (i=0; i<MAX_IF_NUM; i++){
+ 		if(DstPort[i] == skb->dev){
+ 			offset = i;
++			if (DebugLevel >= 1) { /* __MSTC__, Vincent: Remove HW NAT runtime debug message print to console */
+ 			printk("dev match offset, name=%s ifined=%x\n", skb->dev->name,i); 
++			}
+ 		}
+ 	}
+ #endif// (CONFIG_RA_HW_NAT_WIFI_NEW_ARCH)

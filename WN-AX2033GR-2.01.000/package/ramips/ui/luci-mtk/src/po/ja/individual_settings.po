@@ -1,0 +1,68 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-03-30 17:00+0200\n"
+"PO-Revision-Date: 2012-11-14 17:32+0200\n"
+"Last-Translator: Kentaro <kentaro.matsuyama@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Pootle 2.0.6\n"
+
+msgid "You can set the limit level for each instrument."
+msgstr "機器別に制限レベルを設定できます。"
+
+msgid "Individual limits"
+msgstr "個別制限"
+
+msgid "Elementary school students middle grade"
+msgstr "小学生中学年相当"
+
+msgid "Elementary school upper grades"
+msgstr "小学生高学年相当"
+
+msgid "Junior high school"
+msgstr "中学生相当"
+
+msgid "High school"
+msgstr "高校生相当"
+
+msgid "Safety and security course"
+msgstr "安心・安全コース"
+
+msgid "Safety Course"
+msgstr "安全コース"
+
+msgid "Do not limit"
+msgstr "制限しない"
+
+msgid "MAC address"
+msgstr "MACアドレス"
+
+msgid "Computer Selection"
+msgstr "パソコンの選択"
+
+msgid "Individual limits list"
+msgstr "個別制限リスト"
+
+msgid "Level"
+msgstr "レベル"
+
+msgid "MAC address is wrong"
+msgstr "MACアドレスは12桁の16進数で入力してください。"
+
+msgid "MAC address is registered"
+msgstr "MACアドレスが重複しています。"
+
+msgid "It has been registered up to the maximum number of entries"
+msgstr "追加できません。"
+
+msgid "MAC address is empty"
+msgstr "MACアドレスを入力してください。"
+
+msgid "Individual Settings"
+msgstr "個別制限"

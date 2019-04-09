@@ -1,0 +1,23 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Apply"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Disable"
+msgstr ""
+
+msgid "Enable"
+msgstr ""
+
+msgid "IPSec"
+msgstr ""
+
+msgid "PASSTHROUGH"
+msgstr ""
+
+msgid "PPTP"
+msgstr ""

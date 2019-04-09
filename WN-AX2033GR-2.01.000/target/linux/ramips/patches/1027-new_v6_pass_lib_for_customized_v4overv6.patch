@@ -1,0 +1,181 @@
+Index: linux-3.10.14/include/linux/v6pass.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-3.10.14/include/linux/v6pass.h	2017-07-25 16:44:38.707842345 +0800
+@@ -0,0 +1,176 @@
++/*
++ * Copyright (C) 2016 Nextech Co., Ltd. All Rights Reserved.
++ */
++
++#ifndef _V6PASS_H_
++#define _V6PASS_H_
++
++#define SIOCV6PASSCMD		SIOCDEVPRIVATE
++
++#define SIOCGETWANIF		0x00
++#define SIOCGETLANIF		0x01
++#define SIOCSETWANIF		0x02
++#define SIOCSETLANIF		0x03
++#define SIOCDELWANIF		0x04
++#define SIOCDELLANIF		0x05
++
++#define SIOCGETFILTER		0x10
++#define SIOCGETFILTERCNT	0x11
++#define SIOCSETFILTER		0x12
++#define SIOCDELFILTER		0x13
++#define SIOCSETMLDSNOOPING	0x14
++
++#define SIOCGETSTATUS		0x20
++#define SIOCSETSTATUS		0x21
++
++#define V6PASS_DEVNAME		"pass0"
++
++struct v6pass_ifreq {
++	char ifname[IFNAMSIZ];
++	int subcmd;
++	int size;
++	void *data;
++	uint8_t pad[4];	// for 8-byte alignment
++};
++
++enum static_filter_dir {
++	STATIC_FILTER_OUT = 0,
++	STATIC_FILTER_IN,
++	STATIC_FILTER_MAX,
++};
++
++#define DIRECTION_OUT	STATIC_FILTER_OUT
++#define DIRECTION_IN	STATIC_FILTER_IN
++
++#define STATIC_FILTER_NUM_MIN	1
++#define STATIC_FILTER_NUM_MAX	65535
++
++#define IPPROTO_ANY	255	/* XXX */
++
++enum filter_action {
++	ACTION_ALLOW,
++	ACTION_DENY,
++	ACTION_ESTABLISHED,
++};
++
++struct v6pass_filter_user {
++	struct in6_addr src;
++	unsigned int src_prefixlen;
++	struct in6_addr dst;
++	unsigned int dst_prefixlen;
++	int direction;
++	int proto;
++	int action;
++	int num;
++};
++
++struct v6pass_stats {
++	unsigned long rx_packets;
++	unsigned long tx_packets;
++	unsigned long rx_bytes;
++	unsigned long tx_bytes;
++	unsigned long rx_errors;
++	unsigned long tx_errors;
++	unsigned long rx_dropped;
++	unsigned long tx_dropped;
++	unsigned long multicast;
++};
++
++struct v6pass_status_user {
++	int passthrough_enable;
++	int mld_snooping_enable;
++	int filter_enable;
++	struct v6pass_stats stats_wan;
++	struct v6pass_stats stats_lan;
++};
++
++#ifdef __KERNEL__
++
++extern struct v6pass_stats stats_wan, stats_lan;
++extern spinlock_t stats_wan_lock, stats_lan_lock;
++
++struct net_device;
++extern struct net_device *v6pass_dev;
++
++struct v6pass_ifinfo {
++	struct net_device *wan;
++	struct net_device *lan;
++	int passthrough_enable;
++	int mld_snooping_enable;
++	int filter_enable;
++};
++
++struct sk_buff;
++void reverse_skb_dev(struct sk_buff *);
++
++#define WAN_STATS_INC_BH(type)				\
++	do {						\
++		spin_lock_bh(&stats_wan_lock);		\
++		stats_wan.type += 1;			\
++		spin_unlock_bh(&stats_wan_lock);	\
++	} while (0)
++#define WAN_STATS_RX_BYTES_INC_BH(byte)			\
++	do {						\
++		spin_lock_bh(&stats_wan_lock);		\
++		stats_wan.rx_bytes += byte;		\
++		stats_wan.rx_packets += 1;		\
++		spin_unlock_bh(&stats_wan_lock);	\
++	} while (0)
++#define  WAN_STATS_TX_BYTES_INC_BH(byte)		\
++	do {						\
++		spin_lock_bh(&stats_wan_lock);		\
++		stats_wan.tx_bytes += byte;		\
++		stats_wan.tx_packets += 1;		\
++		spin_unlock_bh(&stats_wan_lock);	\
++	} while (0)
++
++#define LAN_STATS_INC_BH(type)				\
++	do {						\
++		spin_lock_bh(&stats_lan_lock);		\
++		stats_lan.type += 1;			\
++		spin_unlock_bh(&stats_lan_lock);	\
++	} while (0)
++#define LAN_STATS_RX_BYTES_INC_BH(byte)			\
++	do {						\
++		spin_lock_bh(&stats_lan_lock);		\
++		stats_lan.rx_bytes += byte;		\
++		stats_lan.rx_packets += 1;		\
++		spin_unlock_bh(&stats_lan_lock);	\
++	} while (0)
++#define LAN_STATS_TX_BYTES_INC_BH(byte)			\
++	do {						\
++		spin_lock_bh(&stats_lan_lock);		\
++		stats_lan.tx_bytes += byte;		\
++		stats_lan.tx_packets += 1;		\
++		spin_unlock_bh(&stats_lan_lock);	\
++	} while (0)
++
++#define STATS_INC_BH(dev, type)						\
++	do {								\
++		struct v6pass_ifinfo *p = netdev_priv(v6pass_dev);	\
++		if (dev == p->wan)					\
++			WAN_STATS_INC_BH(type);				\
++		else							\
++			LAN_STATS_INC_BH(type);				\
++	} while (0)
++#define STATS_RX_BYTES_INC_BH(dev, byte)				\
++	do {								\
++		struct v6pass_ifinfo *p = netdev_priv(v6pass_dev);	\
++		if (dev == p->wan)					\
++			WAN_STATS_RX_BYTES_INC_BH(byte);		\
++		else							\
++			LAN_STATS_RX_BYTES_INC_BH(byte);		\
++	} while (0)
++#define STATS_TX_BYTES_INC_BH(dev, byte)				\
++	do {								\
++		struct v6pass_ifinfo *p = netdev_priv(v6pass_dev);	\
++		if (dev == p->wan)					\
++			WAN_STATS_TX_BYTES_INC_BH(byte);		\
++		else							\
++			LAN_STATS_TX_BYTES_INC_BH(byte);		\
++	} while (0)
++
++#endif /* __KERNEL__ */
++
++#endif /* _V6PASS_H_ */
++

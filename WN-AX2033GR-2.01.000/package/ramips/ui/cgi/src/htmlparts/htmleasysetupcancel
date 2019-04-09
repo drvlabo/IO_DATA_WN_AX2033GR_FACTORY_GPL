@@ -1,0 +1,19 @@
+<form name="easysetup" method="POST" action="/cgi-bin/sec/easysetup.cgi">
+<table width="500" border="1" align="center" cellpadding="5" cellspacing="0" >
+<tr>
+<td align="left">
+<font size="2">
+かんたん接続が中断されました。<br><br>
+設定は以前の状態に戻ります。
+<br><br><br><br><br><br><br><br><br>
+</font>
+</td>
+</tr>
+<tr>
+<td align="right">
+<input type="hidden" name="ottforcsrf">
+<input type="submit" name="EasySetupCancelDone" value="　終了　">
+</td>
+</tr>
+</table>
+</form>

@@ -1,0 +1,86 @@
+#!/bin/sh /etc/rc.common
+
+#MSTC MBA Sean, Porting form IO-DATA
+
+START=99
+QUIET=""
+USE_PROCD=1
+ifname=""
+
+
+#get_wireless_ifname(){
+
+#	local config="$1"
+#	local option="$2"
+#	local option_if="$3"
+
+#        config_get tmp "$config" "$option"
+#        if [ $tmp = "lan" ]; then
+#               config_get tmp "$config" "$option_if"
+#                ifname="$ifname"\""$tmp"\",
+#        fi
+#}
+
+get_lan_ifname(){
+	ifname_lan=`uci get network.lan.ifname`
+	ifname=$ifname_lan
+}
+
+get_wan_ifname(){
+	ifname_wan=`uci get network.wan.ifname`
+        ifname="$ifname,""$ifname_wan"
+}
+
+
+
+
+restart() {
+	stop "$@"
+	start "$@"
+	
+}
+
+start_service() {
+	
+	ipv6pass=`uci get network.wan.ipv6passthrough`
+	wan_mode=`uci get network.wan.mode`
+	
+	case $ipv6pass in
+	"0")
+	if [ "$wan_mode" != "v6plus" -a "$wan_mode" != "transix" ]; then
+		rmmod v6pass
+		rmmod v6passCompat
+	fi
+		
+	;;
+	"1")
+#	config_load wireless
+#	config_foreach get_wireless_ifname wifi-iface network ifname
+	start_v6pass -n
+				
+	;;
+	*)
+        	echo "wrong value in network.wan.ipv6passthrough"
+	;;
+	esac
+	
+}
+
+stop_service() {
+	wan_mode=`uci get network.wan.mode`
+	if [ "$wan_mode" != "v6plus" -a "$wan_mode" != "transix" ]; then
+		rmmod v6pass
+		rmmod v6passCompat
+	fi
+}
+
+reload_service() {
+	restart
+}
+
+boot() {
+	# Be silent on boot, firewall might be started by hotplug already,
+	# so don't complain in syslog.
+	QUIET=-q
+	start
+}

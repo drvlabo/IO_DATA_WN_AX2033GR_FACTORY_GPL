@@ -1,0 +1,40 @@
+	
+config MINIUPNPD_VENDORCFG
+	bool "Enable all manufacturer infos through miniupnpd.conf"
+	default n
+	help
+	  Enable all manufacturer infos through miniupnpd.conf
+
+config MINIUPNPD_PCP_PEER
+	bool "Disable PCP PEER operation"
+	default n
+	help
+	  Disable PCP PEER operation
+	  
+config MINIUPNPD_PORTINUSE
+	bool "Enable port in use check"
+	default n
+	help
+	  Enable port in use check
+	  
+config MINIUPNPD_STRICT
+	bool "Enable more strict about UPnP conformance and the messages"
+	default y
+	help
+		Enable to make MiniUPnPd more strict about UPnP conformance
+		and the messages it receives from control points
+
+config MINIUPNPD_IPV6
+	bool "Enable MiniUPnPd to support IPv6"
+	default y
+	depends on IPV6
+	help
+		Enable MiniUPnPd to support IPv6
+
+config MINIUPNPD_EXEC_IN_WAN_GET_IP
+	bool "miniupnpd execute only if wan interface get IP address"
+	default y
+	help
+	  miniupnpd application execute only if wan interface get IP address
+	  y : execute only if wan interface get IP address
+	  n : execute no matter wan interface get IP address

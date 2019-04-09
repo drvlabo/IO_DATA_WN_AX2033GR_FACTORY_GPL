@@ -1,0 +1,24 @@
+<form name="easysetup" method="POST" action="/cgi-bin/sec/easysetup.cgi">
+<table width="500" border="1" align="center" cellpadding="5" cellspacing="0" >
+<tr>
+<td align="left">
+<font size="2">
+本製品のスイッチを[AP]に切り替えてください。<br>
+[完了]ボタンをクリックするとブラウザが閉じられます。<br><br>
+ブラウザを閉じた後、<br>
+１.本製品の電源ケーブルを抜き電源を切ります。<br>
+２.本製品のスイッチを[AP]に切り替えます。<br>
+３.本製品の電源ケーブルを挿し電源を入れます。<br>
+その後、インターネットへの接続をお試しください。<br>
+<br><br><br>
+</font>
+</td>
+</tr>
+<tr>
+<td align="right">
+<input type="hidden" name="ottforcsrf">
+<input type="submit" name="EasySetupErrorFinish" value="　完了　" onlick="window.close()">
+</td>
+</tr>
+</table>
+</form>

@@ -1,0 +1,9 @@
+<%
+		local sessionpath = luci.config.sauth.sessionpath
+		local session_check = tonumber(luci.sys.exec("ls "..sessionpath.."/ | wc -l"))
+		if session_check > 0 then
+%>
+{hassession:"true"}
+<%
+		end
+%> 

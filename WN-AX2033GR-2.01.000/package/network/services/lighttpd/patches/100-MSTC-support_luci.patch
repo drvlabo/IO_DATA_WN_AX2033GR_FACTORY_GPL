@@ -1,0 +1,16 @@
+#MSTC Sean, Support Luci for lighttpd 2015/01/06
+
+--- a/doc/config/conf.d/cgi.conf	2014-03-11 20:54:49.000000000 +0800
++++ b/doc/config/conf.d/cgi.conf	2016-01-06 13:36:14.725021157 +0800
+@@ -13,10 +13,11 @@
+ cgi.assign                 = ( ".pl"  => "/usr/bin/perl",
+-                               ".cgi" => "/usr/bin/perl",
++                               ".cgi" => "",
+                                ".rb"  => "/usr/bin/ruby",
+                                ".erb" => "/usr/bin/eruby",
+-                               ".py"  => "/usr/bin/python" )
++                               ".py"  => "/usr/bin/python", 
++							   "cgi-bin/luci" => ""			)
+ 
+ ##
+ ## to get the old cgi-bin behavior of apache

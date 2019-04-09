@@ -1,0 +1,347 @@
+<%+header%>
+
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+<script type="text/javascript">
+
+var url ="<%=controller%>/content/vpn/pptp_settings"; //current page url
+
+<%
+	local uci_lanip = uci.get("network", "lan", "ipaddr")
+	local _, _, _, lan_ip = string.match(uci_lanip, '(%w+).(%w+).(%w+).(%w+)')
+	local uci_dnsmasqEnabled;
+	uci.foreach("dhcp", "dnsmasq", 
+		function(s)
+			if (s.enabled ~= nil or s.enabled ~= "" ) then 
+				uci_dnsmasqEnabled = s.enabled
+			end
+		end)
+
+	local uci_wanmode = uci.get("network", "wan", "mode")	
+	local uci_dhcpIgnore = uci.get("dhcp", "lan", "ignore")
+	local uci_dhcpS = uci.get("dhcp", "lan", "start")
+	local uci_dhcpE = uci_dhcpS + uci.get("dhcp", "lan", "limit") - 1
+	local uci_stDchpList = "";
+	uci.foreach("dhcp", "host", 
+		function(s)
+			if (s.ip ~= nil or s.ip ~= "" ) then 
+				if (uci_stDchpList ~= "") then
+					uci_stDchpList = uci_stDchpList..";"
+				end
+					uci_stDchpList = uci_stDchpList..s.ip
+			end
+		end)
+%>
+var lanip=<%=lan_ip%>;
+var dnsmasqEnabled="<%=uci_dnsmasqEnabled%>";
+var dhcpIgnore="<%=uci_dhcpIgnore%>";
+var wanmode="<%=uci_wanmode%>";
+var dhcpS=<%=uci_dhcpS%>;
+var dhcpE=<%=uci_dhcpE%>;
+var stDHCPArray=[
+{index:"1",ip:"0.0.0.0"},
+{index:"2",ip:"0.0.0.0"},
+{index:"3",ip:"0.0.0.0"},
+{index:"4",ip:"0.0.0.0"},
+{index:"5",ip:"0.0.0.0"},
+{index:"6",ip:"0.0.0.0"},
+{index:"7",ip:"0.0.0.0"},
+{index:"8",ip:"0.0.0.0"},
+{index:"9",ip:"0.0.0.0"},
+{index:"10",ip:"0.0.0.0"}
+];
+var stDchpList="<%=uci_stDchpList%>";
+
+function checkIPoverlap(ip1_start, ip1_end, ip2_start, ip2_end)
+{
+	if(((ip2_start - ip1_end)<=0) && ((ip2_end - ip1_start)>=0))
+	{
+		//overlap
+		return false;
+	}
+	return true;
+}
+
+function verifySubmitData()
+{
+	with(document.pptp_settings){
+		if(pptp_enable[0].checked == true) {
+			if( input_username.value == "" ) {
+				alert("<%:Please enter a Username%>");
+				setFocus(input_username);
+				return false;
+			}
+
+			if ( ! input_username.value.match(available_char_16) ){
+				alert("<%:It contains characters that can not be used for Username%>");
+				setFocus(input_username);
+				return false;
+			}
+
+			if( input_password.value == "" ) {
+				alert("<%:Please enter a Password%>");
+				setFocus(input_password);
+				return false;
+			}
+
+			if ( ! input_password.value.match(available_char_16) ){
+				alert("<%:It contains characters that can not be used for Password%>");
+				setFocus(input_password);
+				return false;
+			}
+
+			if( input_remoteIP_start.value <= 0 || input_remoteIP_start.value >= 255 ){
+				alert("<%:Please enter Remote IP%>");
+				setFocus(input_remoteIP_start);
+				return false;
+			}
+
+			if( input_remoteIP_end.value <= 0 || input_remoteIP_end.value >= 255 ){
+				alert("<%:Please enter Remote IP%>");
+				setFocus(input_remoteIP_end);
+				return false;
+			}
+			
+			if( input_remoteIP_start.value == "" || isNaN(input_remoteIP_start.value) ){
+				alert("<%:Please enter Remote IP%>");
+				setFocus(input_remoteIP_start);
+				return false;
+			}
+
+			if( input_remoteIP_end.value == "" || isNaN(input_remoteIP_end.value) ){
+				alert("<%:Please enter Remote IP%>");
+				setFocus(input_remoteIP_end);
+				return false;
+			}
+			
+			if( parseInt(input_remoteIP_start.value) > parseInt(input_remoteIP_end.value) ){
+				alert("<%:Please enter Remote IP%>");
+				setFocus(input_remoteIP_end);
+				return false;
+			}
+
+			if( parseInt(input_remoteIP_end.value) - parseInt(input_remoteIP_start.value) > 2 ){
+				alert("<%:Wrong Remote IP%>");
+				setFocus(input_remoteIP_end);
+				return false;
+			}
+
+			if(!checkIPoverlap(lanip, lanip, input_remoteIP_start.value, input_remoteIP_end.value))
+			{
+				alert("<%:Please enter Remote IP%>");
+				return false;
+			}		
+
+			if(!checkIPoverlap(lanip, lanip, input_remoteIP_start.value, input_remoteIP_end.value))
+			{
+				alert("<%:Please enter Remote IP%>");
+				return false;
+			}		
+
+			if((dnsmasqEnabled=='1') && (dhcpIgnore=='0') && (wanmode=='router'))
+			{
+				if(!checkIPoverlap(dhcpS, dhcpE, input_remoteIP_start.value, input_remoteIP_end.value))
+				{
+					alert("<%:Please enter Remote IP%>");		
+					return false;
+				}
+				
+				for(var i=0;i<stDHCPArray.length;i++)
+				{
+					if(stDHCPArray[i].ip != "0.0.0.0")
+					{
+						var tmpip = stDHCPArray[i].ip.split('.');
+						var ip_4block = tmpip[3];
+						if(!checkIPoverlap(ip_4block, ip_4block, input_remoteIP_start.value, input_remoteIP_end.value))
+						{
+							alert("<%:Please enter Remote IP%>");	
+							return false;
+						}
+					}
+				}
+			}
+		} /* pptp_enable[0].checked == true */
+	}
+
+	return true;
+}
+
+function frmLoad()
+{
+	var f = document.pptp_settings;
+	if (stDchpList != "") {
+		list = stDchpList.split(";");
+		for (var i=0; i<list.length; i++) {
+			stDHCPArray[i].ip = list[i];
+		}
+	}	
+	
+	//f.input_remoteIP_start = parseInt(dhcpE) + 1;
+	//f.input_remoteIP_end = parseInt(f.input_remoteIP_start) + 2;
+}
+
+function btnCancel()
+{
+	location.href=url;
+	return true;
+}
+
+function btnApply()
+{
+	var verifyFlag = verifySubmitData();
+
+	if(verifyFlag){
+		//MBA Sean, show the waiting page & hide the original content
+		document.getElementById("top_menu").style.display = 'none';
+		document.getElementById("content").style.display = 'none';
+		document.getElementById("waiting").style.display = 'block';
+		//MBA Sean, start to countdown.
+		waiting();
+
+		//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+        $.ajax({
+			type:"POST",
+			url: url,
+			data: $("#content_send").serialize(),// serializes the form's elements.
+			});
+
+		return false;
+	}
+	else {
+		return false;
+	}
+}
+
+<%
+	local waiting_time = 10;
+%>
+
+var seconds=<%=waiting_time%>;
+function waiting()
+{
+	(seconds <= 0) ? seconds=0 : seconds-=1;
+	document.getElementById("wait_time").value = seconds;
+
+	if(seconds == 0){
+		location.href = url;
+		return true;
+	}
+
+	setTimeout('waiting()',1000);
+}
+
+</script>
+
+<div id="content">
+<form id="content_send" name="pptp_settings">
+<blockquote>
+<table border="0" width="90%">
+	<tbody>
+		<tr>
+			<td width="30%" class="background" style="text-align:left"><%:PPTP server%>:</td>
+			<%
+				local uci_pptpd_enable = uci.get("pptpd", "pptpd", "enabled")
+				local enableCheckedStr = ""
+				local disableCheckedStr = ""
+				
+				if uci_pptpd_enable == "0" then
+					disablepptpd = "checked"
+				else
+					enablepptpd = "checked"
+				end
+			%>
+			<td width="70%">
+				<label><input type="radio" name="pptp_enable" value="1" <%=enablepptpd%>/><%:Enable%></label>
+				<label><input type="radio" name="pptp_enable" value="0" <%=disablepptpd%>/><%:Disable%></label>
+			</td>
+		</tr>
+		<tr>
+			<td class="background" style="text-align:left"><%:Username%>:</td>
+			<%
+				local uci_username = ""
+
+					uci.foreach("pptpd", "login",
+						function(s)
+							uci_username = s.username
+						end)
+			%>
+
+			<td ><input type="text" name="input_username" size="20" maxlength="16" value="<%=uci_username%>"></input></td>
+		</tr>
+		<tr>
+			<td class="background" style="text-align:left"><%:Password%>:</td>
+			<%
+				local uci_password = ""
+					uci.foreach("pptpd", "login",
+						function(s)
+							uci_password = s.password
+						end)
+			%>
+			<td ><input type="text" name="input_password" size="20" maxlength="16" value="<%=uci_password%>"></input></td>
+		</tr>
+		<tr>
+			<td class="background" style="text-align:left"><%:Remote IP range%>:</td>
+			<td>
+				<%					
+					local lan_ipaddr;
+					file = io.popen("ifconfig br-lan | grep \'inet addr\'", 'r')
+					if file then
+					local data_raw = file:read()
+					if data_raw then
+							lan_ipaddr = data_raw:match(".+inet addr:(%d+%p%d+%p%d+%p%d+).+")
+					end
+							io.close(file)
+					end
+					
+					if not lan_ipaddr then
+						file = io.popen("ifconfig br-lan:avahi | grep \'inet addr\'", 'r')
+						if file then
+						local data_raw = file:read()
+						if data_raw then
+								lan_ipaddr = data_raw:match(".+inet addr:(%d+%p%d+%p%d+%p%d+).+")
+						end
+								io.close(file)
+						end
+					end
+
+					a, b, c = string.match(lan_ipaddr, '(%w+).(%w+).(%w+)')
+					local show_pptpd_lanip = a .. "." .. b .. "." .. c .. "."
+
+					local startip = ""
+					local endip = ""
+					local iprange=uci.get("pptpd", "pptpd", "iprange")
+					if iprange then
+						startip, endip = string.match(iprange, '(%w+)-(%w+)')
+					else
+						startip=33
+						endip=35
+					end
+				%>
+				<%=show_pptpd_lanip%>
+				<input type="text" name="input_remoteIP_start" size="3" maxlength="3" value="<%=startip%>"></input>&nbsp;<%:～%>
+				<input type="text" name="input_remoteIP_end" size="3" maxlength="3" value="<%=endip%>"></input>
+			</td>
+		</tr>
+		<tr>
+			<td class="background" style="text-align:left"><%:Authentication method%>:</td>
+			<td><%:MSCHAP-v2%></td>
+		</tr>
+		<tr>
+			<td class="background" style="text-align:left"><%:Encryption%>:</td>
+			<td>128<%:bit%></td>
+		</tr>
+	</tbody>
+</table>
+<br/>
+<table width="300" border="0" cellspacing="0" cellpadding="0" align="right">
+	<tr>
+		<td align="right">
+			<input type="button" value="<%:Apply%>" onClick="return btnApply()" width="105">
+			<input type="reset" value="<%:Cancel%>" onclick="window.location.reload()">
+			<input type="hidden" name="apply" value="apply">
+		</td>
+	</tr>
+</table>
+</blockquote>
+</form> 
+</div>
+<%+footer%>

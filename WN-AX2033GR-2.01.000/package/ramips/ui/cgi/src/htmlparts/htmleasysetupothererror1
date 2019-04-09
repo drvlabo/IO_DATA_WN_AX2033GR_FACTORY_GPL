@@ -1,0 +1,32 @@
+<form name="easysetup" method="POST" action="/cgi-bin/sec/easysetup.cgi">
+<table width="100%" height="97%" border="0" cellpadding="1" cellspacing="1">
+<tbody><tr>
+	<td align="center" valign="center">
+<table width="500" border="1" align="center" cellpadding="5" cellspacing="0" >
+<tr>
+<td align="left" >
+<font size="2">
+インターネットに接続できませんでした。(エラー4)<br>
+以下の手順でご確認ください。<br><br>
+＜手順＞<br>
+・インターネットポートにモデムからのケーブルが接続されていることを確認してください。<br>
+・モデムの電源が入っていることを確認してください。<br>
+・(CATV、Yahoo!BB)モデムの電源を一旦抜いて30分以上経過後に入れ直してから再設定してください。<br>
+・プロバイダー契約がIPアドレス固定設定の場合は、設定画面「インターネット接続設定」から設定してください。<br>
+
+<br><br><br><br>
+</font>
+</td>
+</tr>
+<tr>
+<td align="right" >
+<input type="hidden" name="ottforcsrf">
+<input type="submit" name="EasySetupErrorFinish" value="　完了　">
+</td>
+</tr>
+</table>
+</td>
+</tr></tbody>
+</table>
+</form>
+

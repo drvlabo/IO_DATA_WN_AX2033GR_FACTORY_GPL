@@ -1,0 +1,77 @@
+Index: linux-3.10.14/net/nat/hw_nat/ra_nat.c
+===================================================================
+--- linux-3.10.14.orig/net/nat/hw_nat/ra_nat.c	2016-06-13 14:52:14.952382886 +0800
++++ linux-3.10.14/net/nat/hw_nat/ra_nat.c	2016-06-22 15:25:19.155104039 +0800
+@@ -41,6 +41,7 @@
+ #include <linux/ppp_defs.h>
+ #include <linux/pci.h>
+ #include <linux/errno.h>
++#include <linux/semaphore.h>
+ 
+ #include "ra_nat.h"
+ #include "foe_fdb.h"
+@@ -2653,15 +2654,61 @@
+ 
+ }
+ #if defined (CONFIG_RA_HW_NAT_WIFI_NEW_ARCH)
++/* __MSTC__, Smith, add semaphore for PpeDevRegHandler & PpeDevUnRegHandler */
++DEFINE_SEMAPHORE(PpeDevRegSem);
+ void PpeDevRegHandler(struct net_device *dev)
+ {
+-	DstPort[dev->ifindex] = dev;
+-	printk("***********dev->ifindex = %x\n", dev->ifindex);
++	int i = 0;
++	int empty = MAX_IF_NUM;
++
++	down(&PpeDevRegSem);
++	for(i=0; i<MAX_IF_NUM; i++)
++	{
++		if(DstPort[i] != NULL)
++		{
++			if(strcmp(DstPort[i]->name, dev->name) == 0)
++			{
++				DstPort[i] = dev;
++				printk("***********dev->ifindex = %x\n", dev->ifindex);
++				break;
++			}
++		}
++		else
++		{
++			if(empty == MAX_IF_NUM)
++				empty = i;
++		}
++	}
++	if(i == MAX_IF_NUM)
++	{
++		if(empty != MAX_IF_NUM)
++		{
++			DstPort[empty] = dev;
++			printk("***********dev->ifindex = %x\n", dev->ifindex);
++		}
++		else
++			printk("***********FAIL to register, full now\n");
++	}
++	up(&PpeDevRegSem);
+ }
+ 
+ void PpeDevUnRegHandler(struct net_device *dev)
+ {
+-	DstPort[dev->ifindex] = NULL;
++	int i = 0;
++
++	down(&PpeDevRegSem);
++	for(i=0; i<MAX_IF_NUM; i++)
++	{
++		if(DstPort[i] != NULL)
++		{
++			if(strcmp(DstPort[i]->name, dev->name) == 0)
++			{
++				DstPort[i] = NULL;
++				break;
++			}
++		}
++	}
++	up(&PpeDevRegSem);
+ }
+ #endif
+ int32_t PpeTxHandler(struct sk_buff *skb, int gmac_no)

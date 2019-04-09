@@ -1,0 +1,35 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2008 OpenWrt.org
+
+START=96
+
+load_led() {
+	local name
+	local sysfs
+	local default
+
+	config_get sysfs $1 sysfs
+	config_get name $1 name "$sysfs"
+	config_get_bool default $1 default "nil"
+
+	[ -c /dev/gpio ] && {
+		echo "setting up led ${name}"
+		[ "$default" != nil ] && {
+			[ $default -eq 1 ] &&
+				/sbin/mstc_led.sh $name on
+			[ $default -eq 0 ] &&
+				/sbin/mstc_led.sh $name off
+		}
+	}
+}
+
+start() {
+	[ -c /dev/gpio ] && {
+		local UCI_CONFIG_DIR='/etc/leds.d'
+		config_load leds
+		config_foreach load_led led
+                [ -f /etc/leds.d/lamp_on_off.sh ] && {
+			/etc/leds.d/lamp_on_off.sh &
+		}
+	}
+}

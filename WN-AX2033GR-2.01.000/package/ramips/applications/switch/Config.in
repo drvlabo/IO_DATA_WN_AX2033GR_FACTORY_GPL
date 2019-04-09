@@ -1,0 +1,14 @@
+if PACKAGE_switch
+if TARGET_ramips_mt7621
+choice
+	prompt "LAN/WAN port setting"
+
+	config PACKAGE_switch_LLLLW
+	bool "LLLLW"
+	default y
+
+	config PACKAGE_switch_WLLLL
+	bool "WLLLL"
+endchoice
+endif
+endif

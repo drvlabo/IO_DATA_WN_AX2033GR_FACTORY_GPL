@@ -1,0 +1,227 @@
+<%
+require("luci.http").prepare_content("text/html")
+local uci = require("luci.model.uci").cursor()
+local i18n = require("luci.i18n")
+local lang = uci:get("luci","main","lang") 
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+-%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
+<head>
+<title> </title>
+<meta http-equiv='content-type' content='text/html;charset=utf-8'>
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<link href="<%=media%>/css/inside.css" rel="stylesheet" type="text/css" />
+<link href="<%=media%>/css/table.css" rel="stylesheet" type="text/css" />
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<style>
+td {white-space: nowrap;}
+</style>
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script language="JavaScript" type="text/javascript">
+
+//var totWanSum;
+//var totLanSum;
+//var currLanSum;
+//var currWanSum;
+
+var userEnb;
+var userDire;
+var oldBwSel;
+var oldBwRate;
+
+function atoi(str, num)
+{
+	i = 1;
+	if (num != 1) {
+		while (i != num && str.length != 0) {
+			if (str.charAt(0) == '.') {
+				i++;
+			}
+			str = str.substring(1);
+		}
+		if (i != num)
+			return -1;
+	}
+
+	for (i=0; i<str.length; i++) {
+		if (str.charAt(i) == '.') {
+			str = str.substring(0, i);
+			break;
+		}
+	}
+	if (str.length == 0)
+		return -1;
+	return parseInt(str, 10);
+}
+
+function checkRange(str, num, min, max)
+{
+	d = atoi(str, num);
+	if (d > max || d < min)
+		return false;
+	return true;
+}
+
+function isNum(str)
+{
+	for (var i=0; i<str.length; i++) {
+		if ((str.charAt(i) >= '0' && str.charAt(i) <= '9'))
+			continue;
+		return 0;
+	}
+	return 1;
+}
+
+function isAllNum(str)
+{
+	for (var i=0; i<str.length; i++) {
+		if ((str.charAt(i) >= '0' && str.charAt(i) <= '9') || (str.charAt(i) == '.' ))
+			continue;
+		return 0;
+	}
+	return 1;
+}
+
+
+function btnApply(buttonSel)
+{
+	var loc = '<%=luci.dispatcher.build_url("expert","configuration","management","qos","advance")%>';
+	with ( document.forms[0] ){
+		if(buttonSel==1)
+		{
+			if(dstPort.value != "" && srcPort.value != ""){
+				var tmp1 = dstPort.value;
+				var tmp2 = srcPort.value;
+				
+				if(tmp1.indexOf(',') != -1 || tmp2.indexOf(',') != -1){
+					alert("<%:Bandwidth_MGMT_Error_2%>");
+					return;
+				}
+			}
+			
+			loc += '?apply_edit=<%=section_name%>';
+			loc += '&dstAddr=' + dstAddr.value;
+			loc += '&dstMask=' + dstMask.value;
+			loc += '&dstPort=' + dstPort.value;
+			loc += '&srcAddr=' + srcAddr.value;
+			loc += '&srcMask=' + srcMask.value;
+			loc += '&srcPort=' + srcPort.value;
+			
+			var idx = protocol.selectedIndex;
+			
+			if (idx == 0){
+				loc += '&proto=tcp';
+			}
+			else if(idx == 1){
+				loc += '&proto=udp';
+			}
+		}
+		else if(buttonSel==2){
+			//loc += '?edit=<%=section_name%>';
+		}
+		
+		var code = 'location="' + loc + '"';
+     	eval(code);
+	}
+}
+
+
+</script>
+
+<style type="text/css">
+<!--
+.wtext_3 {font-family:Arial, Helvetica, sans-serif;color:#000000;font-size:11px;}
+.cfg_title{ font-family:Arial, Helvetica, sans-serif; color:#385f95; font-size:11px; font-weight:bold; height:25px; line-height:25px;}
+-->
+</style>
+
+</head>
+<body>
+<div id="tabs">
+  <ul>
+  	<li><a  href="<%=controller%>/expert/configuration/management/qos" title="<%:General%>"><span><%:General%></span></a></li>
+    <li class="hightline"><a title="<%:Advanced%>"><span><%:Advanced%></span></a></li>
+  </ul>
+  <br class="clearfloat" />
+</div>
+<div id="table">
+	<ul>
+    	<li class="table_content">
+      		<div class="data">
+        		<ul>
+			   		<li class="title" ><font id="userEditTitle"><%:Rule_Configuration%>></font> - <%=rule_name%></li>
+					<li>&nbsp;</li>
+				</ul>
+    		</div>
+			<form method="post" name="QoSUserCfg">
+			<table width="100%" border="0" cellspacing="0" cellpadding="0" >
+				<tr>
+					<td>
+				  		<table width="90%" border="0" align=center cellspacing="0" class="wtext_3">   
+
+							<tr> 
+							<td width=40%><%:Destination_Address%></td>
+							<td colspan=2><input type=text name="dstAddr" size=15 maxlength=15 value="<%=rule_dst%>" >
+							
+							</td></tr> 
+							<tr> 
+							<td width=40%><%:Destination_Subnet_Netmask%></td>
+							<td colspan=2><input type=text name="dstMask" size=15 maxlength=15 value="<%=rule_dst_mask%>" >
+							</td></tr> 
+							<tr> 
+							<td width=40%><%:Destination_Port%></td>
+							<td colspan=2><input type=text name="dstPort" size=25 maxlength=25 value="<%=rule_dst_port%>"  >
+							</td></tr> 
+							<tr> 
+							<td width=40%><%:Source_Address%></td>
+							<td colspan=2><input type=text name="srcAddr" size=15 maxlength=15 value="<%=rule_src%>" >
+							</td></tr> 
+							<tr> 
+							
+							<td width=40%><%:Source_Subnet_Netmask%></td>
+							<td colspan=2><input type=text name="srcMask" size=15 maxlength=15 value="<%=rule_src_mask%>" >
+							</td></tr> 
+							<tr> 
+							<td width=40%><%:Source_Port%></td>
+							<td colspan=2><input type=text name="srcPort" size=25 maxlength=25 value="<%=rule_src_port%>" >
+							</td></tr> 
+							<tr> 
+							<td width=40%><%:Protocol%></td>
+							<td colspan=2><select name="protocol" size=1">
+							<option value="tcp" <% if rule_proto == "tcp" then %> selected <%end%> ><%:TCP%></option>
+							<option value="udp" <% if rule_proto == "udp" then %> selected <%end%> ><%:UDP%></option>
+							</select>&nbsp;&nbsp;
+							</td></tr>
+
+
+						</table>
+
+						<table border="0" cellspacing="0" cellpadding="0" width="100%" align=center>
+							<tr>
+								<td height="10">&nbsp;&nbsp;</td>
+							</tr>
+							<tr>
+								<td align=center class="table_button">
+									<input type="button" value="<%:Apply%>" onClick="btnApply(1);" >
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+									<input type="button" value="<%:Cancel%>" onClick="btnApply(2);">
+								</td>
+							</tr>
+						</table>
+
+					</td>
+				</tr>
+			</table>
+			</form>
+		</li>
+	</ul>
+</div>
+
+</body>
+<script language="JavaScript">
+	showFullPath(' <%:Management%> > <%:Bandwidth_MGMT%> > <%:Advanced%>');
+</script>
+</html>

@@ -1,0 +1,129 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at 
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: header.htm 4891 2009-06-22 10:23:21Z jow $
+
+-%>
+<%
+sys = require("luci.sys")
+uci = require("luci.model.uci").cursor()
+local uci = require("luci.model.uci").cursor()
+local i18n = require("luci.i18n")
+local lang = uci:get("luci","main","lang") 
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+
+-%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"  />
+<title>.::<%:welcome_title_message%>::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<style>
+.on {display:on}
+.off {display:none}
+</style>
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script type="text/javascript" src="<%=media%>/js/jquery-1.6.2.min.js" ></script>
+<script>
+$(function() {
+
+<% if pw_confirm == -1 then %>
+	$('#change_pw_error').show();
+<% end %>	
+
+});
+	
+var clickApply = 0;
+function setApply(click){
+	clickApply = click;
+}	
+	
+function CheckValue() {
+	if ( clickApply == 1){
+		if(document.pass_warning.new_password.value==""){
+			alert("<%:passErrMsg2%>");
+			return false;
+		}else if(document.pass_warning.new_password2.value==""){
+			alert("<%:passErrMsg3%>");
+			return false;
+		}else if(document.pass_warning.new_password.value != document.pass_warning.new_password2.value){
+			alert("<%:passErrMsg5%>");
+			return false;
+		}else{
+			return true; 
+		}
+	}else{
+		return true;
+	}
+}
+</script>
+</head>
+<body>
+<div id="wrapper">
+  <div id="top">
+    <div>
+      <% local logoshow_enable = uci:get("system","main","logoshow") %>
+	  <% if logoshow_enable == "1" then %>
+		<div class="logo"><img src="<%=media%>/index/images/advance_logo.gif"/></div>
+	  <% end %>
+    </div>
+  </div>
+ 
+<div class="wraplogin">
+ 	<ul>
+		<span class="title_index"><%:change_pw%></span><br />
+  		<li class="content_word"><%:pass_warning_msg%>
+    	 <div class="loginInput">
+        <form action="<%=controller%>/expert/passWarning" method="post" name="pass_warning" onSubmit="return CheckValue();">
+          <fieldset>
+          <ul>
+
+        <li style=" margin-top:15px;" >
+              <span ><label for="userpassword" style="width: 100px;" class="content_word_title">
+                      <span class="required"><%:new_password%>:</span>
+                   </label>
+              </span>
+                
+                <span style="position:absolute; right:120px;">
+                  <input name="new_password" type="password" class="text" id="userpassword" size="20" />
+                </span>
+              
+        </li>
+        
+        
+
+        
+        <li style=" margin-top:15px; clear:both;">
+              <span ><label for="userpassword2" style="width: 100px;" class="content_word_title"><span class="required"><%:confirm_password%>:</span></label></span>
+              <span style="position:absolute; right:120px;"><input name="new_password2" type="password" class="text " id="userpassword2" size="20" /></span>
+              
+            </li>
+         <li>
+        <li class="login_button">
+            <input type="submit" name="apply" value="<%:apply%>" onclick="setApply(1);" />
+            <input type="submit" name="skip" value="<%:Skip%>" onclick="setApply(0);"/></li>
+			
+			</ul>
+				</fieldset>
+				<label class="error" style="display:none;" id="change_pw_error"><%:passErrMsg8%> </label>
+  </form>
+</div>
+</li>
+</ul>
+
+
+</div>
+</div>
+</body>
+
+</html>

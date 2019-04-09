@@ -1,0 +1,932 @@
+<%+header%>
+
+<%
+	--get all wireless parameter here
+
+	--MSTC MBA Sean, need to get the iface id from openwrt, dirty work...
+	local ifce={}
+	--MSTC MVA Sean, get all 2.4G chip device name
+    uci.foreach("wireless", "wifi-iface",
+	function(s)
+		if s.mode == "ap" then
+			if (s.device == "mt7620" or s.device == "mt7602e" or s.device == "mt7603e" or s.device == "mt7628" or s.device == "mt7688" or s.device == "mt7615e2") then
+				ifce[#ifce+1] = s[".name"]
+			end
+        end
+    end)
+
+	--MSTC MBA Sean, the 2.4G usually is iface1 ...
+
+	--wifi config
+
+	local ssid1_device = uci.get("wireless", ifce[1], "device")
+	--MBA Sean 2.4G use the same chip
+	local wireless_2g_radio_enable = uci.get("wireless", ssid1_device, "device_on");  -- don't use 'radio'. it's only works on client mode, and wps and site survey will use apcli
+	if not wireless_2g_radio_enable then
+		wireless_2g_radio_enable = "1";
+	end
+	local repeater_2g_connected
+	local file = io.popen("iwconfig apcli0 | grep ESSID:", 'r')
+	if file then
+        local data_raw = file:read()
+        if data_raw then
+                local repeater_2g_connected_tmp = data_raw:match("ESSID:\"(.+)\"")
+				-- if value is exist, get the value
+				if repeater_2g_connected_tmp then
+					repeater_2g_connected = repeater_2g_connected_tmp
+				end
+        end
+	end
+	io.close(file)
+	local wireless_2g_channel = uci.get("wireless", ssid1_device, "channel")
+	local bandwidth_2g = uci.get("wireless", ssid1_device, "bw")
+	local txpower_2g = uci.get("wireless", ssid1_device, "txpower")
+	local repeater_changeable_2g = uci.get("wireless", "repeater", "changeable_2g")
+
+	local lua_wpsEnable = "0";
+	if ssid1_device then
+		local tmp_value = uci.get("wireless", ssid1_device, "wsc_confmode")
+		if tmp_value then
+			lua_wpsEnable = tmp_value
+		end
+	end
+
+	--ssid1
+	local ssid1_ssid = uci.get("wireless", ifce[1], "ssid")
+	--MBA Sean only get ssid from dat if dat exist and value exist
+	local file = io.popen("cat /etc/wireless/" .. ssid1_device .. "/" .. ssid1_device .. ".dat | grep SSID1", 'r')
+	if file then
+        local data_raw = file:read()
+        if data_raw then
+                local ssid_tmp = data_raw:match("SSID1=(.+)")
+				-- if value is exist, get the value
+				if ssid_tmp then
+					ssid1_ssid = ssid_tmp
+				end
+        end
+	end
+	io.close(file)
+
+	local ssid1_uci_encryption = uci.get("wireless", ifce[1], "encryption")
+	local ssid1_wmm = uci.get("wireless", ifce[1], "wmm")
+	local ssid1_broadcast_hidden = uci.get("wireless", ifce[1], "hidden")
+	local ssid1_wep_default_key = uci.get("wireless", ifce[1], "key")
+	--MSTC MBA Sean, wpa key and  wep default key use the same uci value
+	local ssid1_wpa_psk_key = ssid1_wep_default_key
+	--MBA Sean only get wpa_psk_key from dat if dat exist and value exist
+	local file = io.popen("cat /etc/wireless/" .. ssid1_device .. "/" .. ssid1_device .. ".dat | grep WPAPSK1", 'r')
+	if file then
+        local data_raw = file:read()
+        if data_raw then
+                local wpa_psk_tmp = data_raw:match("WPAPSK1=(.+)")
+				-- if value is exist, get the value
+				if wpa_psk_tmp then
+					ssid1_wpa_psk_key = wpa_psk_tmp
+				end
+        end
+	end
+	io.close(file)
+
+	--MBA Sean, encode the ssid, wpa key, wep key
+
+	htmlcode = luci.http.htmlencode(ssid1_wpa_psk_key);
+	ssid1_wpa_psk_key = htmlcode;
+
+	if ssid1_ssid then
+		htmlcode = luci.http.htmlencode(ssid1_ssid);
+		ssid1_ssid = htmlcode;
+	end
+
+	local ssid1_wep_key1 = uci.get("wireless", ifce[1], "key1")
+	if ssid1_wep_key1 then
+		htmlcode = luci.http.htmlencode(ssid1_wep_key1);
+		ssid1_wep_key1 = htmlcode;
+	end
+
+	local ssid1_wep_key2 = uci.get("wireless", ifce[1], "key2")
+	if ssid1_wep_key2 then
+		htmlcode = luci.http.htmlencode(ssid1_wep_key2);
+		ssid1_wep_key2 = htmlcode;
+	end
+
+	local ssid1_wep_key3 = uci.get("wireless", ifce[1], "key3")
+	if ssid1_wep_key3 then
+		htmlcode = luci.http.htmlencode(ssid1_wep_key3);
+		ssid1_wep_key3 = htmlcode;
+	end
+
+	local ssid1_wep_key4 = uci.get("wireless", ifce[1], "key4")
+	if ssid1_wep_key4 then
+		htmlcode = luci.http.htmlencode(ssid1_wep_key4);
+		ssid1_wep_key4 = htmlcode;
+	end
+
+	local ssid1_wpa_key_interval = uci.get("wireless", ifce[1], "rekeyinteval")
+%>
+
+<script type="text/javascript">
+var url ="<%=controller%>/content/wireless_settings/repeater_2g_settings"; //current page url
+var bandwidth_2g = "<%=bandwidth_2g%>";
+var txpower_2g = "<%=txpower_2g%>";
+var ssid1_wep_key1 = htmldecode("<%=ssid1_wep_key1%>");
+var ssid1_wep_key2 = htmldecode("<%=ssid1_wep_key2%>");
+var ssid1_wep_key3 = htmldecode("<%=ssid1_wep_key3%>");
+var ssid1_wep_key4 = htmldecode("<%=ssid1_wep_key4%>");
+
+var ssid1_ssid = htmldecode("<%=ssid1_ssid%>");
+
+var lua_wpsEnable = "<%=lua_wpsEnable%>";
+
+function check_wep_key(key, type, length) {
+
+	var ascii_length = 5;
+	var hex_length = 10;
+	var hex_key_rule;
+
+	if ( length == "64" ) {
+		ascii_length = 5;
+		hex_length = 10;
+		hex_key_rule = /^[a-fA-F0-9]{10}$/;
+	}
+	else if ( length == "128" ) {
+		ascii_length = 13;
+		hex_length = 26;
+		hex_key_rule = /^[a-fA-F0-9]{26}$/;
+	}
+
+	if ( type =="hex" ) {
+		if ( key.length != hex_length) {
+			alert("<%:WEP key length is wrong!%>");
+			return false;
+		}
+
+		if (!hex_key_rule.test(key)){
+			alert("<%:WEP key is not HEX numbers!%>");
+			return false;
+		}
+		else
+			return true;
+	}
+	else if ( type == "ascii" ){
+		if ( key.length != ascii_length) {
+			alert("<%:WEP key length is wrong!%>");
+			return false;
+		} else if ( !isASCII(key) ) {
+			alert("<%:WEP key is not HEX numbers!%>");
+			return false;
+		}
+		else
+			return true;
+	}
+}
+
+function verifySubmitData()
+{
+	var Verify_OK = false;
+	var ssid_rule = /^[\x20-\x21\x23-\x25\x27-\x2b\x2d-\x7e]+$/;
+
+	// ssid 1
+	if (document.getElementById("ssid1_ssid").value == ""  ) {
+		alert("<%:SSID1 is empty!%>");
+		return false
+	}
+	else {
+		Verify_OK = true;
+	}
+
+	//MSTC MBA Sean, add alert if wps is on
+	if (document.getElementById("ssid1_broadcast_hidden").selectedIndex == 1 && lua_wpsEnable == "7" ) {
+		if(!confirm("<%:if you set ssid broadcast to disable, it will disable the WPS!%>"))
+			return false;
+	}
+
+	if ( document.getElementById("ssid1_security").value == "none") {
+		// Remember: Do not display in Repeater mode
+		alert("<%:Encryption function of the wireless LAN is set to none. It is strongly recommended to use WPA-PSK.%>");
+		Verify_OK = true;
+	}
+	else if ( document.getElementById("ssid1_security").value == "wep-auto") {
+		// Remember: Do not display in Repeater mode
+		alert("<%:Encryption function of the wireless LAN is set to WEP. It is strongly recommended to use WPA-PSK.%>");
+
+		if ( lua_wpsEnable == "7" ) {
+			if(!confirm("<%:if you set security to WEP, it will disable the WPS!%>"))
+				return false;
+		}
+
+		var ssid1_wep_key_type = document.getElementById("ssid1_wep_key_type").value;
+		ssid1_wep_key1 = document.getElementById("ssid1_wep_key1").value;
+		ssid1_wep_key2 = document.getElementById("ssid1_wep_key2").value;
+		ssid1_wep_key3 = document.getElementById("ssid1_wep_key3").value;
+		ssid1_wep_key4 = document.getElementById("ssid1_wep_key4").value;
+
+		var default_key = document.getElementById("ssid1_wep_default_key").value;
+		var default_key_value = document.getElementById("ssid1_wep_key" + default_key).value;
+		var wep_keylength = document.getElementById("ssid1_wep_key_length").value;
+
+		// Check default key is wrong or empty
+		if ( default_key_value == "" ) {
+			alert("<%:SSID1 default Key is empty!%>");
+			return false;
+		}
+		else {
+			if (!check_wep_key(default_key_value, ssid1_wep_key_type, wep_keylength) ) {
+				return false;
+			}
+		}
+
+		// non-default key can be empty, but non-empty key must be valid format
+		if ( ssid1_wep_key1 != "" && !check_wep_key(ssid1_wep_key1, ssid1_wep_key_type, wep_keylength)) {
+			return false;
+		}
+
+		if ( ssid1_wep_key2 != "" && !check_wep_key(ssid1_wep_key2, ssid1_wep_key_type, wep_keylength)) {
+			return false;
+		}
+
+		if ( ssid1_wep_key3 != "" && !check_wep_key(ssid1_wep_key3, ssid1_wep_key_type, wep_keylength)) {
+			return false;
+		}
+
+		if ( ssid1_wep_key4 != "" && !check_wep_key(ssid1_wep_key4, ssid1_wep_key_type, wep_keylength)) {
+			return false;
+		}
+
+		Verify_OK = true;
+	}
+	else if ( document.getElementById("ssid1_security").value == "psk2+ccmp") {
+		// Check key update interval
+		if (document.getElementById("ssid1_wpa_key_interval").value == "") {
+			alert("<%:Key Update Interval is empty!%>");
+			return false;
+		}
+		if (isNaN(document.getElementById("ssid1_wpa_key_interval").value)) {
+			alert("<%:Key Update Interval can only input numbers!%>");
+			return false;
+		}
+		if ( (parseInt(document.getElementById("ssid1_wpa_key_interval").value) < 600) ||
+				(parseInt(document.getElementById("ssid1_wpa_key_interval").value) > 86400) ) {
+			alert("<%:Key Update Interval is out of range!%>");
+			return false;
+		}
+
+		// Check key rule
+		if (document.getElementById("ssid1_wpa_key_type").value =="ascii"
+		&& Is_WPA_PSK_ASCII(document.getElementById("ssid1_wpa_psk_key").value))
+			Verify_OK = true;
+		else if ( document.getElementById("ssid1_wpa_key_type").value =="hex" && Is_WPA_PSK_HEX(document.getElementById("ssid1_wpa_psk_key").value))
+			Verify_OK = true;
+		else {
+			alert("<%:WEP key is not HEX numbers!%>");
+			return false;
+		}
+
+	}
+
+	return Verify_OK;
+
+}
+//MBA Sean, Cancel Button script
+function btnCancel()
+{
+	location.href=url;
+	return true;
+}
+
+//MBA Sean, Apply Button script
+function btnApply()
+{
+	var verifyFlag;
+
+	if(document.getElementById("repeater_ssid1_change").value == 1)
+		verifyFlag = verifySubmitData();
+	else
+		verifyFlag = 1;
+
+	if(verifyFlag){
+		//MBA Sean, show the waiting page & hide the original content
+		document.getElementById("top_menu").style.display = 'none';
+		document.getElementById("content").style.display = 'none';
+		document.getElementById("waiting").style.display = 'block';
+		//MBA Sean, start to countdown.
+		waiting();
+
+		//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+        $.ajax({
+        type:"POST",
+        url: url,
+        data: $("#content_send").serialize(),// serializes the form's elements.
+        });
+		return false;
+	}
+	else {
+		return false;
+	}
+}
+<%
+	--MBA Sean, get the waiting time, default is 30 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+	local waiting_time_uci = uci_t.get("web", "gui_config", "network_apply_waiting_time")
+	local waiting_time = 30;
+
+	if waiting_time_uci then
+		waiting_time = waiting_time_uci
+	end
+
+	uci_t.set_confdir(original_confdir)
+%>
+
+var seconds=<%=waiting_time%>;
+function waiting()
+{
+	(seconds<=0)?seconds=0:seconds-=1;
+	document.getElementById("wait_time").value=seconds;
+	if(seconds==0)
+	{
+		location.href=url;
+		return true;
+	};
+	setTimeout('waiting()',1000);
+}
+
+function change_wep_key_length(ssid, key_length) {
+
+	var wep_key_input_id = ssid.concat("_wep_key");
+	var key_type_id = ssid.concat("_wep_key_type");
+	var key_length_id = ssid.concat("_wep_key_length");
+	var key_type_ascii_id = ssid.concat("_wep_key_type_ascii");
+	var key_type_hex_id = ssid.concat("_wep_key_type_hex");
+
+	if( key_length == "64" ) {
+	
+		max_length= 5;
+	
+		document.getElementById(key_length_id).value = "64";
+		document.getElementById(key_type_ascii_id).innerHTML = "<%:ASCII (5 characters)%>"
+		document.getElementById(key_type_hex_id).innerHTML = "<%:HEX (10 characters)%>"
+		
+		if ( document.getElementById(key_type_id).value == "ascii" ) {
+			max_length = 5;
+		}
+		else if ( document.getElementById(key_type_id).value == "hex" ){
+			max_length = 10;
+		}
+		
+		document.getElementById(wep_key_input_id+"1").maxLength = max_length;
+		document.getElementById(wep_key_input_id+"2").maxLength = max_length;
+		document.getElementById(wep_key_input_id+"3").maxLength = max_length;
+		document.getElementById(wep_key_input_id+"4").maxLength = max_length;
+	}
+	else { //MBA Sean set to 128 bits any way
+	
+		max_length= 13;
+	
+		document.getElementById(key_length_id).value = "128";
+		document.getElementById(key_type_ascii_id).innerHTML = "ASCII (13 <%:Character%>)"
+		document.getElementById(key_type_hex_id).innerHTML = "HEX (26 <%:Character%>)"
+		
+		if ( document.getElementById(key_type_id).value == "ascii" ) {
+			max_length = 13;
+		}
+		else if ( document.getElementById(key_type_id).value == "hex" ){
+			max_length = 26;
+		}
+		
+		document.getElementById(wep_key_input_id+"1").maxLength = max_length;
+		document.getElementById(wep_key_input_id+"2").maxLength = max_length;
+		document.getElementById(wep_key_input_id+"3").maxLength = max_length;
+		document.getElementById(wep_key_input_id+"4").maxLength = max_length;
+	}
+}
+
+function change_ssid_change(enabled) {
+	if (enabled == 1) {
+		$('.ssid_changeable').attr('disabled', false);
+	}
+	else {
+		$('.ssid_changeable').attr('disabled', true);
+	}
+}
+
+function change_security( ssid, security ) {
+
+	var wep_id = ssid.concat("_wep");
+	var wpa_id = ssid.concat("_wpa");
+	var security_id = ssid.concat("_security");
+
+	// MBA Sean, block all first
+	document.getElementById(wep_id).style.display = 'none';
+	document.getElementById(wpa_id).style.display = 'none';
+
+	if ( security == "wep-auto") {
+		document.getElementById(wep_id).style.display = 'block';
+		document.getElementById(security_id).value  = "wep-auto";
+		change_wep_key_type("1");
+	}
+	else if (security == "psk2+ccmp") {
+		document.getElementById(wpa_id).style.display = 'block';
+		document.getElementById(security_id).value  = "psk2+ccmp";
+		change_wpa_key_type("1");
+	}
+	else { //MBA sean , deal as none
+		document.getElementById(security_id).value  = "none";
+	}
+
+}
+
+//Check wpa key in HEX
+function Is_WPA_PSK_HEX(str)
+{
+	var len = str.length;
+
+	if( len < 64 ) {
+		alert("<%:WPA-PSK(HEX) key length is less than 64%>");
+		return false;
+	}
+
+	if( len > 64 ) {
+		return false;
+	}
+
+	if ( len == 64 ){
+		re=/^[a-fA-F0-9]{64}$/;
+		if (re.test(str))
+			return true;
+		else {
+			alert("<%:WPA-PSK(HEX) key can only enter HEX numbers!%>");
+			return false;
+		}
+	}
+}
+
+//Check wpa key in ASCII
+function Is_WPA_PSK_ASCII(str)
+{
+	var len = str.length;
+
+	if ( (len < 8) || (len > 63) ){
+		alert("<%:WPA-PSK(Passphrase) key length is less than 8 and bigger than 63%>");
+		return false;
+	}
+	else {
+		re=/^[\x00-\x7F]*$/;
+		if (re.test(str))
+			return true;
+		else {
+			return false;
+		}
+	}
+}
+
+function change_wpa_key_type(index)
+{
+
+	key_type_id = "ssid" + index + "_wpa_key_type";
+	wpa_key_input_id= "ssid" + index + "_wpa_psk_key";
+	
+	if(document.getElementById(key_type_id).value == "ascii" )
+	{
+		document.getElementById(wpa_key_input_id).maxLength = 63;
+	}
+	else if(document.getElementById(key_type_id).value =="hex" )
+	{
+		document.getElementById(wpa_key_input_id).maxLength = 64;
+	}
+}
+
+function change_wep_key_type(index)
+{
+	key_type_id = "ssid" + index + "_wep_key_type";
+	wep_key_length = "ssid" + index + "_wep_key_length";
+	wep_key_input_id= "ssid" + index + "_wep_key";
+	
+	// MSTC MBA Sean, default is 64 bits
+	ascii_max_length = 5;
+	hex_max_length = 10;
+	
+	if ( document.getElementById(wep_key_length).value == "64" ) {
+		ascii_max_length = 5;
+		hex_max_length = 10;
+	}	
+	else if ( document.getElementById(wep_key_length).value == "128" ) {
+		ascii_max_length = 13;
+		hex_max_length = 26;
+	}
+		
+	if(document.getElementById(key_type_id).value == "ascii" )
+	{
+		document.getElementById(wep_key_input_id+"1").maxLength = ascii_max_length;
+		document.getElementById(wep_key_input_id+"2").maxLength = ascii_max_length;
+		document.getElementById(wep_key_input_id+"3").maxLength = ascii_max_length;
+		document.getElementById(wep_key_input_id+"4").maxLength = ascii_max_length;
+	}
+	else if(document.getElementById(key_type_id).value =="hex" )
+	{
+		document.getElementById(wep_key_input_id+"1").maxLength = hex_max_length;
+		document.getElementById(wep_key_input_id+"2").maxLength = hex_max_length;
+		document.getElementById(wep_key_input_id+"3").maxLength = hex_max_length;
+		document.getElementById(wep_key_input_id+"4").maxLength = hex_max_length;
+	}
+}
+
+function frmLoad()
+{
+	// wifi disabled
+	<% if wireless_2g_radio_enable == "0"  then %>
+		document.getElementById("2g_enable").selectedIndex = 1;
+	<% else %>
+		document.getElementById("2g_enable").selectedIndex = 0;
+	<% end %>
+
+	// wifi channel
+	<% if repeater_2g_connected == nil or repeater_2g_connected == "" then %>
+		$('#2g_channel').find('option').remove();
+		document.getElementById("2g_channel").options[0] = new Option('1', '1');
+		document.getElementById("2g_channel").options[1] = new Option('2', '2');
+		document.getElementById("2g_channel").options[2] = new Option('3', '3');
+		document.getElementById("2g_channel").options[3] = new Option('4', '4');
+		document.getElementById("2g_channel").options[4] = new Option('5', '5');
+		document.getElementById("2g_channel").options[5] = new Option('6', '6');
+		document.getElementById("2g_channel").options[6] = new Option('7', '7');
+		document.getElementById("2g_channel").options[7] = new Option('8', '8');
+		document.getElementById("2g_channel").options[8] = new Option('9', '9');
+		document.getElementById("2g_channel").options[9] = new Option('10', '10');
+		document.getElementById("2g_channel").options[10] = new Option('11', '11');
+		document.getElementById("2g_channel").options[11] = new Option('12', '12');
+		document.getElementById("2g_channel").options[12] = new Option('13', '13');
+		document.getElementById("2g_channel").options[13] = new Option('<%:auto%>', 'auto');
+		<% if (wireless_2g_channel == "auto") or (wireless_2g_channel == "auto1") or (wireless_2g_channel == "auto2") then %>
+			document.getElementById("2g_channel").selectedIndex = 13;
+		<% elseif wireless_2g_channel == "1" then %>
+			document.getElementById("2g_channel").selectedIndex = 0;
+		<% elseif wireless_2g_channel == "2" then %>
+			document.getElementById("2g_channel").selectedIndex = 1;
+		<% elseif wireless_2g_channel == "3" then %>
+			document.getElementById("2g_channel").selectedIndex = 2;
+		<% elseif wireless_2g_channel == "4" then %>
+			document.getElementById("2g_channel").selectedIndex = 3;
+		<% elseif wireless_2g_channel == "5" then %>
+			document.getElementById("2g_channel").selectedIndex = 4;
+		<% elseif wireless_2g_channel == "6" then %>
+			document.getElementById("2g_channel").selectedIndex = 5;
+		<% elseif wireless_2g_channel == "7" then %>
+			document.getElementById("2g_channel").selectedIndex = 6;
+		<% elseif wireless_2g_channel == "8" then %>
+			document.getElementById("2g_channel").selectedIndex = 7;
+		<% elseif wireless_2g_channel == "9" then %>
+			document.getElementById("2g_channel").selectedIndex = 8;
+		<% elseif wireless_2g_channel == "10" then %>
+			document.getElementById("2g_channel").selectedIndex = 9;
+		<% elseif wireless_2g_channel == "11" then %>
+			document.getElementById("2g_channel").selectedIndex = 10;
+		<% elseif wireless_2g_channel == "12" then %>
+			document.getElementById("2g_channel").selectedIndex = 11;
+		<% elseif wireless_2g_channel == "13" then %>
+			document.getElementById("2g_channel").selectedIndex = 12;
+		<% else %>
+			document.getElementById("2g_channel").selectedIndex = 13;
+		<% end %>
+	<% else
+		wireless_2g_channel = "auto"
+	end %>
+
+	// bandwidth
+	if ( bandwidth_2g == "1")
+		document.getElementById("2g_bandwidth_40").checked = true;
+	else
+		document.getElementById("2g_bandwidth_20").checked = true;
+
+	// txpower
+	if ( txpower_2g == "100" )
+		document.getElementById("2g_txpower").selectedIndex = 0;
+	else if ( txpower_2g == "90" )
+		document.getElementById("2g_txpower").selectedIndex = 1;
+	else if ( txpower_2g == "75" )
+		document.getElementById("2g_txpower").selectedIndex = 2;
+	else if ( txpower_2g == "50" )
+		document.getElementById("2g_txpower").selectedIndex = 3;
+	else if ( txpower_2g == "25" )
+		document.getElementById("2g_txpower").selectedIndex = 4;
+	else
+		document.getElementById("2g_txpower").selectedIndex = 5;
+
+	// SSID changeable
+	<% if repeater_changeable_2g == "1"  then %>
+		change_ssid_change(1);
+		document.getElementById("repeater_ssid1_change").selectedIndex = 0;
+	<% else %>
+		change_ssid_change(0);
+		document.getElementById("repeater_ssid1_change").selectedIndex = 1;
+	<% end %>
+
+	// WMM
+	<% if ssid1_wmm == "1"  then %>
+		document.getElementById("ssid1_wmm").selectedIndex = 0;
+	<% elseif ssid1_wmm == "0" then%>
+		document.getElementById("ssid1_wmm").selectedIndex = 1;
+	<% else %>
+		document.getElementById("ssid1_wmm").selectedIndex = 0;
+	<% end %>
+
+	// Broadcast
+	<% if ssid1_broadcast_hidden == "1"  then %> //hidden
+		document.getElementById("ssid1_broadcast_hidden").selectedIndex = 1;
+	<% else %>
+		document.getElementById("ssid1_broadcast_hidden").selectedIndex = 0;
+	<% end %>
+
+	// ssid1 Encryption: wep-auto
+	<% if ssid1_uci_encryption == "wep-auto" then %>
+		change_security( "ssid1", "wep-auto" );
+		document.getElementById("ssid1_security").selectedIndex = 1;
+
+		// Init ssid1_wep_default_key item
+		var ssid1_default_wep_key_length = 0;
+		<% if ssid1_wep_default_key == "1" then %>
+			document.getElementById("ssid1_wep_default_key").selectedIndex = 0;
+			ssid1_default_wep_key_length = ssid1_wep_key1.length;
+		<% elseif ssid1_wep_default_key == "2"  then %>
+			document.getElementById("ssid1_wep_default_key").selectedIndex = 1;
+			ssid1_default_wep_key_length = ssid1_wep_key2.length;
+		<% elseif ssid1_wep_default_key == "3"  then %>
+			document.getElementById("ssid1_wep_default_key").selectedIndex = 2;
+			ssid1_default_wep_key_length = ssid1_wep_key3.length;
+		<% elseif ssid1_wep_default_key == "4"  then %>
+			document.getElementById("ssid1_wep_default_key").selectedIndex = 3;
+			ssid1_default_wep_key_length = ssid1_wep_key4.length;
+		<% else %>
+			document.getElementById("ssid1_wep_default_key").selectedIndex = 0;
+			ssid1_default_wep_key_length = ssid1_wep_key1.length;
+		<% end %>
+
+		//MBA Sean, check the key length & key type of wep
+		//MBA Sean  MTK programming guide WEP key:
+		//			10 or 26 hexadecimal characters
+		//			5 or 13 ASCII characters
+		if ( ssid1_default_wep_key_length == 5) { // 5
+			change_wep_key_length("ssid1", "64");
+			document.getElementById("ssid1_wep_key_type").value = "ascii";
+		}
+		else if ( ssid1_default_wep_key_length == 13 ) { //13
+			change_wep_key_length("ssid1", "128");
+			document.getElementById("ssid1_wep_key_type").value = "ascii";
+		}
+		else { //MBA Sean, not the ASCII
+			if( ssid1_default_wep_key_length == 10) {
+				change_wep_key_length("ssid1", "64");
+			}
+			else {//26, MBA Sean, set to 128bits any way
+				change_wep_key_length("ssid1", "128");
+			}
+			document.getElementById("ssid1_wep_key_type").value = "hex";
+		}
+
+		document.getElementById("ssid1_wep_key1").value = ssid1_wep_key1;
+		document.getElementById("ssid1_wep_key2").value = ssid1_wep_key2;
+		document.getElementById("ssid1_wep_key3").value = ssid1_wep_key3;
+		document.getElementById("ssid1_wep_key4").value = ssid1_wep_key4;
+		
+		change_wep_key_type("1");
+
+	// Encryption: psk2+ccmp
+	<% elseif ssid1_uci_encryption =="psk2+ccmp" then %>
+		change_security( "ssid1", "psk2+ccmp" );
+		document.getElementById("ssid1_wpa_aes_type").value  = "psk2+ccmp";
+		// Make Radio button checked.
+		document.getElementById("ssid1_wpa_aes_type").checked="checked";
+		document.getElementById("ssid1_security").selectedIndex = 2;
+
+	// Encryption: psk-mixed+tkip+ccmp
+	<% elseif ssid1_uci_encryption =="psk-mixed+tkip+ccmp" then %>
+
+		/* Because html element, "ssid1_security" doesn't have "psk-mixed+ccmp" option
+		 * , we have to keep it "psk2+ccmp".
+		*/
+		change_security( "ssid1", "psk2+ccmp" );
+		document.getElementById("ssid1_wpa_mix_type").value  = "psk-mixed+tkip+ccmp";
+		// Make Radio button checked.
+		document.getElementById("ssid1_wpa_mix_type").checked="checked";
+		document.getElementById("ssid1_security").selectedIndex = 2;
+	<% end %>
+
+	// SSID1 Check wpa key rule and key type
+	<% if (ssid1_uci_encryption == "psk2+ccmp") or (ssid1_uci_encryption == "psk-mixed+tkip+ccmp") then %>
+		var ssid1_wpa_psk_key = htmldecode("<%=ssid1_wpa_psk_key%>"); // Get uci value first
+		if( ssid1_wpa_psk_key.length >= 8 && ssid1_wpa_psk_key.length <= 63 ) {			 // MBA Sean, ASCII key
+				document.getElementById("ssid1_wpa_key_type").value = "ascii";
+				document.getElementById("ssid1_wpa_key_type").selectedIndex = 0;
+				//Remove the s: of uci wap ascii key
+				document.getElementById("ssid1_wpa_psk_key").value = ssid1_wpa_psk_key;
+		}
+		else { //MBA Sean, not the ASCII
+			if( ssid1_wpa_psk_key.length == 64) {
+				document.getElementById("ssid1_wpa_key_type").value = "hex";
+				document.getElementById("ssid1_wpa_key_type").selectedIndex = 1;
+				document.getElementById("ssid1_wpa_psk_key").value = ssid1_wpa_psk_key;
+			}
+		}
+		change_wpa_key_type("1");
+	<% end %>
+
+	//MBA Sean, add event listener:
+	document.getElementById("repeater_ssid1_change").addEventListener("change", function() {
+		change_ssid_change(document.getElementById("repeater_ssid1_change").value);
+	}, false);
+
+	document.getElementById("ssid1_security").addEventListener("change", function() {
+		change_security("ssid1", document.getElementById("ssid1_security").value);
+	}, false);
+
+	document.getElementById("ssid1_wep_key_length").addEventListener("change", function() {
+		change_wep_key_length("ssid1", document.getElementById("ssid1_wep_key_length").value);
+	}, false);
+
+	document.getElementById("ssid1_ssid").addEventListener("keyup", function() {
+		checkssidlen("ssid1_ssid");
+	}, false);
+	
+	document.getElementById("ssid1_wpa_key_type").addEventListener("change", function() {
+		change_wpa_key_type("1");
+	}, false);
+
+	document.getElementById("ssid1_wep_key_type").addEventListener("change", function() {
+		change_wep_key_type("1");
+	}, false);
+	
+	//MBA Sean, set ssid value
+	document.getElementById("ssid1_ssid").value = ssid1_ssid;
+}
+</script>
+
+<div id="content">
+<form id="content_send" name="2g_settings">
+<blockquote>
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+
+<table border=0 width="470" cellspacing=0>
+<tr><td class=background><%:Basic Settings%></td><td class=background></td></tr>
+<tr>
+<td width="30%"><%:Wireless Lan%>:</td>
+<td width="70%"><select size="1" name="2g_enable" id="2g_enable" >
+<option value="1"> <%:Enable%> </option>
+<option value="0"> <%:Diasable%> </option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td width="30%"><%:Channel%>:</td>
+<td width="70%"><select size="1" name="2g_channel" id="2g_channel" >
+<option value="auto"> <%:auto%> </option>
+</select>
+</td></tr>
+<tr>
+
+<td width="30%"><%:Bandwidth (2.4G)%>:&nbsp;</td>
+<td width="70%">&nbsp;
+<input type="radio" value="1" name="2g_bandwidth" id="2g_bandwidth_40"><%:20/40 MHz%>&nbsp;&nbsp;
+<input type="radio" value="0" name="2g_bandwidth" id="2g_bandwidth_20"><%:20 MHz%></font>
+</td>
+</tr>
+
+<tr><td width="30%"><%:Txpower (2.4G)%>&nbsp;</td>
+<td width="70%">&nbsp;<select size="1" name="2g_txpower" id="2g_txpower">
+<option value=100>100%</option>
+<option value=90>90%</option>
+<option value=75>75%</option>
+<option value=50>50%</option>
+<option value=25>25%</option>
+<option value=10>10%</option>
+</select></td></tr>
+
+</table>
+
+<!-- SSID1 -->
+<table border=0 width="470" cellspacing=0>
+<tr><td class="background"><%:SSID%></td><td class="background"></td></tr>
+
+<tr>
+<td width="30%"><%:Repeater SSID Change%>:</td>
+<td width="70%"><select size="1" name="repeater_ssid1_change"  id="repeater_ssid1_change">
+<option value="1"> <%:Enable%> </option>
+<option value="0"> <%:Diasable%> </option>
+</select>
+</td></tr>
+
+<tr>
+<td width="30%"><%:SSID%>:</td>
+<td width="70%">
+<input class="ssid_changeable" type="text" name="ssid1_ssid" id="ssid1_ssid" size="32" maxlength="32" value="">
+</td>
+</tr>
+
+<tr>
+<td width="30%"><%:SSID Broadcast%>:</td>
+<td width="70%"><select class="ssid_changeable" size="1" name="ssid1_broadcast_hidden"  id="ssid1_broadcast_hidden">
+<option value="0"> <%:Enable%> </option>
+<option value="1"> <%:Diasable%> </option>
+</select>
+</td></tr>
+
+<tr>
+<td width="30%"><%:WMM%>:</td>
+<td width="70%"><select class="ssid_changeable" size="1" name="ssid1_wmm" id="ssid1_wmm">
+<option value="1"> <%:Enable%> </option>
+<!-- Always enable! <option value="0"> <%:Diasable%> </option> -->
+</select>
+</td></tr>
+
+<tr>
+<td width="30%"><%:Security_sub%>:</td>
+<td width="70%"><select class="ssid_changeable" size="1" name="ssid1_security" id ="ssid1_security">
+<option value="none" id="ssid1_wep_security_none"> <%:none%> </option>
+<option value="wep-auto" id="ssid1_wep_security_wep-auto"> <%:WEP%> </option>
+<option value="psk2+ccmp" id="ssid1_wep_security_psk2+ccmp"> <%:WPA-PSK%> </option>
+</select>
+</td></tr>
+</table>
+
+<span id="ssid1_wep" style="display:none">
+<table border=0 width="470" cellspacing=0>
+<tr><td width="30%">
+<%:Authentication Type%>:</td>
+<td width="70%"><%:Auto%></td></tr>
+
+<tr><td width="30%" ><%:Key Length%> :</td>
+<td width="70%"><font size=2><select class="ssid_changeable" size="1" name="ssid1_wep_key_length" id="ssid1_wep_key_length">
+<option value="64">64-bit</option>
+<option value="128" selected="selected">128-bit</option></td></tr>
+</select>
+
+<tr><td width="30%"><%:Key Type%> :</td>
+<td width="70%"><font size=2><select class="ssid_changeable" size="1" name="ssid1_wep_key_type" id="ssid1_wep_key_type">
+<option value=ascii id="ssid1_wep_key_type_ascii">ASCII (13 <%:Character%>)</option>
+<option value=hex id="ssid1_wep_key_type_hex">Hex (26 <%:Character%>)</option>
+</select></td></tr>
+
+<tr><td width="30%" ><%:Default Key%>:</td>
+<td width="70%"><select class="ssid_changeable" size="1" name="ssid1_wep_default_key" id="ssid1_wep_default_key">
+<option value="1"><%:Key%> 1</option>
+<option value="2"><%:Key%> 2</option>
+<option value="3"><%:Key%> 3</option>
+<option value="4"><%:Key%> 4</option>
+</select></td></tr>
+
+<tr><td width="30%" ><%:Security Key%> 1 :</td>
+<td width="70%"><font size=2><input class="ssid_changeable" type="text" name="ssid1_wep_key1" id="ssid1_wep_key1" size="32" maxlength="32" value=""></td></tr>
+
+<tr><td width="30%" ><%:Security Key%> 2 :</td>
+<td width="70%"><font size=2><input class="ssid_changeable" type="text" name="ssid1_wep_key2" id="ssid1_wep_key2" size="32" maxlength="32" value=""></td></tr>
+
+<tr><td width="30%" ><%:Security Key%> 3 :</td>
+<td width="70%"><font size=2><input class="ssid_changeable" type="text" name="ssid1_wep_key3" id="ssid1_wep_key3" size="32" maxlength="32" value=""></td></tr>
+
+<tr><td width="30%" ><%:Security Key%> 4 :</td>
+<td width="70%"><font size=2><input class="ssid_changeable" type="text" name="ssid1_wep_key4" id="ssid1_wep_key4" size="32" maxlength="32" value=""></td></tr>
+</table>
+</span>
+
+<span id="ssid1_wpa" style="display:none">
+<table border=0 width="470" cellspacing=3>
+<tr>
+<tr><td width="30%" ><%:Key Update Interval%>:</td>
+<td width="70%"><font size="2"><input class="ssid_changeable" type="text" name="ssid1_wpa_key_interval" id="ssid1_wpa_key_interval" value="<%=ssid1_wpa_key_interval%>" size="5" maxlength="5">&nbsp;<%:Sec%>&nbsp;(600-86400)</font></td>
+</tr>
+<tr><td width="30%" ><%:WPA Type%>:</td>
+<td width="70%"><font size=2>
+<input class="ssid_changeable" type="radio" name="ssid1_wpa_type" id="ssid1_wpa_aes_type" value="psk2+ccmp" checked><%:WPA2(AES)%></input>
+<input class="ssid_changeable" type="radio" name="ssid1_wpa_type" id="ssid1_wpa_mix_type" value="psk-mixed+tkip+ccmp"><%:Mixed%></input>
+</td></font></tr>
+
+<tr><td width="30%"><%:Key Type%>:</font></td>
+<td width="70%"><font size="2"><select class="ssid_changeable" size="1" name="ssid1_wpa_key_type" id="ssid1_wpa_key_type">
+<option value="ascii" selected><%:Passphrase%></option>
+<option value="hex" >Hex (64 <%:Character%>)</option>
+</select></font></td></tr>
+
+<tr><td width="30%"><%:Security_Key_2g%> :</td>
+<td width="70%"><font size="2"><input class="ssid_changeable" type="text" name="ssid1_wpa_psk_key" id="ssid1_wpa_psk_key" value="" size="32" maxlength="64"></input></font></td></tr>
+</table>
+</span>
+
+<!-- MBA SW Sean, Buton template -->
+<br>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" align="right">
+	<tbody>
+		<tr><td align="right">
+		<input type="button" value="<%:Apply%>" onclick="btnApply()" width="105">
+		<input type="hidden" name="apply" value="apply">
+		<input type="button" value="<%:Cancel%>" onclick="btnCancel()" width="105">
+
+		</td>
+		</tr>
+	</tbody>
+</table>
+</blockquote>
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+</form>
+</div>
+
+<%+footer%>

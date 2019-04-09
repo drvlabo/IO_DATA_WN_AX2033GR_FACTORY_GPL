@@ -1,0 +1,71 @@
+msgid "sms"
+msgstr "SMS"
+
+msgid "sms_char_set"
+msgstr "Character Set : "
+
+msgid "sms_content"
+msgstr "Content"
+
+msgid "sms_date"
+msgstr "Date"
+
+msgid "sms_del"
+msgstr "Delete"
+
+msgid "sms_error1"
+msgstr "Invalid phone number!"
+
+msgid "sms_error3_1"
+msgstr "Max length of Unicode is "
+
+msgid "sms_error3_2"
+msgstr ", your message length is "
+
+msgid "sms_error3_3"
+msgstr "!"
+
+msgid "sms_error4"
+msgstr "Max length of GSM is "
+
+msgid "sms_error5"
+msgstr "Chinese or fullwidth word is included, please use Unicode to send."
+
+msgid "sms_list"
+msgstr "List"
+
+msgid "sms_note"
+msgstr "Note : "
+
+msgid "sms_note1_1"
+msgstr "* A single SMS can contain only up to 160 GSM characters."
+
+msgid "sms_note1_2"
+msgstr "* If you enter a character that GSM character set is not supported, you need to use Unicode character set instead."
+
+msgid "sms_note2"
+msgstr "* A single SMS can contain only up to 70 Unicode characters."
+
+msgid "sms_receiver"
+msgstr "Receiver : "
+
+msgid "sms_send"
+msgstr "Send"
+
+msgid "sms_send_content"
+msgstr "Content : "
+
+msgid "sms_sender"
+msgstr "Sender"
+
+msgid "sms_warn"
+msgstr "Max length "
+
+msgid "sms_warn2"
+msgstr "Are you sure you want to clear the form?"
+
+msgid "sms_warn3"
+msgstr "The Receiver and Content field should not be empty."
+
+msgid "sms_confirm_delete"
+msgstr "Are you sure you want to delete this message?"

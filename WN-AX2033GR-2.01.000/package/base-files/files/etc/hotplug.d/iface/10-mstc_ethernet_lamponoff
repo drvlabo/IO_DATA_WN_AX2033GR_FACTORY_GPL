@@ -1,0 +1,7 @@
+[ ifup = "$ACTION" ] && {
+	[ -f /etc/leds.d/lamp_on_off.sh ] && {
+		/etc/leds.d/lamp_on_off.sh &
+	}	
+}
+
+

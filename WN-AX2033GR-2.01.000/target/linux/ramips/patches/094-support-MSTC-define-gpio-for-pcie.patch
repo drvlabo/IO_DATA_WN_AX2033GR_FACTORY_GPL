@@ -1,0 +1,67 @@
+Index: linux-3.10.14/arch/mips/Kconfig
+===================================================================
+--- linux-3.10.14.orig/arch/mips/Kconfig	2015-12-31 11:54:42.000000000 +0800
++++ linux-3.10.14/arch/mips/Kconfig	2016-06-08 11:12:42.594227343 +0800
+@@ -1746,6 +1746,21 @@
+ 	depends on PCI && RALINK_MT7621
+ 	default n
+ 
++config MSTC_PCIE_PORT0_GPIO_NUM
++	int "PCIe Port0 RST GPIO Number"
++	depends on PCI && RALINK_MT7621 && PCIE_PORT0
++	default "19" if PCIE_PORT0
++
++config MSTC_PCIE_PORT1_GPIO_NUM
++	int "PCIe Port1 RST GPIO Number"
++	depends on PCI && RALINK_MT7621 && PCIE_PORT1
++	default "8" if PCIE_PORT1
++
++config MSTC_PCIE_PORT2_GPIO_NUM
++	int "PCIe Port2 RST GPIO Number"
++	depends on PCI && RALINK_MT7621 && PCIE_PORT2
++	default "7" if PCIE_PORT2
++
+ config PCI_DOMAINS
+ 	bool
+ 
+Index: linux-3.10.14/arch/mips/ralink/pci.c
+===================================================================
+--- linux-3.10.14.orig/arch/mips/ralink/pci.c	2015-12-31 12:16:06.000000000 +0800
++++ linux-3.10.14/arch/mips/ralink/pci.c	2016-06-08 11:16:18.278230326 +0800
+@@ -51,6 +51,7 @@
+ #include <linux/mod_devicetable.h>
+ #include <linux/delay.h>
+ #include <asm/rt2880/surfboardint.h>
++#include <linux/autoconf.h>
+ 
+ extern void pcie_phy_init(void);
+ extern void chk_phy_pll(void);
+@@ -81,16 +82,28 @@
+ 
+ #define GPIO_PERST
+ #if defined GPIO_PERST
++#ifdef CONFIG_MSTC_PCIE_PORT0_GPIO_NUM
++#define GPIO_PCIE_PORT0		 CONFIG_MSTC_PCIE_PORT0_GPIO_NUM
++#else
+ #define GPIO_PCIE_PORT0		19
++#endif
+ #if defined CONFIG_RALINK_I2S || defined CONFIG_RALINK_I2S_MODULE
+ #define	UARTL3_SHARE_PIN_SW	PCIE_SHARE_PIN_SW
+ #define GPIO_PCIE_PORT1		GPIO_PCIE_PORT0
+ #define GPIO_PCIE_PORT2		GPIO_PCIE_PORT0
+ #else
+ #define	UARTL3_SHARE_PIN_SW	 3
++#ifdef CONFIG_MSTC_PCIE_PORT1_GPIO_NUM
++#define GPIO_PCIE_PORT1		 CONFIG_MSTC_PCIE_PORT1_GPIO_NUM
++#else
+ #define GPIO_PCIE_PORT1		 8
++#endif
++#ifdef CONFIG_MSTC_PCIE_PORT2_GPIO_NUM
++#define GPIO_PCIE_PORT2		 CONFIG_MSTC_PCIE_PORT2_GPIO_NUM
++#else
+ #define GPIO_PCIE_PORT2		 7
+ #endif
++#endif
+ #define RALINK_GPIO_CTRL0			*(unsigned int *)(RALINK_PIO_BASE + 0x00)
+ #define RALINK_GPIO_DATA0			*(unsigned int *)(RALINK_PIO_BASE + 0x20)
+ #endif

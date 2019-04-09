@@ -1,0 +1,369 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"  />
+<title>.::User Guide::.</title>
+<script type="text/javascript" src="js/jquery-1.4.1.min.js"></script>
+<style>
+h2 {margin-left: 10px;}
+h3 {margin-left: 20px;}
+h4 {margin-left: 30px;}
+h5 {margin-left: 40px;}
+p {margin-left: 50px;}
+table {margin-left: 60px;}
+</style>
+</head>
+<body>
+	<div><h1><span id="Help_Title"><%:help_title%></span></h1></div>
+	<a name="top"></a>
+	<ul>
+		<% dashboard_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+		--uci.get_t("web", "gui_config", "dashboard") 
+		%>		
+		<% if dashboard_enable == "y" then %>
+		<li><a href="#dashboard"><%:dashboard_title%></a></li>
+		<%end%>
+		
+		<% monitor_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+		--uci.get_t("web", "gui_config", "monitor") 
+		%>		
+		<% if monitor_enable == "y" then %>
+		<li><a href="#monitor"><%:monitor_title%></a></li>
+			<ul>
+				<% logshow_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+				--uci.get_t("web", "gui_config", "monitor_log") 
+				%>		
+				<% if logshow_enable == "y" then %>
+				<li><a href="#log"><%:log_title%></a></li>
+				<% end %>
+				
+				<% dhcp_table_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+				--uci.get_t("web", "gui_config", "monitor_dhcp_table") 
+				%>		
+				<% if dhcp_table_enable == "y" then %>
+				<li><a href="#dhcpTable"><%:dhcp_table_title%></a></li>
+				<% end %>
+				
+				<% internet_status_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+				--uci.get_t("web", "gui_config", "monitor_internet_status") 
+				%>		
+				<% if internet_status_enable == "y" then %>
+				<li><a href="#internetStatus"><%:internet_status_title%></a></li>
+				<% end %>
+				
+				<% sms_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+				--uci.get_t("web", "gui_config", "monitor_sms") 
+				%>		
+				<% if sms_enable == "y" then %>
+				<li><a href="#sms"><%:sms_title%></a></li>			
+					<ul>
+						<li><a href="#smsList"><%:sms_list%></a></li>
+						<li><a href="#smsSend"><%:sms_send%></a></li>
+					</ul>
+				<% end %>
+			</ul>
+		<% end %>
+		
+		<% configuration_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+		--uci.get_t("web", "gui_config", "configuration") 
+		%>		
+		<% if configuration_enable == "y" then %>
+		<li><a href="#configuration"><%:configuration_title%></a></li>
+			<ul>
+				<li><a href="#lte"><%:lte_title%></a></li>
+					<ul>
+						<% apn_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+						--uci.get_t("web", "gui_config", "configuration_apn") 
+						%>		
+						<% if apn_enable == "y" then %>
+						<li><a href="#apn"><%:apn_title%></a></li>
+						<% end %>
+						
+						<% sim_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+						--uci.get_t("web", "gui_config", "configuration_sim") 
+						%>		
+						<% if sim_enable == "y" then %>
+						<li><a href="#sim"><%:sim_title%></a></li>
+						<% end %>
+						
+						<% network_settings_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+						--uci.get_t("web", "gui_config", "configuration_network_settings") 
+						%>		
+						<% if network_settings_enable == "y" then %>
+						<li><a href="#netSet"><%:network_setting_title%></a></li>
+						<% end %>
+					</ul>
+				<li><a href="#network"><%:network_title%></a></li>
+					<ul>
+						<% wlan_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+						--uci.get_t("web", "gui_config", "configuration_wlan") 
+						%>		
+						<% if wlan_enable == "y" then %>
+						<li><a href="#wlanGeneral"><%:wlan_title%></a></li>
+						<ul>
+							<li><a href="#macFilter"><%:mac_filter_title%></a></li>
+						</ul>
+						<% end %>
+						
+						<% lan_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+						--uci.get_t("web", "gui_config", "configuration_lan") 
+						%>		
+						<% if lan_enable == "y" then %>
+						<li><a href="#lanGeneral"><%:lan_title%></a></li>
+						<ul>
+							<li><a href="#ipv6"><%:ipv6_title%></a></li>
+						</ul>
+						<% end %>
+						
+						<% dhcp_server_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+						--uci.get_t("web", "gui_config", "configuration_dhcp_server") 
+						%>		
+						<% if dhcp_server_enable == "y" then %>
+						<li><a href="#dhcpServer"><%:dhcp_server_title%></a></li>
+						<ul>
+							<li><a href="#general"><%:general_title%></a></li>
+						</ul>
+						<% end %>
+						
+						<% dmz_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+						--uci.get_t("web", "gui_config", "configuration_dmz") 
+						%>		
+						<% if dmz_enable == "y" then %>
+						<li><a href="#dmz"><%:dmz_title%></a></li>
+						<% end %>
+					</ul>
+			</ul>
+		<% end %>
+		
+		<% maintenance_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+		--uci.get_t("web", "gui_config", "maintenance") 
+		%>		
+		<% if maintenance_enable == "y" then %>
+		<li><a href="#maintenance"><%:maintenance_title%></a></li>
+			<ul>
+				<% password_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+				--uci.get_t("web", "gui_config", "maintenance_password") 
+				%>		
+				<% if password_enable == "y" then %>
+				<li><a href="#password"><%:password_title%></a></li>
+				<% end %>
+				
+				<% fw_upgrade_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+				--uci.get_t("web", "gui_config", "maintenance_fw_upgrade") 
+				%>		
+				<% if fw_upgrade_enable == "y" then %>
+				<li><a href="#fwUpdate"><%:fw_upgrade_title%></a></li>
+				<% end %>
+				
+				<% backup_restore_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+				--uci.get_t("web", "gui_config", "maintenance_backup_restore") 
+				%>		
+				<% if backup_restore_enable == "y" then %>
+				<li><a href="#backupRestore"><%:backup_restore_title%></a></li>
+				<% end %>
+				
+				<% restart_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+				--uci.get_t("web", "gui_config", "maintenance_restart") 
+				%>		
+				<% if restart_enable == "y" then %>
+				<li><a href="#restart"><%:restart_title%></a></li>
+				<% end %>
+				
+				<% language_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+				--uci.get_t("web", "gui_config", "maintenance_language") 
+				%>		
+				<% if language_enable == "y" then %>
+				<li><a href="#language"><%:language_title%></a></li>
+				<% end %>
+				<% oled_display_enable = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+				--uci.get_t("web", "gui_config", "maintenance_oled_display") 
+				%>		
+				<% if oled_display_enable == "y" then %>
+				<li><a href="#oledDisplay"><%:oled_display_title%></a></li>
+				<% end %>
+			</ul>
+		<% end %>
+	</ul>
+	<hr size="1" color="#000000">		
+	<% if dashboard_enable == "y" then %>
+	<h2><a name="dashboard"><%:dashboard_title%></a></h2>
+		<h3><%:device_info%></h3>
+			<p><%:device_info_help%></p>
+		<h3><%:system_status%></h3>
+			<p><%:system_status_help%></p>
+		<h3><%:internet_status%></h3>
+			<p><%:internet_status_help%></p>
+		<h3><%:interface_status%></h3>
+			<p><%:interface_status_help%></p>
+	<div align="right"><a href="#top">top</a></div><br>
+	<% end %>
+			
+	<% if monitor_enable == "y" then %>
+	<h2><a name="monitor"><%:monitor_title%></a></h2>
+	
+			
+		<% if logshow_enable == "y" then %>
+		<h3><a name="log"><%:log_title%></a></h3>
+			<p><%:log_help%></p>
+			<div align="right"><a href="#top">top</a></div><br>
+		<% end %>
+			
+		<% if dhcp_table_enable == "y" then %>
+		<h3><a name="dhcpTable"><%:dhcp_table_title%></a></h3>
+			<p><%:dhcp_table_help%></p>
+			<div align="right"><a href="#top">top</a></div><br>
+		<% end %>
+				
+		<% if internet_status_enable == "y" then %>
+		<h3><a name="internetStatus"><%:internet_status_title%></a></h3>
+			<h4><%:device_status_title%></h4>
+				<p><%:device_status_help%></p>
+			<h4><%:lte_status_title%></h4>
+				<p><%:lte_status_help%></p>
+			<h4><%:manual_connection_title%></h4>
+				<p><%:manual_connection_help%></p>
+		<div align="right"><a href="#top">top</a></div><br>
+		<% end %>
+				
+		<% if sms_enable == "y" then %>
+		<h3><a name="sms"><%:sms_title%></a></h3>
+			<h4><a name="smsList"><%:sms_list%></a></h4>
+				<p><%:sms_list_help%></p>
+			<div align="right"><a href="#top">top</a></div><br>
+			<h4><a name="smsSend"><%:sms_send%></a></h4>
+				<p><%:sms_send_help_title%></p>
+				<table border="1" cellspacing="3" cellpadding="0">
+					<tr>
+						<td width="75" valign="top"><span><%:sms_send_table_name%></span></td>
+						<td width="550" valign="top"><span><%:sms_send_table_description%></span></td>
+					</tr>
+					<tr>
+						<td width="75" valign="top"><span><%:sms_send_recever%></span></td>
+						<td width="550" valign="top"><span><%:sms_send_recever_help%></span></td>
+					</tr>
+					<tr>
+						<td width="75" valign="top"><span><%:sms_send_character_set%></span></td>
+						<td width="550" valign="top"><span><%:sms_send_character_set_help%></span></td>
+					</tr>
+					<tr>
+						<td width="75" valign="top"><span><%:sms_send_content%></span></td>
+						<td width="550" valign="top"><span><%:sms_send_content_help%></span></td>
+					</tr>
+				</table>
+			<div align="right"><a href="#top">top</a></div><br>
+		<% end %>
+	<% end %>
+			
+	<% if configuration_enable == "y" then %>
+	<h2><a name="configuration"><%:configuration_title%></a></h2>
+		
+		<h3><a name="lte"><%:lte_title%></a></h3>		
+			<% if apn_enable == "y" then %>
+			<h4><a name="apn"><%:apn_title%></a></h4>
+				<p><%:apn_help%></p>
+				<table border="1" cellspacing="3" cellpadding="0">
+					<tr>
+						<td width="75" valign="top"><span><%:apn_table_name%></span></td>
+						<td width="550" valign="top"><span><%:apn_table_description%></span></td>
+					</tr>
+					<tr>
+						<td width="75" valign="top"><span><%:apn_table_apn_name%></span></td>
+						<td width="550" valign="top"><span><%:apn_table_apn_name_help%></span></td>
+					</tr>
+					<tr>
+						<td width="75" valign="top"><span><%:apn_table_ip_mode%></span></td>
+						<td width="550" valign="top"><span><%:apn_table_ip_mode_help%></span></td>
+					</tr>
+				</table>
+			<div align="right"><a href="#top">top</a></div><br>
+			<% end %>
+					
+			<% if sim_enable == "y" then %>
+			<h4><a name="sim"><%:sim_title%></a></h4>
+				<p><%:sim_help%></p>
+			<div align="right"><a href="#top">top</a></div><br>
+			<% end %>
+					
+			<% if network_settings_enable == "y" then %>
+			<h4><a name="netSet"><%:network_setting_title%></a></h4>
+				
+				<h5><a name="netSet"><%:network_setting_title%></a></h5>
+					<p><%:network_setting_help%></p>
+				<h5><a name="netSelect"><%:network_select_title%></a></h5>
+					<p><%:network_select_help%></p>
+			<div align="right"><a href="#top">top</a></div><br>
+			<% end %>	
+		<h3><a name="network"><%:network_title%></a></h3>
+					
+			<% if wlan_enable == "y" then %>
+			<h4><a name="wlanGeneral"><%:wlan_title%></a></h4>
+				<p><%:wlan_help%></p>
+				<div align="right"><a href="#top">top</a></div><br>
+				<h5><a name="macFilter"><%:mac_filter_title%></a></h5>
+				<p><%:mac_filter_help%></p>
+				<div align="right"><a href="#top">top</a></div><br>
+			<% end %>
+					
+			<% if lan_enable == "y" then %>
+			<h4><a name="lanGeneral"><%:lan_title%></a></h4>
+				<p><%:lan_help%></p>
+				<div align="right"><a href="#top">top</a></div><br>
+				<h5><a name="ipv6"><%:ipv6_title%></a></h5>
+					<p><%:ipv6_help%></p>
+					<div align="right"><a href="#top">top</a></div><br>
+			<% end %>
+					
+			<% if dhcp_server_enable == "y" then %>
+			<h4><a name="dhcpServer"><%:dhcp_server_title%></a></h4>
+				<h5><a name="general"><%:general_title%></a></h5>
+					<p><%:general_help%></p>
+					<div align="right"><a href="#top">top</a></div><br>
+			<% end %>
+					
+			<% if dmz_enable == "y" then %>
+			<h4><a name="dmz"><%:dmz_title%></a></h4>
+				<p><%:dmz_help%></p>
+					<div align="right"><a href="#top">top</a></div><br>
+			<% end %>
+	<% end %>
+			
+	<% if maintenance_enable == "y" then %>
+	<h2><a name="maintenance"><%:maintenance_title%></a></h2>		
+		<% if password_enable == "y" then %>
+		<h3><a name="password"><%:password_title%></a></h3>
+			<p><%:password_help%></p>
+			<div align="right"><a href="#top">top</a></div><br>
+		<% end %>
+				
+		<% if fw_upgrade_enable == "y" then %>
+		<h3><a name="fwUpdate"><%:fw_upgrade_title%></a></h3>
+			<p><%:fw_upgrade_help%></p>
+			<div align="right"><a href="#top">top</a></div><br>
+		<% end %>
+				
+		<% if backup_restore_enable == "y" then %>		
+		<h3><a name="backupRestore"><%:backup_restore_title%></a></h3>
+			<p><%:backup_restore_help%></p>
+			<div align="right"><a href="#top">top</a></div><br>
+		<% end %>
+				
+		<% if restart_enable == "y" then %>
+		<h3><a name="restart"><%:restart_title%></a></h3>
+			<p><%:restart_help%></p>
+			<div align="right"><a href="#top">top</a></div><br>
+		<% end %>
+				
+		<% if language_enable == "y" then %>
+		<h3><a name="language"><%:language_title%></a></h3>
+			<p><%:language_help%></p>
+			<div align="right"><a href="#top">top</a></div><br>
+		<% end %>
+				
+		<% if oled_display_enable == "y" then %>
+		<h3><a name="oledDisplay"><%:oled_display_title%></a></h3>
+			<p><%:oled_display_help%></p>
+			<div align="right"><a href="#top">top</a></div><br>
+		<% end %>
+	<% end %>	
+</body>
+</html>

@@ -1,0 +1,107 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Configuration"
+msgstr ""
+
+msgid "Dashboard"
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "Login_Msg_1_1"
+msgstr ""
+
+msgid "Login_Msg_1_2"
+msgstr ""
+
+msgid "Login_Msg_3"
+msgstr ""
+
+msgid "Login_Msg_4"
+msgstr ""
+
+msgid "Maintenance"
+msgstr ""
+
+msgid "Message"
+msgstr ""
+
+msgid "Monitor"
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Ready"
+msgstr ""
+
+msgid "Skip"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "about"
+msgstr ""
+
+msgid "apply"
+msgstr ""
+
+msgid "c_contributors"
+msgstr ""
+
+msgid "c_leaddev"
+msgstr ""
+
+msgid "c_lucidesc"
+msgstr ""
+
+msgid "c_projecthome"
+msgstr ""
+
+msgid "c_thanksto"
+msgstr ""
+
+msgid "change_pw"
+msgstr ""
+
+msgid "close_all"
+msgstr ""
+
+msgid "confirm_password"
+msgstr ""
+
+msgid "msg_confirm_1"
+msgstr ""
+
+msgid "new_password"
+msgstr ""
+
+msgid "open_all"
+msgstr ""
+
+msgid "passErrMsg2"
+msgstr ""
+
+msgid "passErrMsg3"
+msgstr ""
+
+msgid "passErrMsg5"
+msgstr ""
+
+msgid "passErrMsg8"
+msgstr ""
+
+msgid "pass_warning_msg"
+msgstr ""
+
+msgid "welcome"
+msgstr ""
+
+msgid "welcome_title_message"
+msgstr ""

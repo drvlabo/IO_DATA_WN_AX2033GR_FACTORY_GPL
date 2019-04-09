@@ -1,0 +1,31 @@
+<form name="easysetup" method="POST" action="/cgi-bin/sec/easysetup.cgi">
+<table width="500" border="1" align="center" cellpadding="5" cellspacing="0">
+<tr>
+<td align="left">
+<font size="2">
+プロバイダーから指定されたユーザーIDと接続パスワードを設定してください。<br><br>
+・ユーザーIDと接続パスワードはプロバイダーの資料を確認してください。<br>
+・NTTフレッツシリーズなど、＠から後ろの部分も入力してください。<br>
+・大文字、小文字の違いにご注意ください。<br>
+</font>
+<br>
+<table width="500" border="0" cellpadding="0" cellspacing="0">
+<tr>
+<td align="left">ユーザーＩＤ</td><td align="left"><input type="text" name="pppoeuser" size="25" maxlength="128" style="ime-mode:disabled;"></td>
+</tr>
+<tr>
+<td align="left">接続パスワード<td align="left"><input type="password" name="pppoepasswd" size="25" maxlength="128" style="ime-mode:disabled;"></td>
+</tr>
+</table>
+<br>
+</td>
+</tr>
+<tr>
+<td align="right">
+<input type="hidden" name="ottforcsrf">
+<input type="submit" name="EasySetupPPPoESetup" value="　完了　" onclick="return JSCheckConfigData(this.form)">&nbsp;
+<input type="submit" name="EasySetupCancel" value="キャンセル">
+</td>
+</tr>
+</table>
+</form>

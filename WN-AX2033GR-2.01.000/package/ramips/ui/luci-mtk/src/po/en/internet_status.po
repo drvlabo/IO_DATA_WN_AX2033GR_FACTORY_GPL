@@ -1,0 +1,124 @@
+msgid "APN"
+msgstr "APN"
+
+msgid "Connect"
+msgstr "Connect"
+
+msgid "Disconnect"
+msgstr "Disconnect"
+
+msgid "LTE_Auto_Connect_after_Boot_Up"
+msgstr "Auto Connect after Boot Up"
+
+msgid "LTE_CellID"
+msgstr "Cell ID"
+
+msgid "LTE_ConnectionUpTime"
+msgstr "Connection Uptime"
+
+msgid "Hours_Minutes_Seconds"
+msgstr "Hours:Minutes:Seconds"
+
+msgid "LTE_Connection_Status"
+msgstr "LTE Status"
+
+msgid "LTE_DeviceIMEI"
+msgstr "Device IMEI"
+
+msgid "LTE_Device_Status"
+msgstr "Device Status"
+
+msgid "LTE_DownThroughput"
+msgstr "DownLink Throughput"
+
+msgid "LTE_Downlink_Bandwidth"
+msgstr "Downlink Bandwidth"
+
+msgid "LTE_Downlink_Frequency"
+msgstr "Downlink Frequency"
+
+
+msgid "LTE_DynamicAPN"
+msgstr "Dynamic APN"
+
+
+msgid "LTE_FrequencyBand"
+msgstr "Frequency Band"
+
+msgid "LTE_Maunal_Connection"
+msgstr "Manual Connection"
+
+msgid "LTE_RSRP"
+msgstr "RSRP"
+
+msgid "LTE_RSRQ"
+msgstr "RSRQ"
+
+msgid "LTE_RoamingStatus"
+msgstr "Roaming Status"
+
+msgid "LTE_SIMCardIMSI"
+msgstr "SIM Card IMSI"
+
+msgid "LTE_ServiceProvider"
+msgstr "Service Provider"
+
+msgid "LTE_SignalStrength"
+msgstr "Signal Strength"
+
+msgid "LTE_Status"
+msgstr "Link Status"
+
+msgid "LTE_Uplink_Bandwidth"
+msgstr "Upink Bandwidth"
+
+msgid "LTE_Uplink_Frequency"
+msgstr "Uplink Frequency"
+
+msgid "Set"
+msgstr "Set"
+
+msgid "WAN_Status"
+msgstr "Internet Status"
+
+msgid "dashboard_data"
+msgstr "Data"
+
+msgid "dashboard_item"
+msgstr "Item"
+
+msgid "day"
+msgstr "day"
+
+msgid "hr"
+msgstr "hr"
+
+msgid "interval_select_none"
+msgstr "None"
+
+msgid "min"
+msgstr "min"
+
+msgid "msg_config"
+msgstr "Configuration Update is proceeding. Please Wait..."
+
+msgid "poll_interval"
+msgstr "Poll Interval(s)"
+
+msgid "sec"
+msgstr "sec"
+
+msgid "seconds"
+msgstr "seconds"
+
+msgid "set_interval"
+msgstr "Set Interval"
+
+msgid "stop_interval"
+msgstr "Stop"
+
+msgid "dBm"
+msgstr "dBm"
+
+msgid "MHz"
+msgstr "MHz"

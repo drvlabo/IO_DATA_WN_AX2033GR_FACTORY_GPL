@@ -1,0 +1,371 @@
+<%+header%>
+
+<% local mode = uci.get("network", "wan", "mode")%>
+
+<script type="text/javascript">
+<%
+local startip = ""
+local endip = ""
+local iprange = uci.get("pptpd", "pptpd", "iprange")
+local pptpd_enable = uci.get("pptpd", "pptpd", "enabled")
+if iprange then
+	startip, endip = string.match(iprange, '(%w+)-(%w+)')
+else
+	if pptpd_enable == "0" then
+		startip=33
+		endip=35
+	end
+end
+
+%>
+var url ="<%=controller%>/content/lan_settings/ipaddress_settings"; //current page url
+var startip=<%=startip%>;
+var endip=<%=endip%>;
+
+function checkIPoverlap(ip1_start, ip1_end, ip2_start, ip2_end)
+{
+	if(((ip2_start - ip1_end)<=0) && ((ip2_end - ip1_start)>=0))
+	{
+		//overlap
+		return false;
+	}
+	return true;
+}
+
+function verifySubmitData()
+{
+	with(document.ipaddress_settings){
+		if( ipaddr.value == "" ) {
+			alert("<%:IP address is Empty%>");
+			return false;
+		}
+		if( (!checkIpValid(ipaddr.value, "255.255.255.0")) ||  (!checkInvalidIP(ipaddr.value)) ){
+			alert("<%:IP address is not correct%>");
+			return false;
+		}
+
+		<%if (mode == "router") or (mode == "v6plus") or (mode == "transix") then%>
+		
+		if ( startAdd.value == "" ){
+			alert("<%:IP address is not correct%>");
+			return false;
+		}
+		
+		if ( (!checkIpValid(startAdd.value, "255.255.255.0")) || (!checkInvalidIP(startAdd.value)) ){
+			alert("<%:Start IP is not correct%>");
+			return false;
+		}		
+
+		if ( endAdd.value == "" ){
+			alert("<%:IP address is not correct%>");
+			return false;
+		}
+		
+		if ( (!checkIpValid(endAdd.value, "255.255.255.0")) || (!checkInvalidIP(endAdd.value)) ){
+			alert("<%:End IP is not correct%>");
+			return false;
+		}		
+		
+		 //check if the IP Range is duplicated to pptpd.
+                var the_forth_address = ipaddr.value;
+                the_forth_address = the_forth_address.replace(/ /g, "");
+                var ip_array = the_forth_address.split(".");
+                the_forth_address = ip_array[3];
+<% if pptpd_enable == "1" then%> 
+                if( (the_forth_address >= startip) && (the_forth_address <= endip ))
+                {
+                        alert("<%:IP range is duplicated to PPTP.%>");
+                        return false;
+                }
+ 
+		if(!checkIPoverlap(startip, endip, startAdd.value, endAdd.value))
+		{
+			alert("<%:IP range is duplicated to PPTP.%>");
+			return false;
+		}	
+<%end%>	
+		//MBA Sean check the end ip is smaller than start ip or not
+		
+		var start_forth_address = startAdd.value;
+        start_forth_address = start_forth_address.replace(/ /g, "");
+        var ip_array = start_forth_address.split(".");
+		start_forth_address = ip_array[3];
+		
+		var end_forth_address = endAdd.value;
+        end_forth_address = end_forth_address.replace(/ /g, "");
+        ip_array = end_forth_address.split(".");
+		end_forth_address = ip_array[3];
+//MBA, olivia, check if the VPN IP range is duplicated to dhcp ip range.
+<% if pptpd_enable == "1" then%>  
+		if(!checkIPoverlap(startip, endip, start_forth_address, end_forth_address))
+		{
+			alert("<%:IP range is duplicated to PPTP.%>");
+			return false;
+		}
+<%end%>	
+		if( parseInt(end_forth_address) < parseInt(start_forth_address) ){
+			alert("<%:End IP is smaller than Start IP%>");
+			return false;
+		}
+		
+		var ip_forth_address = ipaddr.value;
+        ip_forth_address = ip_forth_address.replace(/ /g, "");
+        ip_array = ip_forth_address.split(".");
+		ip_forth_address = ip_array[3];
+		
+		if( ip_forth_address == start_forth_address) {
+			alert("<%:Start IP is not correct%>");
+			return false;
+		}
+		if( ip_forth_address == end_forth_address) {
+			alert("<%:End IP is not correct%>");
+			return false;
+		}
+		
+		<%end%>
+		
+		<%if mode == "ap" or mode == "repeater" then%>
+		if ( ! document.getElementById("lanproto").checked ) {
+			if( default_gw.value == "" ) {
+				alert("<%:Default Gateway is Empty%>");
+				return false;
+			}
+			if ( (!checkIpValid(default_gw.value, "255.255.255.0")) || (!checkInvalidIP(default_gw.value)) ){
+				alert("<%:Default gateway is not correct%>");
+				return false;
+			}
+
+			if( dns_server.value  == "" ) {
+				alert("<%:DNS Server is Empty%>");
+				return false;
+			}
+			if ( (!checkIpValid(dns_server.value, "255.255.255.0")) || (!checkInvalidIP(dns_server.value)) ){
+				alert("<%:DNS Server is not correct %>");
+				return false;
+			}
+		}
+		//MBA Sean, if enable checked, disable the hidden lanproto "static" value
+		if ( document.getElementById("lanproto").checked ) {
+				document.getElementById("lanproto_hidden").disabled = true;
+		}
+		<%end%>
+	}
+    return true;
+}
+
+//MBA Sean, Cancel Button script
+function btnCancel()
+{
+	location.href=url;
+	return true;
+}
+
+//MBA Sean, Apply Button script
+function btnApply()
+{
+	var verifyFlag = verifySubmitData();
+	
+	if(verifyFlag){
+		//MBA Sean, show the waiting page & hide the original content
+		document.getElementById("top_menu").style.display = 'none';
+		document.getElementById("content").style.display = 'none';
+		document.getElementById("waiting").style.display = 'block';
+		//MBA Sean, start to countdown.
+		waiting();
+
+		//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+        $.ajax({
+        type:"POST",
+        url: url,
+        data: $("#content_send").serialize(),// serializes the form's elements.
+        });
+		return false;
+	}
+	else {
+		return false;
+	}
+	
+}
+
+<%
+	--MBA Sean, get the waiting time, default is 30 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+	local waiting_time_uci = uci_t.get("web", "gui_config", "network_apply_waiting_time")
+	local waiting_time = 30;
+	
+	if waiting_time_uci then
+		waiting_time = waiting_time_uci
+	end
+	
+	uci_t.set_confdir(original_confdir)
+%>
+
+var seconds=<%=waiting_time%>;
+function waiting()
+{
+	(seconds<=0)?seconds=0:seconds-=1;
+	document.getElementById("wait_time").value=seconds;
+	if(seconds==0)
+	{
+		location.href=url;
+		return true;
+	};
+	setTimeout('waiting()',1000);
+} 
+
+function lanproto_clicked()
+{
+	if ( document.getElementById("lanproto").checked ) {
+		document.getElementById("static_ip_table").style.display = 'none';
+	}
+	else {
+		document.getElementById("static_ip_table").style.display = 'block';
+	}
+}
+
+function frmLoad()
+{
+<%if (mode == "router") or (mode == "v6plus") or (mode == "transix") then%>
+	<%  local dhcp_disable = uci.get("dhcp", "lan", "ignore") 
+		if dhcp_disable == "1" then %>
+		document.getElementById("dhcp_enable").selectedIndex = "1";
+	<%  else %>
+		//MBA Sean, if no value, means lan dhcp enable, if other value, enable dhcp by default
+		document.getElementById("dhcp_enable").selectedIndex = "0";
+	<%  end
+		local dhcp_lease = uci.get("dhcp", "lan", "leasetime")
+		if dhcp_lease == "1h" then %>
+		document.getElementById("leasetime").selectedIndex = "0";
+	<%	elseif dhcp_lease == "2h" then %>
+		document.getElementById("leasetime").selectedIndex = "1";
+	<%	elseif dhcp_lease == "12h" then %>
+		document.getElementById("leasetime").selectedIndex = "2";
+	<%	elseif dhcp_lease == "24h" then %>
+		document.getElementById("leasetime").selectedIndex = "3";
+	<%	elseif dhcp_lease == "168h" then %>
+		document.getElementById("leasetime").selectedIndex = "4";
+	<%	else %> 
+		//MBA Sean, openwrt default is 12h
+		document.getElementById("leasetime").selectedIndex = "1";
+	<%	end %>
+<%elseif ( mode == "ap" or mode == "repeater" ) then%>
+	document.getElementById("lanproto").addEventListener("click", function() {
+		lanproto_clicked();
+	}, false);
+	lanproto_clicked();
+<%end%>
+}
+</script>
+
+<div id="content">
+<form id="content_send" name="ipaddress_settings">
+<blockquote>
+<p class="title"><%:You can set the IP address , Subnet mask and DHCP server.%></p>
+<p class="background"><%:IP Address Settings%></p>
+
+<%if mode == "ap" or mode == "repeater" then%>
+<table border="0" align="center" width="480" cellspacing="1" cellpadding="0">
+	<tbody>
+		<tr>
+		<td width=""><font size="2">
+		<input type="checkbox" id="lanproto" name="lanproto" value="dhcp"
+		<% local lanproto = uci.get("network", "lan", "proto")
+			if lanproto == "dhcp" then 
+		%>
+			checked="checked"
+		<% end %>
+		><%:Get IP Adress from DHCP server%></input>
+		<input type="hidden" id="lanproto_hidden" name="lanproto" value="static"></input>
+		</font></td>
+		</tr>
+	</tbody>
+</table>
+<%end%>
+<div id="static_ip_table">
+<table border="0" align="center" width="480" cellspacing="1" cellpadding="0">
+	<tbody>
+		<tr>
+		<td width=""><font size="2"><%:IP Address%>:</font></td>
+		<td width=""><input type="text" name="ipaddr" size="15" maxlength="15" value="<%=uci.get("network", "lan", "ipaddr")%>"></input></td>
+		</tr>
+		<tr>
+		<td width=""><font size="2"><%:Subnet Mask%>:</font></td>
+		<td width=""><input type="text" name="mask" size="15" maxlength="15" value="<%=uci.get("network", "lan", "netmask")%>" readonly=""></input></td>
+		</tr>
+	<%if mode == "ap" or mode == "repeater" then%>
+		<tr>
+		<td width=""><font size="2"><%:Default Gateway%>:</font></td>
+		<td width=""><input type="text" name="default_gw" size="15" maxlength="15" value="<%=uci.get("network", "lan", "gateway")%>"></input></td>
+		</tr>
+		<tr>
+		<td width=""><font size="2"><%:DNS Server%>:</font></td>
+		<td width=""><input type="text" name="dns_server" size="15" maxlength="15" value="<%=uci.get("network", "lan", "dns")%>"></input></td>
+		</tr>
+	<%end%>
+	</tbody>
+</table>
+</div>
+<%if (mode == "router") or (mode == "v6plus") or (mode == "transix") then%>
+<p class="background"><%:DHCP Server%></p>
+<table border="0" align="center" width="480" cellspacing="1" cellpadding="0">
+	<tbody>
+		<tr>
+		<td width=""><font size="2"><%:DHCP Server%>:</font></td>
+		<td width=""><select name="dhcp_enable" size="1" id="dhcp_enable">
+		<option value="0"><%:Enable%></option>
+		<option value="1"><%:Disable%></option>
+		</select></td>
+		</tr>
+		<tr>
+		<td width=""><font size="2"><%:Lease Time%>:</font></td>
+		<td width="">
+		<select name="leasetime" size="1" id="leasetime">
+		<option value="1h"><%:1 hour%></option>
+		<option value="2h"><%:2 hour%></option>
+		<option value="12h"><%:12 hour%></option>
+		<option value="24h"><%:1 day%></option>	<!-- 24h -->
+		<option value="168h"><%:1 week%></option>	<!-- 168h -->
+		</select>
+		</td>
+		</tr>
+
+		<!--MBA Sean get the value from uci-->
+		<%local startIp = uci.get("network","lan","ipaddr")%>
+		<%local start = uci.get("dhcp","lan","start")%>
+		<%local startIp = string.match(startIp,"(%d+.%d+.%d+.)%d+") %>
+		<%local endIp = startIp %>
+		<%local poolSize = uci.get("dhcp","lan","limit")%>
+		<%startIp = startIp .. start %>
+		<%endIp = endIp .. start+poolSize-1 %>
+
+		<tr>
+		<td width=""><font size="2"><%:Start IP%>:</font></td>
+		<td width=""><input type="text" name="startAdd" size="15" maxlength="15" value="<%=startIp%>"></input></td>
+		</tr>
+		<tr>
+		<td width=""><font size="2"><%:End IP%>:</font></td>
+		<td width=""><input type="text" name="endAdd" size="15" maxlength="15" value="<%=endIp%>"></input></td>
+		</tr>
+	</tbody>
+</table>
+<%end%>
+<br>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" align="right">
+	<tbody>
+		<tr><td align="right">
+		<input type="button" value="<%:Apply%>" onclick="btnApply()" width="105">
+		<input type="hidden" name="apply" value="apply">
+		<input type="button" value="<%:Cancel%>" onclick="btnCancel()" width="105">
+
+		</td>
+		</tr>
+	</tbody>
+</table>
+
+</blockquote>
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+</form> 
+</div>
+<%+footer%>

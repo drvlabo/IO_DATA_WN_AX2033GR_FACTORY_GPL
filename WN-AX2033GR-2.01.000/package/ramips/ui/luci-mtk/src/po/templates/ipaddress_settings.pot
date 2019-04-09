@@ -1,0 +1,71 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "1 day"
+msgstr ""
+
+msgid "1 hour"
+msgstr ""
+
+msgid "1 week"
+msgstr ""
+
+msgid "12 hour"
+msgstr ""
+
+msgid "2 hour"
+msgstr ""
+
+msgid "Apply"
+msgstr ""
+
+msgid "Applying the changes. Please wait a moment"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "DHCP Server"
+msgstr ""
+
+msgid "DNS Server"
+msgstr ""
+
+msgid "Default Gateway"
+msgstr ""
+
+msgid "Disable"
+msgstr ""
+
+msgid "Enable"
+msgstr ""
+
+msgid "End IP"
+msgstr ""
+
+msgid "Get IP Adress from DHCP server"
+msgstr ""
+
+msgid "IP Address"
+msgstr "IPアドレス"
+
+msgid "IP Address Settings"
+msgstr "IPアドレス設定"
+
+msgid "IP_Address_Settings"
+msgstr "IPアドレス設定"
+
+msgid "LAN_Error_1"
+msgstr ""
+
+msgid "Lease Time"
+msgstr ""
+
+msgid "Start IP"
+msgstr ""
+
+msgid "Subnet Mask"
+msgstr ""
+
+msgid "You can set the IP address , Subnet mask and DHCP server."
+msgstr ""

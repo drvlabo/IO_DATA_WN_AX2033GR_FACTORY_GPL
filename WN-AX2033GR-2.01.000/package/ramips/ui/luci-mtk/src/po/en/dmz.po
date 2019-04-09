@@ -1,0 +1,32 @@
+msgid "DMZ"
+msgstr "DMZ"
+
+msgid "DMZ_Server_IP"
+msgstr "DMZ Server IP Address : "
+
+msgid "IP_Error_1"
+msgstr "Error. IP address is empty."
+
+msgid "IP_Error_2"
+msgstr "It should be a [0-9] number."
+
+msgid "IP_Error_3"
+msgstr "IP adress format error."
+
+msgid "NAT_Error_2"
+msgstr "Invalid default server ip address!\nIt should be located in the same subnet of current LAN IP address."
+
+msgid "Network"
+msgstr "Network"
+
+msgid "msg_config"
+msgstr "Configuration Update is proceeding. Please Wait..."
+
+msgid "DMZ Description."
+msgstr "DMZ Description."
+
+msgid "Local IP address"
+msgstr "Local IP address"
+
+msgid "IP address is empty."
+msgstr "IP address is empty."

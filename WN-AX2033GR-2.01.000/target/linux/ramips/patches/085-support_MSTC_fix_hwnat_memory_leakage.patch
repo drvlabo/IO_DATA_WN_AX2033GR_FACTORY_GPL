@@ -1,0 +1,93 @@
+Index: linux-3.10.14/net/nat/hw_nat/ra_nat.c
+===================================================================
+--- linux-3.10.14.orig/net/nat/hw_nat/ra_nat.c	2016-04-06 15:40:24.000000000 +0800
++++ linux-3.10.14/net/nat/hw_nat/ra_nat.c	2016-04-06 15:41:58.128638595 +0800
+@@ -138,13 +138,13 @@
+ }
+ #endif
+ 
+-uint16_t RemoveVlanTag(struct sk_buff *skb)
++uint16_t RemoveVlanTag(struct sk_buff **skb)
+ {
+ 	struct ethhdr *eth;
+ 	struct vlan_ethhdr *veth;
+ 	uint16_t VirIfIdx;
+ 
+-	veth = (struct vlan_ethhdr *)LAYER2_HEADER(skb);
++	veth = (struct vlan_ethhdr *)LAYER2_HEADER(*skb);
+ 
+ 	//something wrong
+ 	if ((veth->h_vlan_proto != htons(ETH_P_8021Q)) && (veth->h_vlan_proto != 0x5678)){
+@@ -155,25 +155,25 @@
+ 
+ 	VirIfIdx = ntohs(veth->h_vlan_TCI);
+ 
+-	if (skb_cloned(skb) || skb_shared(skb)) {
++	if (skb_cloned(*skb) || skb_shared(*skb)) {
+ 
+ 		struct sk_buff *new_skb;
+-		new_skb = skb_copy(skb, GFP_ATOMIC);
+-		kfree_skb(skb);
++		new_skb = skb_copy(*skb, GFP_ATOMIC);
++		kfree_skb(*skb);
+ 		if (!new_skb)
+ 			return 65535;
+-		skb = new_skb;
++		*skb = new_skb;
+ 	}
+ 
+ 	/* remove VLAN tag */
+-	skb->data = LAYER2_HEADER(skb);
+-	LAYER2_HEADER(skb) += VLAN_HLEN;
+-	memmove(LAYER2_HEADER(skb), skb->data, ETH_ALEN * 2);
++	(*skb)->data = LAYER2_HEADER(*skb);
++	LAYER2_HEADER(*skb) += VLAN_HLEN;
++	memmove(LAYER2_HEADER(*skb), (*skb)->data, ETH_ALEN * 2);
+ 	
+-	skb_pull(skb, VLAN_HLEN);
+-	skb->data += ETH_HLEN;	//pointer to layer3 header
+-	eth = (struct ethhdr *)LAYER2_HEADER(skb);
+-	skb->protocol = eth->h_proto;
++	skb_pull(*skb, VLAN_HLEN);
++	(*skb)->data += ETH_HLEN;	//pointer to layer3 header
++	eth = (struct ethhdr *)LAYER2_HEADER(*skb);
++	(*skb)->protocol = eth->h_proto;
+ 
+ 	return VirIfIdx;
+ 
+@@ -617,7 +617,7 @@
+ 	struct ethhdr *eth = NULL;
+ 	uint16_t VirIfIdx = 0;
+ 	struct net_device *dev;
+-	VirIfIdx = RemoveVlanTag(skb);
++	VirIfIdx = RemoveVlanTag(&skb);
+ 
+ 	//recover to right incoming interface
+ 	if (VirIfIdx < MAX_IF_NUM && DstPort[VirIfIdx]!=NULL) {
+@@ -747,7 +747,7 @@
+ #if defined (CONFIG_RAETH_QDMA)
+         uint16_t VirIfIdx = 0;
+          
+-	VirIfIdx = RemoveVlanTag(skb);
++	VirIfIdx = RemoveVlanTag(&skb);
+ 	foe_entry = &PpeFoeBase[VirIfIdx];
+ #endif
+ 	if (IS_IPV4_HNAT(foe_entry) || IS_IPV4_HNAPT(foe_entry)) {
+@@ -792,7 +792,7 @@
+         /*if we only use GMAC1, we need to use vlan id to identify LAN/WAN port.
+           otherwise, CPU send untag packet to switch so we don't need to remove vlan tag before sending to WiFi interface
+         */
+-        RemoveVlanTag(skb); //pointer to layer3 header
++        RemoveVlanTag(&skb); //pointer to layer3 header
+ #endif
+ 
+ 	LAYER3_HEADER(skb) = skb->data;
+@@ -947,7 +947,7 @@
+ 		if (veth->h_vlan_proto == 0x5678){
+ #if defined (CONFIG_RA_HW_NAT_PPTP_L2TP) 
+ 			uint16_t VirIfIdx = 0;
+-			VirIfIdx = RemoveVlanTag(skb);
++			VirIfIdx = RemoveVlanTag(&skb);
+ 			foe_entry = &PpeFoeBase[VirIfIdx];
+ #else
+ 			return PpeHitBindForceToCpuHandler(skb, foe_entry);

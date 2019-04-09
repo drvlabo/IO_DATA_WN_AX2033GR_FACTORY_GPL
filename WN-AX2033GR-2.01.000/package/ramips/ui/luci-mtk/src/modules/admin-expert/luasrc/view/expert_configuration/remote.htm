@@ -1,0 +1,287 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: header.htm 4891 2009-06-22 10:23:21Z jow $
+
+-%>
+<%
+require("luci.http").prepare_content("text/html")
+local uci = require("luci.model.uci").cursor()
+local http = require("luci.http")
+local i18n = require("luci.i18n")
+local lang = uci:get("luci","main","lang") 
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+-%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"  />
+<title>.::Welcome to the Web-Based Configurator::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script type="text/javascript">
+
+<%
+	local http_port=uci:get("uhttpd", "main", "listen_http")
+	local host=http.getenv("HTTP_HOST")
+	local host_ip = host:match("(%d+.%d+.%d+.%d+)")
+%>
+var objXMLHTTP;
+
+function checkIPFormat( value )
+{
+  return /^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$/.test( value )
+}
+
+function chkIP(address) { 
+        
+		var IP = address;        
+        IP = IP.replace(/ /g, "");
+        //address.value = IP;
+        var IPsplit = IP.split(".");
+        if(IPsplit.length != 4) {
+            alert("<%:IP_Error_3%>");
+            return false;
+        }
+        //check first,and last byte is zero
+        if((IPsplit[0] == "0") || (IPsplit[3] == "0")){
+            alert("<%:IP_Error_3%>");
+                return false;
+        }
+        for(i = 0; i < 4; i++)
+            if((isNaN(IPsplit[i])) || (IPsplit[i] == undefined) || (IPsplit[i] == "")) {
+                alert("<%:IP_Error_3%>");
+                return false;
+        } else
+        if((parseInt(IPsplit[i], 10) > 255) || (parseInt(IPsplit[i], 10) < 0)) {
+                    alert("<%:IP_Error_3%>");
+                    return false;
+        }
+		<%local lan_ipaddr = uci.get("network","lan","ipaddr")%>
+		if(IP=="<%=lan_ipaddr%>"){
+			alert("<%:IP_Error_4%>");
+			return false;
+		}
+        return true;
+        
+}
+
+function chkPort(object){
+    if(object.value==""){
+            //ShowError('##MLG_PortFormatError_JS##');
+			alert("<%:Port_Error_1%>");
+            object.focus();
+            return false;
+    }
+    if(isNaN(object.value)){
+            //ShowError('##MLG_PortFormatError_JS##');
+			alert("<%:Port_Error_3%>");
+            object.focus();
+            return false;
+    }
+        if((parseInt(object.value) <= 0) || (parseInt(object.value) > 65535)){
+            //ShowError('##MLG_PortRangeError_JS##');
+			alert("<%:Port_Error_2%>");
+            object.focus();
+            return false;
+        }
+        return true;
+}
+
+function submitData()
+{
+   //<![CDATA[
+
+	with (document.forms[0]){
+		
+		if (chkPort(remoteWWWPort)==false)
+			return false;
+		//if(remoteWWWClientCheck0.checked)
+		//	remoteWWWClientAddr.value="";
+		//return chkIP(remoteWWWClientAddr.value);
+		if((remoteWWWClientCheck1.checked && chkIP( remoteWWWClientAddr.value )) || remoteWWWClientCheck0.checked)
+		{	
+			showWebMessage( 2, '<%:Message%>', '<%:msg_config%>' );
+			return true;
+		}
+		
+	}
+   
+//   alert( "<%:IP_Error_3%>" );
+   return false;
+   //]]>
+}
+
+function frmload()
+{
+	//document.getElementById("popup_wait").style.visibility='hidden';
+	with (document.forms[0]){
+	if (remoteWWWClientCheck0.checked)
+		remoteWWWClientAddr.disabled = true;
+	else if (remoteWWWClientCheck1.checked)
+		remoteWWWClientAddr.disabled = false;
+	}
+		
+}
+function relogin()
+{	
+	with ( document.forms[0] ){
+		var submit_url = 'http://<%=host_ip%>:' + remoteWWWPort.value + '<%=controller%>/expert/status/';
+		top.window.location.href = submit_url; 
+	}
+}
+
+function checkSubmit()
+{
+    var verifyFlag = submitData();
+	
+    if (verifyFlag){
+	with ( document.forms[0] ){
+		var submit_url = '<%=luci.dispatcher.build_url("expert","configuration","management","remote")%>';
+		var loc = submit_url + '?apply=Apply';
+		
+		loc += '&RemoteWWWPort=' + remoteWWWPort.value;
+		loc += '&RemoteWWWInterface=' + remoteWWWInterface.options[remoteWWWInterface.selectedIndex].value;
+		if(remoteWWWClientCheck0.checked == true){
+			loc += '&RemoteWWWClientCheck=' + 0;
+		}
+		else{
+			loc += '&RemoteWWWClientCheck=' + 1;
+		}
+		
+		if(remoteWWWClientCheck1.checked == true && remoteWWWClientAddr.value != ""){
+			loc += '&RemoteWWWClientAddr=' + remoteWWWClientAddr.value;
+		}
+		else{
+			loc += '&RemoteWWWClientAddr=' + "";
+		}
+		
+		if(remoteWWWPort.value == "<%=http_port%>"){
+			var code = 'location="' + loc + '"';
+     		eval(code);
+		}
+		else{
+			//document.getElementById("popup_wait").style.visibility='visible';
+			
+			
+			if (window.XMLHttpRequest) {
+			     objXMLHTTP=new XMLHttpRequest();
+			}// code for IE
+			else if (window.ActiveXObject)  {
+			     objXMLHTTP=new ActiveXObject("Microsoft.XMLHTTP");
+			}
+			
+			objXMLHTTP.open("GET",loc,true);
+
+		    /*let IE refresh page */
+		    objXMLHTTP.setRequestHeader("If-Modified-Since",new Date(0));
+		    objXMLHTTP.setRequestHeader("Content-Type", "text/plain");
+		    
+		    objXMLHTTP.send(null);
+
+		    setTimeout("relogin()", 5000);
+		}
+	
+	}
+	}
+}
+function changeClient(btn)
+{
+	with (document.forms[0]){
+		if(btn == 0){
+			remoteWWWClientCheck0.checked = true;
+			remoteWWWClientCheck1.checked = false;
+			remoteWWWClientAddr.disabled = true;
+			remoteWWWClientAddr.value="";
+		}
+		else{
+			remoteWWWClientCheck0.checked = false;
+			remoteWWWClientCheck1.checked = true;
+			remoteWWWClientAddr.disabled = false;
+		}
+	}
+}
+function path_msg_init(){
+   showFullPath(' <%:Management%> > <%:Remote_MGMT%> > <%:WWW%>');
+   showWebMessage( 0, '<%:Message%>', '<%:Ready%>' );
+}
+</script>
+</head>
+<body onload="frmload();path_msg_init();">
+<%
+   local infIdx = tonumber( uci:get( "firewall", "remote_www", "interface" ) )
+   local clientCheck = uci:get( "firewall", "remote_www", "client_check" )
+%>
+<form name="RMGMTWWWForm">
+<div id="tabs">
+   <ul>
+      <li class="hightline"><a title="<%:WWW%>"><span><%:WWW%></span></a></li>
+      <li><a href="<%=controller%>/expert/configuration/management/remote/telnet" title="<%:Telnet%>"><span><%:Telnet%></span></a></li>
+   </ul>
+   <br class="clearfloat" />
+</div>
+<div id="table">
+   <ul>
+      <li class="table_top"></li>
+      <li class="table_content">
+         <div class="data">
+            <ul>
+               <div class="w_text">
+                  <ul>
+                     <li class="left_table"><%:Port%> : </li>
+                     <li class="right_table">
+                        <input name="remoteWWWPort" size="5" maxlength="5" value="<%= uci:get( "firewall", "remote_www", "port" )%>" type="text" />
+                     </li>
+                  </ul>
+               </div>
+               <div class="w_text">
+                  <ul>
+                     <li class="left_table"><%:Access_Status%> : </li>
+                     <li class="right_table">
+                        <select name="remoteWWWInterface" size="1" >
+                           <option value="00000001" <% if 1 == infIdx then %>selected="selected"<% end %> ><%:LAN_WAN%> </option>
+                           <option value="00000002" <% if 2 == infIdx then %>selected="selected"<% end %> ><%:LAN%> </option>
+                           <option value="00000003" <% if 3 == infIdx then %>selected="selected"<% end %> ><%:WAN%> </option>
+                        </select>
+                     </li>
+                  </ul>
+               </div>
+               <div class="w_text">
+                  <ul>
+                     <li class="left_table"><%:Secured_Client_IP_Address%>   :</li>
+                     <li class="right_table">
+                        <input name="remoteWWWClientCheck0" value="0" type="radio" <% if "0" == clientCheck then%>checked="checked"<% end %> onclick="changeClient(0)"/>
+                           <%:All%>&nbsp;&nbsp;&nbsp;
+                        <input name="remoteWWWClientCheck1" value="1" type="radio" <% if not ( "0" == clientCheck ) then%>checked="checked"<% end %> onclick="changeClient(1)"/>
+                           <%:Selected%>&nbsp;
+                        <input name="remoteWWWClientAddr" size="20" maxlength="15" value="<%= uci:get( "firewall", "remote_www", "client_addr" )%>" type="text" />
+                     </li>
+                  </ul>
+               </div>
+               <div class="spaceair"></div>
+            </ul>
+         </div>
+      </li>
+      <li class="table_button">
+         <div class="button" align="center">
+            <input name="apply" value="<%:Apply%>" type="button" onclick="checkSubmit()"/>
+               &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+            <input name="Cancel" value="<%:Cancel%>" type="reset" />
+         </div>
+      </li>
+   </ul>
+</div>
+
+</form>
+</body>
+</html>

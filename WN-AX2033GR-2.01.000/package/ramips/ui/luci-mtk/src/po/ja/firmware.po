@@ -1,0 +1,95 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Apply"
+msgstr "設定"
+
+msgid "Auto Update"
+msgstr "自動更新"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "Checking If New Firmware available"
+msgstr "更新確認"
+
+msgid "Day of the week:"
+msgstr "曜日："
+
+msgid "Disabled"
+msgstr "無効"
+
+msgid "Firmware"
+msgstr "ファームウェア"
+
+msgid "Firmware update function:"
+msgstr "ファームウェア更新機能："
+
+msgid "Friday"
+msgstr "金"
+
+msgid "Hour"
+msgstr "時"
+
+msgid "It takes several minutes for update. Please do not turn off power."
+msgstr "更新に数分かかります。電源をオフにしないでください。"
+
+msgid "Minute"
+msgstr "分"
+
+msgid "Monday"
+msgstr "月"
+
+msgid "Please choose a file."
+msgstr "ファイルを選択してください。"
+
+msgid "Please choose at least one day of the week."
+msgstr "曜日を１つ以上選択してください。"
+
+msgid "Please input hour in the range of 0-23."
+msgstr "時は0～23の範囲で入力してください。"
+
+msgid "Please input minute in the range of 0-59."
+msgstr "分は0～59の範囲で入力してください。"
+
+msgid "Predefined"
+msgstr "プリセット"
+
+msgid "Reset"
+msgstr "キャンセル"
+
+msgid "Saturday"
+msgstr "土"
+
+msgid "Sunday"
+msgstr "日"
+
+msgid "The file is broken. Please check the file integrity."
+msgstr "ファイルが壊れています。ファイルを確認してください。"
+
+msgid "The firmware of this product can be updated."
+msgstr "本製品のファームウェアの更新ができます。"
+
+msgid "The schedule function:"
+msgstr "スケジュール機能："
+
+msgid "Thursday"
+msgstr "木"
+
+msgid "Time:"
+msgstr "時刻："
+
+msgid "Tuesday"
+msgstr "火"
+
+msgid "Update"
+msgstr "更新"
+
+msgid "User-defined"
+msgstr "手動"
+
+msgid "Wednesday"
+msgstr "水"
+
+msgid "Would you like to start firmware update?"
+msgstr "更新作業を続けますか？"

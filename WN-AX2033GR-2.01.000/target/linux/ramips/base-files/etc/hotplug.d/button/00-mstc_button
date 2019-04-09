@@ -1,0 +1,64 @@
+#!/bin/sh
+. /lib/functions.sh
+
+BUTTON=$1
+ACTION=$2
+SEEN=$3
+
+do_button () {
+        local button
+        local action
+        local handler
+        local min
+        local max
+        local action2
+        local handler2
+        local min2
+        local max2
+        local gpio_num
+        local active_low
+
+        config_get button $1 button
+        config_get gpio_num $1 gpio_num
+        config_get active_low $1 active_low
+        config_get action $1 action
+        config_get handler $1 handler
+        config_get min $1 min
+        config_get max $1 max
+        config_get action2 $1 action2
+        config_get handler2 $1 handler2
+        config_get min2 $1 min2
+        config_get max2 $1 max2
+        config_get action3 $1 action3
+        config_get handler3 $1 handler3
+        config_get min3 $1 min3
+        config_get max3 $1 max3
+ 
+        [ "$ACTION" = "$action" -a "$BUTTON" = "$button" -a -n "$handler" ] && {
+                [ -z "$min" -o -z "$max" ] && eval $handler
+                [ -n "$min" -a -n "$max" ] && {
+                        [ "$ACTION" = "released" -a $min -le $SEEN -a $max -ge $SEEN ] && eval $handler
+                        [ "$ACTION" = "pressed" ] && eval $handler $gpio_num $active_low $min $max
+                }
+        }        
+        [ "$ACTION" = "$action2" -a "$BUTTON" = "$button" -a -n "$handler2" ] && {
+                [ -z "$min2" -o -z "$max2" ] && eval $handler2
+                [ -n "$min2" -a -n "$max2" ] && {
+                        [ "$ACTION" = "released" -a $min2 -le $SEEN -a $max2 -ge $SEEN ] && eval $handler2
+                        [ "$ACTION" = "pressed" ] && eval $handler2 $gpio_num $active_low $min2 $max2
+                }
+        }
+		[ "$ACTION" = "$action3" -a "$BUTTON" = "$button" -a -n "$handler3" ] && {
+                [ -z "$min3" -o -z "$max3" ] && eval $handler3
+                [ -n "$min3" -a -n "$max3" ] && {
+                        [ "$ACTION" = "released" -a $min3 -le $SEEN -a $max3 -ge $SEEN ] && eval $handler3
+                        [ "$ACTION" = "pressed" ] && eval $handler3 $gpio_num $active_low $min3 $max3
+                }
+        }
+}
+ 
+[ -c /dev/gpio ] && {	
+	local UCI_CONFIG_DIR='/etc/buttons.d'
+	config_load buttons
+	config_foreach do_button button
+}

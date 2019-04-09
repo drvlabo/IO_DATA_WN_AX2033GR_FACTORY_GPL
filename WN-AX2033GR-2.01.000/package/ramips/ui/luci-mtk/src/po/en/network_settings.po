@@ -1,0 +1,65 @@
+msgid "AUTO_NETWORK_SELECTION"
+msgstr "Auto Network Selection"
+
+msgid "LTE"
+msgstr "LTE"
+
+msgid "L_CIMResult_info1"
+msgstr "Done. Nothing find...Or Try again later."
+
+msgid "L_CIMResult_info2"
+msgstr "Done. Please select..."
+
+msgid "L_CIMValidateNW_SELWarn"
+msgstr "Start to scan networks? It may take many time."
+
+msgid "Select_Warning1"
+msgstr "Please select a network!"
+
+msgid "MANUAL_SELECTION"
+msgstr "Manual Selection"
+
+msgid "MANUAL_SELECTION"
+msgstr "Manual Selection"
+
+msgid "MLG_PleaseWait"
+msgstr "Please wait..."
+
+msgid "MTU"
+msgstr "MTU"
+
+msgid "Select_Mode"
+msgstr "Select Mode"
+
+msgid "Automatic_Setting"
+msgstr "Automatic Setting"
+
+msgid "Automatic"
+msgstr "Automatic"
+
+msgid "Manual"
+msgstr "Manual"
+
+msgid "Scan"
+msgstr "Scan"
+
+msgid "MTU_SIZE"
+msgstr "MTU Size"
+
+msgid "NETWORK_MODE"
+msgstr "Network Mode"
+
+msgid "NETWORK_MODE_PREFERENCE"
+msgstr "Network Mode Preference"
+
+msgid "NETWORK_SELECT"
+msgstr "Network Select"
+
+msgid "NETWORK_SETTINGS"
+msgstr "Network Settings"
+
+msgid "WAN_Error_20"
+msgstr "Please set MTU Size between 1280 ~ 1600 !"
+
+msgid "msg_config"
+msgstr "Configuration Update is proceeding. Please Wait..."

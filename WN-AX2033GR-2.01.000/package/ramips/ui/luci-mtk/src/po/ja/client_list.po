@@ -1,0 +1,25 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Client List"
+msgstr "クライアントリスト"
+
+msgid "Interface"
+msgstr "インターフェース"
+
+msgid "MAC Address"
+msgstr ""
+
+msgid "There are no client connected to the router"
+msgstr "ルーターにクライアントが接続されていません"
+
+msgid "Update"
+msgstr "更新"
+
+msgid ""
+"Wireless LAN client table displays the MAC address of the client that is "
+"connected to this product ."
+msgstr "無線LANクライアントテーブルは、本製品に接続しているクライアントのMACアドレスを表示します。"
+
+msgid "Wireless Lan Client Table"
+msgstr "無線LANクライアントテーブル"

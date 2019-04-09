@@ -1,0 +1,44 @@
+#!/bin/sh
+
+CNT_STATUS_CHK_FLAG="/tmp/cnt_status_chk"
+wanmode=`/sbin/uci get network.wan.mode`
+exam_proto_type=`/sbin/uci get network.wan.proto`
+ether_wan="`uci get network.wan.ifname 2>/dev/null`"
+auto_mode=`/sbin/uci get network.wan.ifce_automode`
+count=0
+
+while [ ! -f $CNT_STATUS_CHK_FLAG ]
+do
+		# MSTC Sean, lock the file when enter the loop
+		echo 8 > $CNT_STATUS_CHK_FLAG
+		#echo "[MSTC Sean Debug]enter status_cnt_chk!!" > /dev/console
+		if [ "$wanmode" == "router" ] && [ "$exam_proto_type" != "pppoe" ]; then
+	inetchk -i $ether_wan ; echo -n $? > $CNT_STATUS_CHK_FLAG; #dhcp/static
+		else
+			if [ "$wanmode" == "ap" ] || [ "$wanmode" == "repeater" ]; then
+	inetchk -i $ether_wan ; echo -n $? > $CNT_STATUS_CHK_FLAG; #ap/repeater
+			elif  [ "$wanmode" == "transix" ] || [ "$wanmode" == "v6plus" ]; then
+				inetchk -woi -i $ether_wan; echo -n $? > $CNT_STATUS_CHK_FLAG; #transix/v6plus
+else
+	inetchk -woi ; echo -n $? > $CNT_STATUS_CHK_FLAG; #pppoe
+fi
+		fi
+		
+		if [ ! -f /tmp/chk.lock ];then
+			count=$((count+1))
+			cnn_status=`cat $CNT_STATUS_CHK_FLAG`
+			if [ "$cnn_status" != "1" ]; then
+				rm $CNT_STATUS_CHK_FLAG
+				sleep 3
+				if [ "$count" == "2" ];then
+					count=0
+					sleep 180
+				fi
+			else
+				touch /tmp/chk.lock
+			fi
+		fi
+done
+
+
+

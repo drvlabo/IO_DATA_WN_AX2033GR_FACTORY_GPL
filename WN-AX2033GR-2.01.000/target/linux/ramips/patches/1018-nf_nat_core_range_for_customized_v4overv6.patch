@@ -1,0 +1,342 @@
+Index: linux-3.10.14/net/netfilter/nf_nat_core.c
+===================================================================
+--- linux-3.10.14.orig/net/netfilter/nf_nat_core.c	2016-01-08 14:07:07.000000000 +0800
++++ linux-3.10.14/net/netfilter/nf_nat_core.c	2017-07-25 17:06:41.108711100 +0800
+@@ -169,6 +169,21 @@
+ 	return 0;
+ }
+ 
++//Add for support customized IPv4 over IPv6
++static void nat_convert_range(struct nf_nat_range *dst,
++				const struct nf_nat_ipv4_range *src)
++{
++	memset(&dst->min_addr, 0, sizeof(dst->min_addr));
++	memset(&dst->max_addr, 0, sizeof(dst->max_addr));
++
++	dst->flags   = src->flags;
++	dst->min_addr.ip = src->min_ip;
++	dst->max_addr.ip = src->max_ip;
++	dst->min_proto   = src->min;
++	dst->max_proto   = src->max;
++}
++//End add
++
+ static inline int
+ same_src(const struct nf_conn *ct,
+ 	 const struct nf_conntrack_tuple *tuple)
+@@ -209,6 +224,43 @@
+ 	return 0;
+ }
+ 
++//Add for support customized IPv4 over IPv6
++static inline int fake_cmp(const struct nf_conn *ct,
++							u_int32_t src, u_int32_t dst, u_int8_t protonum,
++							unsigned int *score, const struct nf_conn *ct2)
++{
++	/* Compare backwards: we're dealing with OUTGOING tuples, and
++	inside the conntrack is the REPLY tuple.  Don't count this
++	conntrack. */
++	if (ct != ct2
++		&& ct->tuplehash[IP_CT_DIR_REPLY].tuple.src.u3.ip == dst
++		&& ct->tuplehash[IP_CT_DIR_REPLY].tuple.dst.u3.ip == src
++		&& (ct->tuplehash[IP_CT_DIR_REPLY].tuple.dst.protonum == protonum))
++			(*score)++;
++			return 0;
++}
++
++static inline unsigned int
++count_maps(struct net *net, u16 zone,
++			u_int32_t src, u_int32_t dst, u_int8_t protonum,
++			const struct nf_conn *conntrack)
++{
++	struct nf_conn *ct;
++	unsigned int score = 0;
++	unsigned int h;
++	struct nf_conn_nat *nat;
++	const struct hlist_node *n;
++
++	h = hash_by_src(net, zone,
++					&conntrack->tuplehash[IP_CT_DIR_ORIGINAL].tuple);
++	hlist_for_each_entry_rcu(nat, &net->ct.nat_bysource[h], bysource) {
++			ct = nat->ct;
++			fake_cmp(ct, src, dst, protonum, &score, conntrack);
++	}
++	return score;
++}
++//End add
++
+ /* For [FUTURE] fragmentation handling, we want the least-used
+  * src-ip/dst-ip/proto triple.  Fairness doesn't come into it.  Thus
+  * if the range specifies 1.2.3.4 ports 10000-10005 and 1.2.3.5 ports
+@@ -282,6 +334,80 @@
+ 	}
+ }
+ 
++//Add for support customized IPv4 over IPv6
++static struct nf_nat_ipv4_range *
++find_best_ips_proto_mr(struct net *net, u16 zone,
++		       struct nf_conntrack_tuple *tuple,
++		       const struct nf_nat_ipv4_multi_range_compat *mr,
++		       const struct nf_conn *ct,
++		       enum nf_nat_manip_type maniptype)
++{
++	unsigned int i;
++	__be32 *var_ipp, *other_ipp, saved_ip, orig_dstip;
++	static unsigned int randomness;
++	struct {
++		const struct nf_nat_ipv4_range *range;
++		unsigned int score;
++		struct nf_conntrack_tuple tuple;
++	} best = { NULL, 0xFFFFFFFF };
++
++	if (maniptype == NF_NAT_MANIP_SRC) {
++		var_ipp = &tuple->src.u3.ip;
++		saved_ip = tuple->dst.u3.ip;
++		other_ipp = &tuple->dst.u3.ip;
++	} else {
++		var_ipp = &tuple->dst.u3.ip;
++		saved_ip = tuple->src.u3.ip;
++		other_ipp = &tuple->src.u3.ip;
++	}
++
++	orig_dstip = tuple->dst.u3.ip;
++
++	NF_CT_ASSERT(mr->rangesize >= 1);
++	for (i = 0; i < mr->rangesize; i++) {
++		/* Host order */
++		u_int32_t minip, maxip, j;
++
++		if (mr->range[i].flags & NF_NAT_RANGE_FULL)
++			continue;
++		if (mr->range[i].flags & NF_NAT_RANGE_MAP_IPS) {
++			minip = ntohl(mr->range[i].min_ip);
++			maxip = ntohl(mr->range[i].max_ip);
++		} else {
++			minip = maxip = ntohl(*var_ipp);
++		}
++
++		randomness++;
++		for (j = 0; j < maxip - minip + 1; j++) {
++			unsigned int score;
++
++			*var_ipp = htonl(minip + (randomness + j)
++					 % (maxip - minip + 1));
++			*other_ipp = saved_ip;
++
++			score = count_maps(net, zone,
++							   tuple->src.u3.ip,
++							   tuple->dst.u3.ip,
++							   tuple->dst.protonum,
++							   ct);
++			if (score < best.score) {
++				if (score == 0) {
++					return (struct nf_nat_ipv4_range *)
++						&mr->range[i];
++				}
++				best.score = score;
++				best.tuple = *tuple;
++				best.range = &mr->range[i];
++			}
++		}
++	}
++
++	*tuple = best.tuple;
++
++	return (struct nf_nat_ipv4_range *)best.range;
++}
++//End add
++
+ /* Manipulate the tuple into the range given. For NF_INET_POST_ROUTING,
+  * we change the source to map into the range. For NF_INET_PRE_ROUTING
+  * and NF_INET_LOCAL_OUT, we change the destination to map into the
+@@ -357,6 +483,105 @@
+ 	rcu_read_unlock();
+ }
+ 
++//Add for support customized IPv4 over IPv6
++/* for multiple range */
++static int
++get_unique_tuple_mr(struct nf_conntrack_tuple *tuple,
++		 const struct nf_conntrack_tuple *orig_tuple,
++		 const struct nf_nat_ipv4_multi_range_compat *mrr,
++		 struct nf_conn *ct,
++		 enum nf_nat_manip_type maniptype)
++{
++	const struct nf_nat_l3proto *l3proto;
++	const struct nf_nat_l4proto *l4proto;
++	struct net *net = nf_ct_net(ct);
++	u16 zone = nf_ct_zone(ct);
++
++	struct nf_nat_range range;
++	struct nf_nat_ipv4_range *rptr;
++	int i, ret;
++	struct nf_nat_ipv4_multi_range_compat *mr = (void *)mrr;
++
++	rcu_read_lock();
++	l3proto = __nf_nat_l3proto_find(orig_tuple->src.l3num);
++	l4proto = __nf_nat_l4proto_find(orig_tuple->src.l3num,
++					orig_tuple->dst.protonum);
++
++	for (i = 0; i < mr->rangesize; i++) {
++		nat_convert_range(&range, &mr->range[i]);
++		if (maniptype == NF_NAT_MANIP_SRC &&
++		    !(range.flags & NF_NAT_RANGE_PROTO_RANDOM)) {
++			if (in_range(l3proto, l4proto, orig_tuple, &range)) {
++				if (!nf_nat_used_tuple(orig_tuple, ct)) {
++					*tuple = *orig_tuple;
++					rcu_read_unlock();
++					return 1;
++				}
++			} else if (find_appropriate_src(net, zone, l3proto, l4proto,
++										    orig_tuple, tuple, &range)) {
++				pr_debug("get_unique_tuple: Found current src map\n");
++				if (!nf_nat_used_tuple(tuple, ct)) {
++					rcu_read_unlock();
++					return 1;
++				}
++			}
++		}
++	}
++
++	/* 2) Select the least-used IP/proto combination in the given range */
++	*tuple = *orig_tuple;
++
++	while ((rptr = find_best_ips_proto_mr(net, zone, tuple, mr, ct,
++									       maniptype)) != NULL) {
++
++		/* 3) The per-protocol part of the manip is made to map into
++		 * the range to make a unique tuple.
++		 */
++
++		nat_convert_range(&range, rptr);
++
++		/* Only bother mapping if it's not already in range and unique */
++		if (!(range.flags & NF_NAT_RANGE_PROTO_RANDOM)) {
++			if (range.flags & NF_NAT_RANGE_PROTO_SPECIFIED) {
++				if (l4proto->in_range(tuple, maniptype,
++						      &range.min_proto,
++						      &range.max_proto) &&
++				    (range.min_proto.all == range.max_proto.all ||
++				     !nf_nat_used_tuple(tuple, ct))) {
++					ret = 1;
++					goto out;
++				}
++			} else if (!nf_nat_used_tuple(tuple, ct)) {
++				ret = 1;
++				goto out;
++			}
++		}
++
++		/* get protocol to try to obtain unique tuple. */
++		l4proto->unique_tuple(l3proto, tuple, &range, maniptype, ct);
++		if (!nf_nat_used_tuple(tuple, ct)) {
++			ret = 1;
++			goto out;
++		}
++
++		/* Eliminate that from range, and try again */
++		range.flags |= NF_NAT_RANGE_FULL;
++		rptr->flags |= NF_NAT_RANGE_FULL;
++		*tuple = *orig_tuple;
++	}
++
++	ret = 0;
++
++out:
++	rcu_read_unlock();
++	NF_CT_ASSERT(mr->rangesize >= 1);
++	for (i = 0; i < mr->rangesize; i++)
++		mr->range[i].flags &= ~NF_NAT_RANGE_FULL;
++
++	return ret;
++}
++//End add
++
+ unsigned int
+ nf_nat_setup_info(struct nf_conn *ct,
+ 		  const struct nf_nat_range *range,
+@@ -428,6 +653,84 @@
+ }
+ EXPORT_SYMBOL(nf_nat_setup_info);
+ 
++//Add for support customized IPv4 over IPv6
++/* for multiple range */
++unsigned int
++nf_nat_setup_info_mr(struct nf_conn *ct,
++		     const struct nf_nat_ipv4_multi_range_compat *mr,
++		     enum nf_nat_manip_type maniptype)
++{
++	struct net *net = nf_ct_net(ct);
++	struct nf_conntrack_tuple curr_tuple, new_tuple;
++	struct nf_conn_nat *nat;
++
++	/* nat helper or nfctnetlink also setup binding */
++	nat = nfct_nat(ct);
++	if (!nat) {
++		nat = nf_ct_ext_add(ct, NF_CT_EXT_NAT, GFP_ATOMIC);
++		if (nat == NULL) {
++			pr_debug("failed to add NAT extension\n");
++			return NF_ACCEPT;
++		}
++	}
++
++	NF_CT_ASSERT(maniptype == NF_NAT_MANIP_SRC ||
++		     maniptype == NF_NAT_MANIP_DST);
++	BUG_ON(nf_nat_initialized(ct, maniptype));
++
++	/* What we've got will look like inverse of reply. Normally
++	 * this is what is in the conntrack, except for prior
++	 * manipulations (future optimization: if num_manips == 0,
++	 * orig_tp = ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple)
++	 */
++	nf_ct_invert_tuplepr(&curr_tuple,
++			     &ct->tuplehash[IP_CT_DIR_REPLY].tuple);
++
++	if (!get_unique_tuple_mr(&new_tuple, &curr_tuple, mr, ct,
++							 maniptype)) {
++		printk(KERN_ALERT "nat core: port range exhausted\n");
++		return NF_DROP;
++	}
++
++	if (!nf_ct_tuple_equal(&new_tuple, &curr_tuple)) {
++		struct nf_conntrack_tuple reply;
++
++		/* Alter conntrack table so will recognize replies. */
++		nf_ct_invert_tuplepr(&reply, &new_tuple);
++		nf_conntrack_alter_reply(ct, &reply);
++
++		/* Non-atomic: we own this at the moment. */
++		if (maniptype == NF_NAT_MANIP_SRC)
++			ct->status |= IPS_SRC_NAT;
++		else
++			ct->status |= IPS_DST_NAT;
++	}
++
++	if (maniptype == NF_NAT_MANIP_SRC) {
++		unsigned int srchash;
++
++		srchash = hash_by_src(net, nf_ct_zone(ct),
++				      &ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple);
++		spin_lock_bh(&nf_nat_lock);
++		/* nf_conntrack_alter_reply might re-allocate extension aera */
++		nat = nfct_nat(ct);
++		nat->ct = ct;
++		hlist_add_head_rcu(&nat->bysource,
++				   &net->ct.nat_bysource[srchash]);
++		spin_unlock_bh(&nf_nat_lock);
++	}
++
++	/* It's done. */
++	if (maniptype == NF_NAT_MANIP_DST)
++		ct->status |= IPS_DST_NAT_DONE;
++	else
++		ct->status |= IPS_SRC_NAT_DONE;
++
++	return NF_ACCEPT;
++}
++EXPORT_SYMBOL(nf_nat_setup_info_mr);
++//End add
++
+ /* Do packet manipulations according to nf_nat_setup_info. */
+ unsigned int nf_nat_packet(struct nf_conn *ct,
+ 			   enum ip_conntrack_info ctinfo,

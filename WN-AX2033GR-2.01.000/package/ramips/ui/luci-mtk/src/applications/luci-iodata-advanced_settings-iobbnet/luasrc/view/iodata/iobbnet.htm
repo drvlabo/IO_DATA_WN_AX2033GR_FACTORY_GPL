@@ -1,0 +1,479 @@
+<%+header%>
+
+<%
+--uci iobbnet config
+local lua_username = uci.get("ddns", "iobbnet", "username")
+local lua_password = uci.get("ddns", "iobbnet", "password")
+local lua_domain = uci.get("ddns", "iobbnet", "domain")
+
+--uci global config
+local lua_mode = uci.get("ddns", "global", "mode")
+
+local uci_tmp = require("luci.model.uci").cursor()
+local original_confdir = uci_tmp.get_confdir()
+uci_tmp.set_confdir("/etc/tmp_config")
+local lua_status = uci_tmp.get("web", "runtime", "status")
+local lua_preset_hostname = uci_tmp.get("web", "runtime", "preset_hostname")
+uci_tmp.set_confdir(original_confdir)
+%>
+
+<script type="text/javascript">
+var url ="<%=controller%>/content/advanced_settings/iobbnet"; //current page url
+// store lua var to JS var
+//debugger;
+var js_mode = "<%=lua_mode%>";
+var js_username = "<%=lua_username%>";
+var js_password = "<%=lua_password%>";
+var js_domain = "<%=lua_domain%>";
+var js_status = "<%=lua_status%>";
+var js_preset_hostname = "<%=lua_preset_hostname%>";
+
+
+
+// Jay 
+function SET_DDNS_MODE() 
+{
+    if (document.getElementById("ddnsDisable").checked == true) //ddns disable
+	{
+		setMode("disable");
+	}
+	else if (document.getElementById("ddnsPreset").checked == true) // ddns preset
+	{
+		setMode("preset");
+	}
+		
+	else if(document.getElementById("ddnsEnable").checked == true) //ddns enable
+	{
+		setMode("enable");
+	}
+}
+
+
+function setMode(mode)
+{
+    if (mode == "disable") //ddns disable
+	{
+		// show iobbLicence, mask serialNumber and password
+		document.getElementById("iobbLicence").style.display = ""; 
+		document.getElementById("serialNumber").style.display = "none";
+		document.getElementById("password").style.display = "none";
+		
+		// Set prest hostname for GUI 	
+		document.getElementById("iobbHostname").value = js_preset_hostname;
+		
+		// set input tag not editable		
+		document.getElementById("iobbSerialNumber").disabled = true;
+		document.getElementById("iobbPassword").disabled = true;
+		document.getElementById("iobbHostname").disabled = true;
+		
+		// set radio button correct
+		document.getElementById("ddnsDisable").checked = true
+		
+	}
+	else if (mode == "preset") // ddns preset
+	{
+	//debugger;
+		// show iobbLicence, mask s/n and password
+		document.getElementById("iobbLicence").style.display = ""; // show iobbLicence
+		document.getElementById("serialNumber").style.display = "none";
+		document.getElementById("password").style.display = "none";		
+		
+		// set radio button correct
+		document.getElementById("ddnsPreset").checked = true;
+		
+		// Set prest hostname for GUI 	
+		document.getElementById("iobbHostname").value = js_preset_hostname;
+		
+		// set input tag not editable
+		document.getElementById("iobbHostname").disabled = true;
+		
+	}
+		
+	else if(mode == "enable") //ddns enable
+	{
+		document.getElementById("iobbLicence").style.display = "none";
+		document.getElementById("serialNumber").style.display = "";
+		document.getElementById("password").style.display = "";
+		
+		// set input tag editable
+		document.getElementById("iobbSerialNumber").disabled = false;
+		document.getElementById("iobbPassword").disabled = false;
+		document.getElementById("iobbHostname").disabled = false;
+		
+		// set value
+		document.getElementById("iobbSerialNumber").value = js_username;
+		document.getElementById("iobbPassword").value = js_password;
+		document.getElementById("iobbHostname").value = js_domain;
+		
+		// set radio button correct
+		document.getElementById("ddnsEnable").checked = true		
+				
+	}
+}
+
+function verifySubmitData()
+{	
+	// Regex tester: https://regex101.com
+	var serial_number_rule = /^[0-9A-Z]{12}$/;
+	var password_rule = /^[0-9a-z\-\_]{6,8}$/;
+	var hostname_rule = /^[0-9a-z\-\_]{3,16}$/;
+
+	var serialNumber = document.getElementById("iobbSerialNumber").value;
+	var password = document.getElementById("iobbPassword").value;
+	var hostname = document.getElementById("iobbHostname").value;
+	var len_serialNumber = serialNumber.length;
+	var len_password = password.length;
+	var len_hostname = hostname.length;
+	
+	// Check if it's blank
+	if ( len_serialNumber == 0) {		
+		alert("<%:Please enter the serial number.%>");
+		return false;
+	}
+	if (len_password == 0) {
+		alert("<%:Please enter a password.%>");
+		return false;
+	}
+	if (len_hostname == 0) {
+		alert("<%:Please enter the host name.%>");
+		return false;
+	}	
+
+	// Check length
+	if (len_serialNumber != 12) {
+		alert("<%:Please input the serial number entered in the alphanumeric characters of 12 digits%>");
+		return false;
+	}
+	if (len_password < 6 || len_password > 8) {
+		alert("<%:Password is up to 8 characters at least six characters (lowercase letters, numbers, -, _) Please enter.%>");
+		return false;
+	}
+	if (len_hostname < 3 || len_hostname > 16) {
+		alert("<%:The host name is 3 or more characters to 16 characters or less (lower case letters, numbers, -, _) Please enter.%>");
+		return false;
+	}		
+	
+	// Check format
+	if (!serial_number_rule.test(serialNumber)){
+		alert("<%:It contains characters that can not be used for serial number.%>");
+		return false;
+	}	
+	
+	if (!password_rule.test(password)){
+		alert("<%:It contains characters that can not be used in passwords.%>");
+		return false;
+	}		
+	
+	if (!hostname_rule.test(hostname)){
+		alert("<%:It contains characters that can not be used in the host name.%>");
+		return false;
+	}		
+	
+	return true;
+	
+}
+
+
+//MBA Sean, Cancel Button script
+function btnCancel()
+{
+	location.href=url;
+}
+
+//MBA Sean, Apply Button script
+function btnApply()
+{
+	var verifyFlag = true;
+
+    if (document.getElementById("ddnsDisable").checked == true) //ddns disable
+	{
+		; 
+	}
+	else if (document.getElementById("ddnsPreset").checked == true) // ddns preset
+	{
+		;
+	}
+		
+	else if(document.getElementById("ddnsEnable").checked == true) //ddns enable
+	{
+		verifyFlag = verifySubmitData();
+	}
+
+
+	if(verifyFlag){
+	
+		//MBA Sean, show the waiting page & hide the original content
+		document.getElementById("top_menu").style.display = 'none';
+		document.getElementById("content").style.display = 'none';
+		document.getElementById("waiting").style.display = 'block';
+		
+		// Jay, set the value of button isAddressUpdate to 0
+		document.getElementById("isAddressUpdate").value = 0;
+		
+		//MBA Sean, start to countdown.
+		waiting();
+
+		//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+		$.ajax({
+			type:"POST",
+			url: url,
+			data: $("#content_send").serialize(),// serializes the form's elements.
+		});
+		
+	}	
+
+
+}
+
+function btnAddressUpdate(){
+
+	// set the value of button isAddressUpdate to 1
+	document.getElementById("isAddressUpdate").value = 1;
+	
+	// set the value of button isApply to 0
+	document.getElementById("isApply").value = 0;
+		
+	//MBA Sean, show the waiting page & hide the original content
+	document.getElementById("top_menu").style.display = 'none';
+	document.getElementById("content").style.display = 'none';
+	document.getElementById("waiting").style.display = 'block';
+			
+	//MBA Sean, start to countdown.
+	waiting();
+
+	//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+	$.ajax({
+		type:"POST",
+		url: url,
+		data: $("#isAddressUpdate").serialize(),// serializes the form's elements.
+	});
+
+}
+
+<%
+	--MBA Sean, get the waiting time, default is 40 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+	local waiting_time_uci = uci_t.get("web", "gui_config", "network_apply_waiting_time")
+	uci_t.set_confdir(original_confdir)
+%>
+
+var seconds=5;
+function waiting()
+{
+	(seconds <= 0) ? seconds=0 : seconds-=1;
+	document.getElementById("wait_time").value = seconds;
+
+	if(seconds == 0){
+		location.href = url;
+		return true;
+	}
+
+	setTimeout('waiting()',1000);
+}
+
+// TODO: get uci status 
+function frmLoad(){
+		
+	if (js_status == "ddnsdisable")	
+		document.getElementById("iobbStatus").innerHTML = "<%:DDNS Feature is disabled%>";
+		
+	else if (js_status == "wannotconnect")		
+		document.getElementById("iobbStatus").innerHTML = "<%:DDNS Unable to connect to the server%>";
+		
+	else if (js_status == "good" || js_status == "nochg")
+		document.getElementById("iobbStatus").innerHTML = "<%:DDNS Of the registered address has been updated%>";
+	
+	else if (js_status == "notfqdn")
+		document.getElementById("iobbStatus").innerHTML = "<%:Hostname is incorrect%>";
+	
+	else if (js_status == "nohost")
+		document.getElementById("iobbStatus").innerHTML = "<%:Serial number or password is incorrect%>";
+		
+	else if (js_status == "dnserr" || js_status == "!active")
+		document.getElementById("iobbStatus").innerHTML = "<%:Currently, DDNS Server is not available%>";
+	
+	else if (js_status == "authenticationrequired")
+		document.getElementById("iobbStatus").innerHTML = "<%:Serial number or password is incorrect%>";
+	
+	else
+		document.getElementById("iobbStatus").innerHTML = "";
+		
+				
+	// mode
+	<% if lua_mode == "0"  then %>
+		setMode("disable");
+		
+	<% elseif lua_mode == "1" then %>
+		setMode("preset");
+		
+	<% elseif lua_mode == "2" then %>
+		setMode("enable");
+
+	<% end %>
+}
+
+</script>
+<div id="content">
+<form id="content_send" name="iobbnet">
+<blockquote>
+<table border="0" width="100%">
+<tr>
+<td width="100%" align="right">
+<img src="<%=media%>/image/iobb.jpg">
+</td>
+</tr>
+
+</table>
+<p class="title"><%:To use it, you must be registered with the Sabosu. (Ltd.) after the user registration at the IO data equipment operated "IOPortal services", please perform the user registration of iobb.net.%> <a href="https://ioportal.iodata.jp" target="_blank" style="color:blue; text-decoration:underline">ioportal.iodata.jp</a></p>
+<table border="0" width="90%">
+	<tbody>
+		<tr align="left">
+			<td width="30%" class="background">iobb.net：</td>
+			<td width="70%">
+				<input type="radio" name="ddnsMode" id="ddnsPreset" onclick="SET_DDNS_MODE();" value="1"><%:Preset%>
+				<input type="radio" name="ddnsMode" id="ddnsEnable" onclick="SET_DDNS_MODE();" value="2" ><%:Enable%>
+				<input type="radio" name="ddnsMode" id="ddnsDisable" onclick="SET_DDNS_MODE();" value="0" checked=""><%:Disable%>
+			</td>
+		</tr>
+		
+		<tr id="iobbLicence">
+			<td colspan="2">
+				<textarea readonly="" rows="5" cols="40" wrap="soft" edit="off" style="font-size: 12px; overflow-x: hidden; margin: 0px; width: 330px; height: 72px;">
+				<%:
+ダイナミックDNSサービス利用登録規約
+
+　この規約は、株式会社アイ・オー・データ機器（以下、弊社という）が提供するダイナミックDNSサービス（以下「本サービス」）を利用する際の条件 並びにお客様(以下、利用者という)が本サービスをご利用の結果収集される利用者情報の取扱いを定めたものです。
+
+・「ダイナミックDNSサービスのご利用について」 
+以下の本規約は、当サイトにて弊社のダイナミックDNSサービスをご利用する際に適用されます。ご利用の前にお読み頂き、ダイナミックDNSサービスを利用中に必要に応じて参照してください。
+当サイトをご利用頂くことは、皆さまが本利用者登録規約に同意したものとみなします。従って、何らかの理由で規約に同意できない場合は、本サービスの利用はできません。 
+
+１．使用の条件
+　本サービスは、弊社製ネットワークカメラ・ルーター・その他対応するネットワーク機器および対応するソフトウェア製品をご利用の利用者で、本規約に同意の上、所定の方法で当サイトへ利用登録された利用者のみが、個人の便宜の目的に限り、利用できます。当サイトは、一切の商用利用、営業利益目的の利用はできません。
+　 また、 利用者は、弊社が発行したシリアル番号(ID)、ホスト名およびパスワードの管理・使用について一切の責任を負うものとし、その使用にかかる一切の責務を負うものとします。 
+
+２．利用の期限
+　本サービスの利用は、上記「1.使用の条件」を満たした利用者であれば、本サービスの提供がおこなわれている間、製品を所有している限りにおいて、利用することが可能です。
+　サービスで利用していた対応製品を第三者に譲渡、移転した場合には、その時点で、登録したホスト名、IDを含むすべての情報についての利用する権利はなく、製品に付帯するシリアル番号(ID)で新規に登録する権利は、製品とともに移転するものとします。
+
+３．免責事項
+　本サービスの利用は、利用者の責任において行われるものとします。
+1) 本サービス及び本サービスにリンクが設定されている他のウェブサイトから取得された各種情報の利用によって生じたあらゆる損害に関して、弊社は一切の責任を負いません。
+2) 本サービスを利用した映像の利用については、映像情報が利用者の需要に適合するか否か、映像情報の保存、複製その他の利用につき、必要な法的権利を有しているか否かに関して、弊社は一切の責任を負いません。
+3) 弊社は、本サービスではQoS(ネットワークの通信品質)を含む品質については如何なる保証も行っておらず、本サービスの停止、欠陥及びそれらが原因となり発生した損失や損害については一切責任を負いません。
+4) 情報の内容や確実な提供、アクセス結果などにつき、弊社は一切保証しておりません。当サイト内に含まれる情報と素材は、いかなる保証行為も伴わず、現状のまま、利用者に提供されているものです。
+5) シリアル番号(ID)またはパスワードの第三者の使用により、利用者に損害が生じた場合、利用者故意、過失の有無にかかわらず、弊社は一切責任を負いません。
+6) 本サービスによって、インターネットに公開されるインターネット・ネットワーク機器およびサーバー、パソコンにおきましても同様に、弊社では一切の責任を負いません。
+
+４．禁止事項
+　本サービスの利用に際し、利用者は、以下の行為を禁止されています。
+　1)　営業目的または利益を得ることを目的とした行為又はその準備をすること
+　2)　自己または他人のパスワードを第三者へ公開すること、
+　3)　パスワードを不正目的で使用すること、
+　4)　他人の著作権、営業秘密、財産、プライバシーその他の権利を侵す行為または侵す恐れのある行為
+　5)　公序良俗に反する情報や他人を誹謗中傷する情報を公開する行為またはその恐れのある行為
+　6)　犯罪的行為もしくは犯罪的行為に結びつく行為またはその恐れのある行為
+　7)　本サービスを違法目的で使用する行為
+　8)　コンピュータウィルスのような不正プログラムや迷惑メールを配信・配布する行為
+　9)　事実に反する情報を配信・配布する行為
+　10)　本サービスの運営を阻害する行為またはその恐れのある行為
+　11)　弊社または第三者に迷惑、不利益もしくは損害を与える行為またはその恐れのある行為
+　12)　対応機種以外を使っての本サービスを利用する行為
+　13)　その他、弊社が不適切と判断した行為
+
+　上記に違反した場合、弊社は自己の判断により、何ら通知せずに当該利用者のサービス利用を停止し利用者登録を解除します。この場合、弊社はその理由を開示する責を負わないものとします。 
+
+５．本サービスにおける著作権保護対象物の取り扱いについて
+　当サイトにあるすべての情報やレイアウト、デザインおよび構造を含む画面などの著作権は弊社に帰属するか、または他の著作権者などの権利者から弊社が許諾を受けているものです。
+　これらの著作物の全部または一部を弊社の了解を得ずに、無断で複製、改竄、再配布することは著作権法で禁じられています。 
+　株式会社アイ･オー･データ機器の社名、ロゴ、製品等は商用を目的とした名称・記号であり、その一部は登録商標です。 当サイト中に含まれる全ての他の商標、サービス名称・記号等は、それぞれの企業、或いは、個人にその権利が帰属しています。
+
+６．利用料金について
+　本サービスは、利用者に対して無料で提供されます。
+
+７．本サービスの変更等について
+　弊社は、登録した利用者に事前に連絡することなく、本サービス自体及び本規約の内容の変更、修正、項目の削除、追加を、あるいは本サービス自体を終了する権利を有します。　是非、内容変更を定期的にご確認いただくようお願いします。　今後、本サービスを継続的にご利用される場合は、規約の内容に変更がありうることにも同意されたとみなされます。
+
+８．規約違反について
+　利用者の方が、本規約に違反するような行為等を発見された場合、あるいは本サービスを利用中に何らかの不正侵入等が行われた場合には、弊社までご連絡ください。
+
+　弊社は、利用者が本規約に違反した場合または違反する恐れがあると判断した場合、何時でも当該利用者のご利用を停止する権利を有します。　弊社はこの停止により利用者が被るかもしれない如何なる不利益、損害に対し一切の責任を負わないものとします。
+
+９．利用者情報について
+　利用者が当サイトを通じて本サービスを一般的な方法によって利用する間、以下の情報を収集しています。
+　1) 自動生成された、または、利用者が指定したホスト名およびメールアドレスの記録
+　2) 当サイトを訪れた日付と時間の記録
+　3) ダイナミックDNSサービスを利用した日付と時間の記録
+
+　 これらの情報により、当サイト内の各ページのアクセス頻度、履歴を統計記録し、今後、より一層有益なサービスを提供させて頂く為の貴重な資料とします。 
+　当サイト内では、登録される利用者に対するサービス提供や返信のために、利用者の個人情報を求める入力フォームがあります。 Eメールアドレス情報等々を、弊社は、重要データとして適切な管理のもと、保管し、本サービスの改善・向上の目的に限り使用します。
+
+１０．準拠法と管轄裁判所
+　この規約又は本サービスに関連した紛争は、日本国法に準拠し解決します。専管裁判所は、日本国金沢地方裁判所を第一審の管轄裁判所とします。 
+
+　上記にご同意頂いた上で、当サイトをご利用頂きますよう宜しくお願い申上げます。 
+
+                                                         2006年11月29日
+                                              株式会社アイ･オー･データ機器
+				%></textarea>
+			</td>
+		</tr>
+		
+		
+		<tr id="serialNumber" style="display:none" align="left">
+			<td width="30%" class="background"><%:Serial Number%>：</td>
+			<td width="70%">&nbsp;<input type="text" name="iobbSerialNumber" id="iobbSerialNumber" size="17" maxlength="12" disabled="">
+			</td>
+		</tr>
+
+		<tr id="password" style="display:none" align="left">
+			<td width="30%" class="background"><%:Password%>：</td>
+			<td width="70%">&nbsp;<input type="password" name="iobbPassword" id="iobbPassword" size="17" maxlength="8" disabled="">
+			</td>
+		</tr>
+		
+		
+		<tr id="hostname" align="left">
+			<td width="30%" class="background"><%:Hostname%>：</td>
+			<td width="70%">&nbsp;<input type="text" name="iobbHostname" id="iobbHostname" size="17" maxlength="16" disabled="">&nbsp;.iobb.net
+			</td>
+		</tr>
+		
+		<tr align="left">
+			<td width="30%" class="background"><%:Status%>：</td>
+			<td width="70%" id="iobbStatus" >&nbsp;
+			</td>
+		</tr>
+
+	</tbody>
+
+</table>
+<br/>
+
+
+<table border="0" width="90%">
+	<tr align="left">
+		<td width="100%"><%:Since "Updating the address" causes the server load, Please do not run blindly. There are cases where the account is disabled.%>
+		</td>
+	</tr>
+</table>
+
+
+<table width="300" border="0" cellspacing="0" cellpadding="0" align="right">
+
+	<tr>
+		<td align="right">
+			<input type="button" value="<%:AddressUpdate%>" onClick="btnAddressUpdate()" width="105" height="30" border="0"/>
+			<input type="button" value="<%:Apply%>" onClick="btnApply()" width="105" height="30" border="0"/>
+			<input type="reset" value="<%:Cancel%>" onClick="btnCancel()"/>
+			<input type="hidden" value="1" name="isAddressUpdate" id="isAddressUpdate"/>
+			<input type="hidden" value="1" name="isApply" id="isApply" />
+		</td>
+	</tr>
+</table>
+</blockquote>
+</form>
+</div>
+<%+footer%>

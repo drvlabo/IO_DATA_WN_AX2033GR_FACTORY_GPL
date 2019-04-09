@@ -1,0 +1,74 @@
+		function JSOTTSet()
+		{
+			document.easysetup.ottforcsrf.value = OTTforCSRF;
+		}
+		function JSUserInputSelect(method)
+		{
+			if(method == 0){
+				document.easysetup.inputmethod.value=0;
+				document.easysetup.pppoefletsuser.disabled = false;
+				document.easysetup.pppoefletsdomain.disabled = false;
+				document.easysetup.pppoeuser.disabled = true;
+				document.easysetup.userinputmethod[0].checked = true;
+			}else{
+				document.easysetup.inputmethod.value=1;
+				document.easysetup.pppoefletsuser.disabled = true;
+				document.easysetup.pppoefletsdomain.disabled = true;
+				document.easysetup.pppoeuser.disabled = false;
+				document.easysetup.userinputmethod[1].checked = true;
+			}
+		}
+		function JSCheckConfigData(frm){
+			if(document.easysetup.userinputmethod[0].checked == true){
+				if(document.easysetup.pppoefletsuser.value == ""){
+					window.alert('ユーザー名が入力されていません。\nユーザー名は必ず入力をしてください。');
+					return false;
+				}else{
+					if(document.easysetup.pppoefletsdomain.value == ""){
+						window.alert('ドメイン名が入力されていません。\nドメイン名は必ず入力をしてください。');
+						return false;
+					}else{
+						if(document.easysetup.pppoepasswd.value == ""){
+							window.alert('接続パスワードが入力されていません。\n接続パスワードは必ず入力をしてください。');
+							return false;
+						}else{
+							return true;
+						}
+					}
+				}
+			}else{
+				if(document.easysetup.pppoeuser.value == ""){
+					window.alert('ユーザーIDが入力されていません。\nユーザーIDは必ず入力をしてください。');
+					return false;
+				}else{
+					if(document.easysetup.pppoepasswd.value == ""){
+						window.alert('接続パスワードが入力されていません。\n接続パスワードは必ず入力をしてください。');
+						return false;
+					}else{
+						return true;
+					}
+				}
+			}
+		}
+		function JSErrorMessageDisplay(status){
+			if(status == 1600){
+				alert("ユーザー名は、1〜128文字のASCII文字を入力してください。");
+			}else if(status == 1601){
+				alert("パスワードは、1〜128文字のASCII文字を入力してください。");
+			}else if(status == 1515){
+				alert("レッツシリーズのユーザーは、1〜126文字のASCII文字を入力してください。");
+			}else if(status == 1516){
+				alert("フレッツシリーズのドメインは、1〜126文字のASCII文字を入力してください。");
+			}else if(status == 1517){
+				alert("フレッツシリーズのユーザー名は、@も含めて、3〜128文字のASCII文字を入力してください。");
+			}
+		}
+		function initEasySetupwindow() {
+			/* OTT Set */
+			JSOTTSet();
+			JSUserInputSelect(0);
+			JSErrorMessageDisplay(ErrorStatus);
+		}
+		/* When display this window */
+		window.onload = initEasySetupwindow;
+	</script>

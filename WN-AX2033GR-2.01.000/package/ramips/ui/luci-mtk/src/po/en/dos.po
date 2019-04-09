@@ -1,0 +1,8 @@
+msgid "DoS"
+msgstr "DoS"
+
+msgid "DoS attack defense setting."
+msgstr "DoS attack defense setting."
+
+msgid "DoS attack defense"
+msgstr "DoS attack defense"

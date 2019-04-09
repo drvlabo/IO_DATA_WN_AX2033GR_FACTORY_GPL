@@ -1,0 +1,355 @@
+<%
+--require("luci.i18n").loadc("default")
+local i18n = require("luci.i18n")
+require("luci.http").prepare_content("text/html")
+local uci = require("luci.model.uci").cursor()
+local lang = uci:get("luci","main","lang")
+i18n.load("sms",lang)
+i18n.setlanguage(lang)
+-%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"  />
+<title>.::<%:welcome_title_message%>::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="<%=media%>/js/jquery-1.3.1.min.js"></script>
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script>
+var sevenbitdefault = new Array('@', '¢G', '$', '¢D', 'e', 'e', 'u', 'i', 'o', 'C', '\n', 'O', 'o', '\r','A', 'a','\u0394', '_', '\u03a6', '\u0393', '\u039b', '\u03a9', '\u03a0','\u03a8', '\u03a3', '\u0398', '\u039e','&#8364;', 'A', 'a', 's', 'E', ' ', '!', '"', '#', '?', '%', '&', '\'', '(', ')','*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7','8', '9', ':', ';', '<', '=', '>', '?', '!', 'A', 'B', 'C', 'D', 'E','F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S','T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'A', 'O', 'N', 'U', '¡±', '?', 'a','b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o','p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'a', 'o', 'n','u', 'a');
+var dataLength = 0;
+var smsMessage = "";
+var receiver = "";
+var maxLength = 70;
+var alerted = false;
+var contentType = "08";
+var chinese = true;
+$(document).ready(function()
+{
+	path_msg_init();
+});
+function sendSMS()
+{
+	if(storeMessage() == false)
+		return false;
+	else{
+		if(smsMessage == "" || receiver == "")
+		{
+			alert("<%:sms_warn3%>");
+			return false;
+		}
+		else{
+	/*			$.ajax(
+			{
+				type: "POST",
+				url: "<%=controller%>/expert/monitor/sms/sms_send",
+				data:
+				{
+					apply: 1,
+					Receiver: receiver,
+					Length: dataLength,
+					Data: smsMessage,
+					ContentType: contentType
+				},
+				dataType: "text",
+				success: function(msgs)
+				{
+					self.location.reload();
+				},
+				error: function(xhr, textStatus, errorThrown)
+				{
+					alert("FAIL: " + xhr + " " + textStatus + " " + errorThrown);
+				}
+			});
+*/
+			document.getElementById("Data").value = smsMessage;
+			document.getElementById("Receiver").value = receiver;
+			document.getElementById("Length").value = dataLength;
+			document.getElementById("apply").value = "1";
+			document.getElementById("ContentType").value = contentType;
+		}
+	}
+}
+function path_msg_init(){
+   showFullPath(' <%:monitor%> > <%:sms%> > <%:sms_send%>');
+   showWebMessage( 0, '<%:Message%>', '<%:Ready%>' );
+}
+function storeMessage()
+{
+	var smsMessageTmp;
+	
+	receiver = document.getElementById("receiver").value;
+	if(receiver.charAt(0) == '+') /* if first digit of phone number is '+', remove it */
+		receiver = receiver.substring(1, receiver.length);
+	if(isNaN(receiver)) /* check if there is any digit which is not a number */
+	{
+		alert("<%:sms_error1%>");
+		return false;
+	}
+	
+	smsMessage = document.getElementById("sendText").value;
+	if(smsMessage.length > maxLength)
+	{
+		if(maxLength == 70)
+			alert("<%:sms_error3_1%>" + maxLength + "<%:sms_error3_2%>" + smsMessage.length + "<%:sms_error3_3%>");
+		else if(maxLength == 160)
+			alert("<%:sms_error4%>" + maxLength + "<%:sms_error3_2%>" + smsMessage.length + "<%:sms_error3_3%>");
+		return false;
+	}
+	if(contentType == "08") /* Unicode */
+	{
+		smsMessage = convert2utf8(smsMessage);
+		dataLength = appendZero((smsMessage.length / 2).toString(16));
+		//alert("length: " + dataLength + "\ndata: " +smsMessage + "\ntype: " + contentType);
+	}
+	else if(contentType == "00") /* GSM */
+	{
+		dataLength = appendZero(smsMessage.length.toString(16));
+		smsMessageTmp = convert2seven(smsMessage);
+		if(smsMessageTmp == false)
+			return false;
+		else 
+			smsMessage = smsMessageTmp;
+		//alert("length: " + dataLength + "\ndata: " +smsMessage + "\ntype: " + contentType);
+	}
+}
+function appendZero(num)
+{
+	if(String(num).length==1)
+		return "0"+num;
+	else 
+		return num;
+}
+function convert2utf8(input) 
+{
+    function pad_four(input) {
+        var l = input.length;
+        if (l == 0) return '0000';
+        if (l == 1) return '000' + input;
+        if (l == 2) return '00' + input;
+        if (l == 3) return '0' + input;
+        return input;
+    }
+    var output = '';
+    for (var i = 0, l = input.length; i < l; i++)
+        output += pad_four(input.charCodeAt(i).toString(16));
+    return output;
+}
+function convert2GSM(input)
+{
+	var output = '';
+	for (var i = 0, l = input.length; i < l; i++)
+        output += input.charCodeAt(i);
+    return output;
+}
+function convert2seven(input)
+{
+	var output = "";
+	var octetFirst = "";
+	var octetSecond = "";
+	for(var i=0;i<=input.length;i++)
+	{
+		if(i==input.length)
+		{
+			if (octetSecond != "") // AJA Fix overshoot
+			{
+				output = output + "" + (intToHex(binToInt(octetSecond)));
+			}
+			break;
+		}
+		var currentTmp = getSevenBit(input.charAt(i));
+		if(currentTmp == -1)
+			return false;
+		else{
+			var current = intToBin(currentTmp,7);
+			var currentOctet;
+			if(i!=0 && i%8!=0)
+			{
+				octetFirst = current.substring(7-(i)%8);
+				currentOctet = octetFirst + octetSecond;	//put octet parts together
+
+				output = output + "" + (intToHex(binToInt(currentOctet)));
+				octetSecond = current.substring(0,7-(i)%8);	//set net second octet
+			}
+			else
+			{
+				octetSecond = current.substring(0,7-(i)%8);
+			}
+		}
+	}
+	return output;
+}
+function getSevenBit(character)
+{
+	for(var i=0;i<sevenbitdefault.length;i++)
+	{
+		if(sevenbitdefault[i] == character)
+		{
+			return i;
+		}
+	}
+	if(chinese == false)
+	{
+		alert("<%:sms_error5%>");
+	}
+	return -1;
+}
+function intToHex(i)
+ {
+  var sHex = "0123456789ABCDEF";
+  h = "";
+  i = parseInt(i);
+  for(j = 0; j <= 3; j++)
+  {
+    h += sHex.charAt((i >> (j * 8 + 4)) & 0x0F) +
+         sHex.charAt((i >> (j * 8)) & 0x0F);
+  }
+  return h.substring(0,2);
+}
+function intToBin(x,size)
+{
+	var base = 2;
+	var num = parseInt(x);
+	var bin = num.toString(base);
+	for(var i=bin.length;i<size;i++)
+	{
+		bin = "0" + bin;
+	}
+	return bin;
+}
+function binToInt(x)
+{
+	var total = 0;
+	var power = parseInt(x.length)-1;
+
+	for(var i=0;i<x.length;i++)
+	{
+		if(x.charAt(i) == '1')
+		{
+		 total = total +Math.pow(2,power);
+		}
+		power --;
+	}
+	return total;
+}
+function change (what)
+{
+	var keysSoFar = what.value.length;
+
+	if (keysSoFar > maxLength)
+	{
+		if (!alerted)
+		{
+			alert ("<%:sms_warn%>" + maxLength + "<%:sms_error3_3%>");
+		}
+		what.value = what.value.substring (0, maxLength); /* delete the word which is longer than maxLength*/
+		alerted = false;
+		keysSoFar = maxLength;
+	}
+	window.status = "Characters left : " + (maxLength - keysSoFar);
+	$("#smsTextLeft").val(maxLength - keysSoFar);
+}
+function checkTypeContent(val)
+{
+	if(val == 0) /* GSM */
+	{
+		maxLength = 160;
+		contentType = "00";
+		chinese = false;
+		$("#smsTextLeft").val('160');
+	}
+	else if(val == 1) /* Unicode */
+	{
+		maxLength = 70;
+		contentType = "08";
+		chinese = true;
+		$("#smsTextLeft").val('70');
+	}
+}
+function clearForm()
+{
+	if(!confirm("<%:sms_warn2%>"))
+		return false;
+	else
+	{
+		$("#receiver").val('');
+		$("#sendText").val('');
+	}
+}
+</script>
+</head>
+<body >
+<div id="tabs">
+	<ul>
+		<li><a href="<%=controller%>/expert/monitor/sms" title="<%:sms_list%>"><span><%:sms_list%></span></a></li>
+		<li class="hightline"><a title="<%:sms_send%>"><span><%:sms_send%></span></a></li>		
+	</ul>
+	<br class="clearfloat" />
+</div>
+<!-- Tab --> 
+<form name="sms_send">
+<div id="table">
+	<ul>
+		<li class="table_top"></li>
+		<li class="table_content">
+			<div class="data">
+				<ul>
+					<div class="w_text">
+						<ul>
+							<li class="left_table"><label for="receiver" style="width: 100px;" class="content_word_title"><span class="required"><%:sms_receiver%></span></label></li>
+							<li class="right_table">
+								<input id="receiver" name="receiver" size="15" maxlength="15" type="text" />
+							</li>
+						</ul>
+					</div>
+					<div class="w_text">
+						<ul>
+							<li class="left_table"><label for="characterSet" style="width: 100px;" class="content_word_title"><span class="required"><%:sms_char_set%></span></label></li>
+							<li class="right_table">
+								<input name="Radio_ContentType" type="radio" value="0" onclick="checkTypeContent(0);"/> GSM
+								<input name="Radio_ContentType" type="radio" value="1" checked="checked" onclick="checkTypeContent(1);"/> Unicode
+							</li>
+						</ul>
+					</div>
+					<div class="w_text">
+						<ul>
+							<li class="left_table"><label for="smsText" style="width: 100px;" class="content_word_title"><span class="required"><%:sms_send_content%> </span></label></li>
+							<li class="right_table">
+								<textarea id="sendText" name="sendText" rows="4" cols="50" onchange="change(this)" onkeyup="change(this)"></textarea>
+								&nbsp;&nbsp;/&nbsp;<input id="smsTextLeft" name="smsTextLeft" value="70" style="border: none" readonly>
+							</li>
+						</ul>
+					</div>
+					<div class="spaceair"></div>
+					<div class="w_text"><span class="i_note"><%:sms_note%></span> </div>
+					<div class="w_text"><span class="i_note_a">1. GSM:</span></div>
+					<div class="w_text">
+						<span class="a.note">&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;<%:sms_note1_1%></br>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;<%:sms_note1_2%></span>
+					</div>
+					<div class="w_text"><span class="i_note_a">2. Unicode:</span></div>
+					<div class="w_text">
+						<span class="a.note">&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;<%:sms_note2%></span>
+					</div>
+					<div class="spaceair"></div>
+				</ul>
+			</div>
+		</li>
+		<li class="table_button">
+			<div class="button">
+				<center>
+				<input name="Receiver" id="Receiver" type="hidden" value="0"/> 
+				<input name="Length" id="Length" type="hidden" value="0"/> 
+				<input name="Data" id="Data" type="hidden" value="0"/>
+				<input name="apply" id="apply" type="hidden" value="0"/> 
+				<input name="ContentType" id="ContentType" type="hidden" value="0"/> 
+					<input id="btnApply" name="Submit" value="Apply" type="submit" onclick="sendSMS();"/>
+					&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+					<input id="btnClear" name="Cancel" value="Cancel" type="reset" onclick="clearForm();"/>
+				</center>
+			</div>
+		</li>
+	</ul>
+</div>
+</form>
+</body>
+</html>

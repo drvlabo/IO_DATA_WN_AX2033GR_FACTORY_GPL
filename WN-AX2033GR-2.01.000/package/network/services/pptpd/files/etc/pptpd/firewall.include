@@ -1,0 +1,9 @@
+iptables -A input_wan_rule -p tcp --dport 1723 -j ACCEPT -m comment --comment "PPTP"
+iptables -A input_wan_rule -p 47 -j ACCEPT -m comment --comment "GRE for PPTP"
+	  
+# Allow all traffic in and out of the pptp interface. No reason to specify nets.
+iptables -A input_rule -i pptp+ -j ACCEPT
+iptables -A output_rule -o pptp+ -j ACCEPT
+# This rule will allow traffic towards internet
+iptables -A forwarding_rule -i pptp+ -j ACCEPT
+iptables -A forwarding_rule -o pptp+ -j ACCEPT

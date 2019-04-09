@@ -1,0 +1,253 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: header.htm 4891 2009-06-22 10:23:21Z jow $
+
+-%>
+<%
+--require("luci.i18n").loadc("default")
+local i18n = require("luci.i18n")
+require("luci.http").prepare_content("application/xhtml+xml")
+require "luci.sys"
+local uci = require("luci.model.uci").cursor()
+local lang = uci:get("luci","main","lang")
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+-%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"  />
+<title>.::<%:welcome_title_message%>::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+</head>
+<script language="JavaScript">
+
+var time_id=0;
+
+function setRefreshInterval()
+{
+	polling_interval=document.forms[0].interval.selectedIndex*60
+
+	if (polling_interval>0)
+		time_id=self.setTimeout('self.location.reload();', polling_interval*1000);
+
+	document.forms[0].interval.selectedIndex=polling_interval/60;
+}
+
+function stopInterval()
+{
+	clearTimeout(time_id);
+}
+
+function path_msg_init(){
+	showFullPath(' <%:monitor%> > <%:pkt_statistics%>');
+	showWebMessage( 0, '<%:Message%>', '<%:Ready%>' );
+}
+</script>
+<body onload="setRefreshInterval();path_msg_init();">
+<form method="post" name="SetIntervalForm" action="<%=controller%>/expert/monitor/pktstats">
+<div id="tabs">
+  <ul>
+    <li class="hightline"><a title="<%:pkt_statistics%>"><span><%:pkt_statistics%></span></a></li>
+  </ul>
+  <br class="clearfloat" />
+</div>
+<div id="table">
+  <ul>
+    <li class="table_top"></li>
+    <li class="table_content">
+      <div class="data">
+        <ul>
+          <div class="tableframe">
+            <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0" class="table_frame">
+              <tr>
+                <td>
+                  <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td>
+                        <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                          <tr>
+                            <td>
+                              <table width="100%" cellpadding="0" cellspacing="0" >
+                                <tr>
+                                  <td height="26" colspan="9">
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                      <tr>
+                                        <td height="26" class="table_title"><%:pkt_statistics%></td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+				<%
+				local up_time = luci.sys.uptime()
+				local wan_status = luci.sys.exec("/usr/sbin/lte_StatusUpdate Status")
+				local lan_status = luci.sys.exec("cat /sys/devices/platform/ag71xx.1/net/eth0/carrier")
+				local wlan_status = uci:get("wireless","general","disabled")
+				local wan_data, wan_rx_pks, wan_tx_pks, wan_collisions, wan_rx_bys, wan_tx_bys
+				local lan_data, lan_rx_pks, lan_tx_pks, lan_collisions, lan_rx_bys, lan_tx_bys
+				local wlan_data, wlan_rx_pks, wlan_tx_pks, wlan_collisions, wlan_rx_bys, wlan_tx_bys
+
+				if wan_status=="Up" or wan_status=="UP" then
+					local module_sierra = tonumber(luci.sys.exec("cat /proc/bus/usb/devices | grep Sierra | wc -l"))
+					local module_altair = tonumber(luci.sys.exec("cat /proc/bus/usb/devices | grep Altair | wc -l"))
+
+					if module_altair ~= 0 and module_sierra == 0 then
+						wan_data=luci.sys.exec("ifconfig lte0.1")
+					elseif module_altair == 0 and module_sierra ~= 0 then
+						wan_data=luci.sys.exec("ifconfig wwan0")
+					end
+
+					wan_rx_pks=string.match(wan_data,"RX packets:(%d+)")
+					wan_tx_pks=string.match(wan_data,"TX packets:(%d+)")
+					wan_collisions=string.match(wan_data,"collisions:(%d+)")
+					wan_rx_bys=math.ceil(tonumber(string.match(wan_data,"RX bytes:(%d+)"))/up_time)
+					wan_tx_bys=math.ceil(tonumber(string.match(wan_data,"TX bytes:(%d+)"))/up_time)
+				else
+					wan_status="Down"
+				end
+				
+				if tonumber(lan_status) == 1 then
+					lan_status="Up"
+					lan_data=luci.sys.exec("ifconfig eth0")
+					lan_rx_pks=string.match(lan_data,"RX packets:(%d+)")
+					lan_tx_pks=string.match(lan_data,"TX packets:(%d+)")
+					lan_collisions=string.match(lan_data,"collisions:(%d+)")
+					lan_rx_bys=math.ceil(tonumber(string.match(lan_data,"RX bytes:(%d+)"))/up_time)
+					lan_tx_bys=math.ceil(tonumber(string.match(lan_data,"TX bytes:(%d+)"))/up_time)
+				else
+					lan_status="Down"
+				end
+
+				if wlan_status=="1" then
+					wlan_status="Down"
+				else
+					wlan_status="Up"
+					wlan_data=luci.sys.exec("ifconfig ath0")
+					wlan_rx_pks=string.match(wlan_data,"RX packets:(%d+)")
+					wlan_tx_pks=string.match(wlan_data,"TX packets:(%d+)")
+					wlan_collisions=string.match(wlan_data,"collisions:(%d+)")
+					wlan_rx_bys=math.ceil(tonumber(string.match(wlan_data,"RX bytes:(%d+)"))/up_time)
+					wlan_tx_bys=math.ceil(tonumber(string.match(wlan_data,"TX bytes:(%d+)"))/up_time)
+				end
+
+				local ca_date,ca_hour,ca_minute,ca_second
+				while up_time do
+					if up_time>86399 then 
+						ca_date=math.floor(up_time/86400)
+						up_time=up_time-(ca_date*86400)
+					elseif up_time>3599 then
+						ca_hour=math.floor(up_time/3600)
+						up_time=up_time-(ca_hour*3600)
+					elseif up_time>59 then
+						ca_minute=math.floor(up_time/60)
+						up_time=up_time-(ca_minute*60)
+						if ca_minute<10 then 
+							ca_minute="0"..tostring(ca_minute) 
+						end
+					else
+						ca_second=up_time
+						if ca_second<10 then 
+							ca_second="0"..tostring(ca_second) 
+						end
+						break
+					end
+				end
+				%>
+                                <tr class="top_font" align="center">
+                                  <td><%:pkt_statistics_port%></td>
+                                  <td><%:pkt_statistics_status%></td>
+                                  <td><%:tx_pkt%></td>
+                                  <td><%:rx_pkt%></td>
+                                  <td><%:pkt_collisions%></td>
+                                  <td><%:tx_bps%></td>
+                                  <td><%:rx_bps%></td>
+                                </tr>
+                                <tr class="table_font" align="center">
+                                  <td><%:pkt_statistics_wan%>&nbsp;</td>
+                                  <td><%=wan_status%> </td>
+                                  <td><%=wan_tx_pks%> </td>
+                                  <td><%=wan_rx_pks%> </td>
+                                  <td><%=wan_collisions%></td>
+                                  <td><%=wan_tx_bys%></td>
+                                  <td><%=wan_rx_bys%></td>
+                                </tr>
+                                <tr class="table_font" align="center">
+                                  <td><%:pkt_statistics_lan%>&nbsp;</td>
+				  <td><%=lan_status%> </td>
+                                  <td><%=lan_tx_pks%> </td>
+                                  <td><%=lan_rx_pks%> </td>
+                                  <td><%=lan_collisions%></td>
+                                  <td><%=lan_tx_bys%></td>
+                                  <td><%=lan_rx_bys%></td>
+                                </tr>
+                                <tr class="table_font" align="center">
+                                  <td><%:pkt_statistics_wlan1%>&nbsp;</td>
+                                  <td><%=wlan_status%> </td>
+                                  <td><%=wlan_tx_pks%> </td>
+                                  <td><%=wlan_rx_pks%> </td>
+                                  <td><%=wlan_collisions%></td>
+                                  <td><%=wlan_tx_bys%></td>
+                                  <td><%=wlan_rx_bys%></td>
+                                </tr>                               
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </ul>
+        <ul>
+          <div class="w_text"><%:system_up_time%> : <%if ca_date then%><%=ca_date%><%:up_day%><%end%><%if ca_hour then%><%=ca_hour%>:<%else%>00:<%end%> <%if ca_minute then%><%=ca_minute%>:<%else%>00:<%end%> <%if ca_second then%><%=ca_second%><%else%>00<%end%>
+          </div>
+        </ul>
+        <ul>
+          <div class="w_text"><b><%:poll_interval%> : </b>
+	  <%
+          local f = io.open("/tmp/SysStatus_interval","r") 
+	  local sec_interval
+	  if f then
+	  	sec_interval = f:read("*all")
+		f:close()
+	  end				  
+	  %>
+            <select name="interval" size="1">
+              <option value="00000000" <% if not sec_interval or sec_interval == "0" then %>selected="selected"<% end %>><%:interval_select_none%></option>
+              <option value="00000001" <% if sec_interval == "60" then %>selected="selected"<% end %>>60 <%:seconds%></option>
+              <option value="00000002" <% if sec_interval == "120" then %>selected="selected"<% end %>>120 <%:seconds%></option>
+              <option value="00000003" <% if sec_interval == "180" then %>selected="selected"<% end %>>180 <%:seconds%></option>
+              <option value="00000004" <% if sec_interval == "240" then %>selected="selected"<% end %>>240 <%:seconds%></option>
+              <option value="00000005" <% if sec_interval == "300" then %>selected="selected"<% end %>>300 <%:seconds%></option>
+            </select>
+            &nbsp;&nbsp;
+            <input onclick="setRefreshInterval();showWebMessage( 1 , '<%:Message%>' , '<%:msg_config%>' )" value="<%:set_interval%>" id="StatisticsSetInterval" name="SetIntvl" type="submit"/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <!--<input onclick="stopInterval();showWebMessage( 1 , '<%:Message%>' , '<%:msg_config%>' )" value="<%:stop_interval%>" id="StatisticsStop" name="stopIntvl" type="button"/>-->
+          </div>
+        </ul>
+        <ul>
+          <div class="spaceair"></div>
+        </ul>
+      </div>
+    </li>
+    <li class="table_button"></li>
+  </ul>
+</div>
+</form>
+</body>
+</html>

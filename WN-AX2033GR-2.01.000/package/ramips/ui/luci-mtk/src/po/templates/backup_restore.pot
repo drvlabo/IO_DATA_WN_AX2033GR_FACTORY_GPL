@@ -1,0 +1,71 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Backup_Restore"
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "Message"
+msgstr ""
+
+msgid "Ready"
+msgstr ""
+
+msgid "backup"
+msgstr ""
+
+msgid "bak_configure"
+msgstr ""
+
+msgid "bak_remind1"
+msgstr ""
+
+msgid "bak_remind2"
+msgstr ""
+
+msgid "bak_rst"
+msgstr ""
+
+msgid "factory_default"
+msgstr ""
+
+msgid "factory_remind1"
+msgstr ""
+
+msgid "factory_reset"
+msgstr ""
+
+msgid "file_path"
+msgstr ""
+
+msgid "file_upload"
+msgstr ""
+
+msgid "maintenance"
+msgstr ""
+
+msgid "msg_config"
+msgstr ""
+
+msgid "msg_confirm_1"
+msgstr ""
+
+msgid "restarting"
+msgstr ""
+
+msgid "rst_configure"
+msgstr ""
+
+msgid "rst_remind1"
+msgstr ""
+
+msgid "rst_remind2"
+msgstr ""
+
+msgid "rst_remind3"
+msgstr ""
+
+msgid "seconds"
+msgstr ""

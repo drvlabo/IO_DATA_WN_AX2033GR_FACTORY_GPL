@@ -1,0 +1,11 @@
+config gui gui_config
+	option network_apply_waiting_time 50
+	option reboot_waiting_time 70
+config timeserver ntp_server_list
+	list server	ntp.nict.jp
+	list server	time.nist.gov
+	list server	time-nw.nist.gov
+
+config ddnsconfig runtime
+	option status ''
+	option preset_hostname ''

@@ -1,0 +1,67 @@
+Index: uci-2014-04-11.1/cli.c
+===================================================================
+--- uci-2014-04-11.1.orig/cli.c	2016-03-31 14:53:18.675977390 +0800
++++ uci-2014-04-11.1/cli.c	2016-03-31 17:32:27.148109420 +0800
+@@ -69,8 +69,8 @@
+ #ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
+ extern int gint_pathc;
+ extern int gint_commitChange;
+-char **g_allocMem = NULL;
+-int gint_config_num = 0;
++extern char **g_allocMem;
++extern int gint_config_num;
+ #endif
+ static int uci_cmd(int argc, char **argv);
+ 
+Index: uci-2014-04-11.1/file.c
+===================================================================
+--- uci-2014-04-11.1.orig/file.c	2016-03-31 14:53:18.675977390 +0800
++++ uci-2014-04-11.1/file.c	2016-03-31 17:32:27.180109420 +0800
+@@ -41,9 +41,8 @@
+ #ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
+ int gint_pathc = 0;
+ char g_dirName[128] = {0};
+-extern char **g_allocMem;
+-extern int gint_config_num;
+-
++char **g_allocMem;
++int gint_config_num;
+ 
+ /*
+  * check if the file is in the the white list to be included in config checksum
+@@ -63,6 +62,7 @@
+ 	}
+ 	return 0;
+ }
++
+ #endif 
+ 
+ /*
+@@ -678,9 +678,12 @@
+ error:
+ 		if (ctx->flags & UCI_FLAG_PERROR)
+ 			uci_perror(ctx, NULL);
++		fprintf(stderr, "############ %s() ctx->err=%d\n", __FUNCTION__, ctx->err);
+ 		if ((ctx->err != UCI_ERR_PARSE) ||
+-			(ctx->flags & UCI_FLAG_STRICT))
++			(ctx->flags & UCI_FLAG_STRICT)){
++			fprintf(stderr,"####################### %s() throw UCI_ERR_PARSE\n", __FUNCTION__);
+ 			UCI_THROW(ctx, ctx->err);
++		}
+ 	}
+ 
+ 	uci_fixup_section(ctx, ctx->pctx->section);
+Index: uci-2014-04-11.1/uci.h
+===================================================================
+--- uci-2014-04-11.1.orig/uci.h	2016-03-31 14:53:18.675977390 +0800
++++ uci-2014-04-11.1/uci.h	2016-03-31 17:32:27.088109419 +0800
+@@ -79,6 +79,9 @@
+ struct uci_parse_option;
+ struct uci_parse_context;
+ 
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++int checkConfigWhiteList(char *filename);
++#endif
+ 
+ /**
+  * uci_alloc_context: Allocate a new uci context

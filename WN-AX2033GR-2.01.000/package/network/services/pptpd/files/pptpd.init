@@ -1,0 +1,109 @@
+#!/bin/sh /etc/rc.common
+# Copyright (C) 2006 OpenWrt.org
+
+START=60
+BIN=/usr/sbin/pptpd
+DEFAULT=/etc/default/$BIN
+RUN_D=/var/run
+PID_F=$RUN_D/$BIN.pid
+CONFIG=/var/etc/pptpd.conf
+CHAP_SECRETS=/var/etc/chap-secrets
+lan_ifname="br-lan";
+autoip_ifname="br-lan:avahi"
+
+set_firewall() {
+	local action="$1"
+
+	iptables -$action input_rule -p tcp --dport 1723 -j ACCEPT
+	iptables -$action output_rule -p tcp --sport 1723 -j ACCEPT
+	iptables -$action input_rule -p gre -j ACCEPT
+	iptables -$action output_rule -p gre -j ACCEPT
+
+	iptables -$action input_rule -i ppp+ -j ACCEPT
+	iptables -$action output_rule -o ppp+ -j ACCEPT
+	iptables -$action forwarding_rule -i ppp+ -j ACCEPT
+	iptables -$action forwarding_rule -o ppp+ -j ACCEPT
+}
+
+setup_login() {
+	local section="$1"
+
+	config_get username "$section" username
+	config_get password "$section" password
+	[ -n "$username" ] || return 0
+	[ -n "$password" ] || return 0
+
+	echo "'$username' pptp-server '$password' *" > $CHAP_SECRETS
+}
+
+setup_config() {
+	local section="$1"
+
+	config_get enabled "$section" enabled
+	[ "$enabled" -eq 0 ] && return 1
+
+	mkdir -p /var/etc
+	cp /etc/pptpd.conf $CONFIG
+
+	localip=`ifconfig $lan_ifname | grep 'inet addr:' | sed 's/^.*addr://g' | awk '{print $1}' 2>/dev/null`
+	if [ "A$localip" == "A" ]; then
+		localip=`ifconfig $autoip_ifname | grep 'inet addr:' | sed 's/^.*addr://g' | awk '{print $1}' 2>/dev/null`
+	fi
+	config_get iprange "$section" iprange
+	if [ "A$iprange" == "A" ]; then
+		iprange="33-35"
+	fi
+
+	sub_lanip_a=$(echo $localip | cut -d '.' -f 1)
+	sub_lanip_b=$(echo $localip | cut -d '.' -f 2)
+	sub_lanip_c=$(echo $localip | cut -d '.' -f 3)
+	remoteip=$(echo $sub_lanip_a"."$sub_lanip_b"."$sub_lanip_c"."$iprange)
+	
+	[ -n "$localip" ] && echo "localip  $localip" >> $CONFIG
+	[ -n "$remoteip" ] && echo "remoteip  $remoteip" >> $CONFIG
+	return 0
+}
+
+
+start_pptpd() {
+	[ -f $DEFAULT ] && . $DEFAULT
+	mkdir -p $RUN_D
+	for m in arc4 sha1_generic slhc crc-ccitt ppp_generic ppp_async ppp_mppe; do
+		insmod $m >/dev/null 2>&1
+	done
+	ln -sfn $CHAP_SECRETS /etc/ppp/chap-secrets
+	service_start $BIN $OPTIONS -c $CONFIG
+}
+
+start() {
+	wan_mode=`/sbin/uci -q get network.wan.mode`
+	if [ $wan_mode != "repeater" ]; then
+		config_load pptpd
+		setup_config pptpd || return
+		config_foreach setup_login login
+		start_pptpd
+
+		# firewall rule should be set by /etc/init.d/firewall
+		#set_firewall "A"
+
+		# to allow vpn access LAN
+		echo 1 > /proc/sys/net/ipv4/conf/br-lan/proxy_arp
+		echo 1 > /proc/sys/net/ipv4/ip_forward
+	fi
+}
+
+stop() {
+	wan_mode=`/sbin/uci -q get network.wan.mode`
+	if [ $wan_mode != "repeater" ]; then
+		service_stop $BIN
+
+		ps | pgrep pptp | awk '{print "kill -9 " $0}' | sh
+		# firewall rule should be set by /etc/init.d/firewall
+		#set_firewall "D"
+		echo 0 > /proc/sys/net/ipv4/conf/br-lan/proxy_arp
+		
+		if [ $wan_mode == "ap" ]; then
+			echo 0 > /proc/sys/net/ipv4/ip_forward
+		fi
+	fi
+}

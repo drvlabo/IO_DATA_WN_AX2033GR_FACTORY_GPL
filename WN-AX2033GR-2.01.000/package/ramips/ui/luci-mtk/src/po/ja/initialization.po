@@ -1,0 +1,33 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Back to the factory setting"
+msgstr "出荷時設定に戻す"
+
+msgid "Factory setting"
+msgstr "出荷時設定"
+
+msgid "Initialization"
+msgstr "初期化"
+
+msgid ""
+"It takes a few minutes to reboot. Please do not turn off the power during "
+"the restart"
+msgstr "再起動に数分かかります。再起動中に電源をオフにしないでください"
+
+msgid "Reboot"
+msgstr "再起動"
+
+msgid ""
+"Return to the factory default settings, please press the factory settings "
+"button."
+msgstr "本製品を工場出荷時設定に戻すには、出荷時設定ボタンを押してください。"
+
+msgid "Return to the factory setting"
+msgstr "出荷時設定に戻します。"
+
+msgid "System restart"
+msgstr "システムを再起動します。"
+
+msgid "Will reboot the system"
+msgstr "システムの再起動をおこないます"

@@ -1,0 +1,113 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "AddressUpdate"
+msgstr "アドレスの更新"
+
+msgid "Apply"
+msgstr "設定"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "To use it, you must be registered with the Sabosu. (Ltd.) after the user registration at the IO data equipment operated \"IOPortal services\", please perform the user registration of iobb.net."
+msgstr "ご利用の際には、サービスへの登録が必要です。(株)アイ・オー・データ機器が運営する「IOPortalサービス」にてユーザー登録後、iobb.netのユーザー登録をおこなってください。"
+
+msgid "Preset"
+msgstr "プリセット"
+
+msgid "Enable"
+msgstr "有効"
+
+msgid "Disable"
+msgstr "無効"
+
+msgid "Hostname"
+msgstr "ホスト名"
+
+msgid "Password"
+msgstr "パスワード"
+
+msgid "Serial Number"
+msgstr "シリアルナンバー"
+
+msgid "Status"
+msgstr "ステータス"
+
+msgid "Since \"Updating the address\" causes the server load, Please do not run blindly. There are cases where the account is disabled."
+msgstr "サーバー負荷の原因となるため、「アドレスの更新」はむやみに実行しないでください。アカウントが無効になる場合があります。"
+
+msgid "The number of characters of the serial number is wrong"
+msgstr "シリアルナンバーの文字数が間違っている"
+
+msgid "The number of characters of the password is wrong"
+msgstr "パスワードの文字数が間違っている"
+
+msgid "The number of characters of the hostname is wrong"
+msgstr "ホスト名の文字数が間違っている"
+
+msgid "Characters are input that can not be used for serial number"
+msgstr "シリアルナンバーに使用できない文字が入力されている"
+
+msgid "Characters that can not be used in the password has been entered"
+msgstr "パスワードに使用できない文字が入力されている"
+
+msgid "It has been input character that can not be used in the hostname"
+msgstr "ホスト名に使用できない文字が入力されている"
+
+msgid "Serial number is blank"
+msgstr "シリアルナンバーが空欄になっている"
+
+msgid "Password is blank"
+msgstr "パスワードが空欄になっている"
+
+msgid "Hostname is blank"
+msgstr "ホスト名が空欄になっている"
+
+msgid "DDNS Feature is disabled"
+msgstr "DDNS機能は無効です。"
+
+msgid "DDNS Unable to connect to the server"
+msgstr "DDNSサーバーに接続できません。"
+
+msgid "DDNS Of the registered address has been updated"
+msgstr "DDNSの登録アドレスが更新されました。"
+
+msgid "Hostname is incorrect"
+msgstr "ホスト名が違います。"
+
+msgid "Serial number or password is incorrect"
+msgstr "シリアルナンバーまたはパスワードが違います。"
+
+msgid "Currently, DDNS Server is not available"
+msgstr "現在、DDNSサーバーが利用できません。"
+
+msgid "Serial number or password is incorrect"
+msgstr "シリアル番号またはパスワードが違います。"
+
+msgid "Please input the serial number entered in the alphanumeric characters of 12 digits"
+msgstr "シリアルナンバーは12桁の英数字で入力してください。"
+
+msgid "Password is up to 8 characters at least six characters (lowercase letters, numbers, -, _) Please enter."
+msgstr "パスワードは6文字以上8文字以内(小文字英字,数字,-,_)で入力してください。"
+
+msgid "The host name is 3 or more characters to 16 characters or less (lower case letters, numbers, -, _) Please enter."
+msgstr "ホスト名は3文字以上16文字以内(小文字英字,数字,-,_)で入力してください。"
+
+msgid "It contains characters that can not be used for serial number."
+msgstr "シリアルナンバーに使用できない文字が含まれています。"
+
+msgid "It contains characters that can not be used in passwords."
+msgstr "パスワードに使用できない文字が含まれています。"
+
+msgid "It contains characters that can not be used in the host name."
+msgstr "ホスト名に使用できない文字が含まれています。"
+
+msgid "Please enter the serial number."
+msgstr "シリアルナンバーを入力してください。"
+
+msgid "Please enter a password."
+msgstr "パスワードを入力してください。"
+
+msgid "Please enter the host name."
+msgstr "ホスト名を入力してください。"

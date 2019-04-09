@@ -1,0 +1,346 @@
+<%+header%>
+<% if updateFwSuccess == 1 then %>
+<script type="text/javascript">
+window.location.href= "<%=controller%>/content/system_settings/firmware/countdown";
+</script>
+<% end %>
+<script language="JavaScript">
+var currentUrl = "<%=controller%>/content/system_settings/firmware"; //current page url
+
+function checkDigitRange(value, lowerBound, upperBound)
+{
+	if (isNaN(value)) {
+		return false;
+	}
+
+	if ((Number(value) < lowerBound) || (Number(value) > upperBound)) {
+		return false;
+	}
+
+	return true;
+}
+
+function verifySubmitData(submitItem)
+{
+	var f = document.upload;
+
+	if (submitItem == 0) { /* upload firmware to update */
+		if(f.filePath.value.length == 0) {
+			alert("<%:Please choose a file.%>");
+			return false;
+		}
+	}
+	else
+	{ /* configure auto-firmware update */
+		if(document.upload.startTimeHour.disabled == false) {
+			if(!checkDigitRange(f.startTimeHour.value, 0, 23)) {
+				alert("<%:Please input hour in the range of 0-23.%>");
+				return false;
+			}
+			if(!checkDigitRange(f.startTimeMin.value, 0, 59)) {
+				alert("<%:Please input minute in the range of 0-59.%>");
+				return false;
+			}
+		}
+		if(document.upload.schedule_1.disabled == false) {
+			for(i=0; i<7; i++) {
+				if(eval("f.schedule_"+i).checked == true) {
+					f.hdaysmask.value = Number(f.hdaysmask.value) + Number(1<<i);
+				}
+			}
+			if(f.hdaysmask.value == 0) {
+				alert("<%:Please choose at least one day of the week.%>");
+				return false;
+			}
+		}
+		
+	}
+
+	return true;
+}
+
+function btnApply(submitItem)
+{
+	var f = document.upload;
+	var verifyFlag = verifySubmitData(submitItem);
+
+	if(verifyFlag) {
+		if (submitItem == 0) { /* upload firmware to update */
+			if (confirmMessage() == false) {
+				return false;
+			}
+			f.filePath.disabled = "";
+			f.sendbutton.value = 0;
+			
+			/*MSTC MBA Sean, put csrf token in the input field*/
+			var input = document.createElement('input');
+			input.type = 'hidden';
+			input.name = 'csrf_token';
+			input.value = csrf_token;
+			f.appendChild(input);
+			
+			f.submit();
+			return true;
+		}
+		else { /* configure auto-firmware update */
+			f.filePath.disabled = "disabled";
+			f.sendbutton.value = 1;
+		}
+
+		showWaitingAndRedirect();
+
+		//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+        $.ajax({
+        type:"POST",
+        url: currentUrl,
+        data: $("#content_send").serialize(),// serializes the form's elements.
+        });
+		return false;
+	}
+	else {
+		return false;
+	}
+}
+
+function confirmMessage()
+{
+	if (confirm("<%:Would you like to start firmware update?%>")) {
+		alert("<%:It takes several minutes for update. Please do not turn off power.%>");
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+function showInvalidMessage()
+{
+	alert("<%:The file is broken. Please check the file integrity.%>");
+}
+
+function updateChanged()
+{
+	updateselected = $('input[name="updateability"]:checked').val();
+	scheduleselected = $('input[name="scheduleability"]:checked').val();
+	hideme = (updateselected != 2 ? "none" : "")
+	document.getElementById('manual_block1').style.display = hideme;
+	document.getElementById('manual_block2').style.display = hideme;
+	document.getElementById('manual_block3').style.display = hideme;
+	hideme = (updateselected != 2 ? true : (scheduleselected == 1 ? true : false));
+	document.upload.schedule_1.disabled = hideme;
+	document.upload.schedule_2.disabled = hideme;
+	document.upload.schedule_3.disabled = hideme;
+	document.upload.schedule_4.disabled = hideme;
+	document.upload.schedule_5.disabled = hideme;
+	document.upload.schedule_6.disabled = hideme;
+	document.upload.schedule_0.disabled = hideme;
+	document.upload.startTimeHour.disabled = hideme;
+	document.upload.startTimeMin.disabled = hideme;
+}
+
+<%
+	local lua_updateability = uci.get("system", "firmware", "updateability");
+	if (not lua_updateability) or (tonumber(lua_updateability)>2) or (tonumber(lua_updateability)<0) then
+		lua_updateability = 2;
+	end
+
+	local lua_scheduleability = uci.get("system", "firmware", "scheduleability");
+	if (not lua_scheduleability) or (tonumber(lua_scheduleability)>1) or (tonumber(lua_scheduleability)<0) then
+		lua_scheduleability = 1;
+	end
+
+	local lua_daysmask = uci.get("system", "firmware", "daysmask");
+	-- 127 means everyday is selected
+	if (not lua_daysmask) or (tonumber(lua_daysmask)>127) or (tonumber(lua_daysmask)<0) then
+		lua_daysmask = 0;
+	end
+
+	local lua_startTimeHour = uci.get("system", "firmware", "startTimeHour");
+	if (not lua_startTimeHour) or (tonumber(lua_startTimeHour)>23) or (tonumber(lua_startTimeHour)<0) then
+		lua_startTimeHour = 0;
+	end
+
+	local lua_startTimeMin = uci.get("system", "firmware", "startTimeMin");
+	if (not lua_startTimeMin) or (tonumber(lua_startTimeMin)>60) or (tonumber(lua_startTimeMin)<0) then
+		lua_startTimeMin = 0;
+	end
+%>
+
+function loadCurrentSetting()
+{
+	f = document.upload;
+
+	document.getElementById('manual_block1').style.display = "";
+	document.getElementById('manual_block2').style.display = "";
+	document.getElementById('manual_block3').style.display = "";
+
+	updateability = <%=lua_updateability%>;
+	f.updateability[updateability].checked = true;
+
+	scheduleability = <%=lua_scheduleability%>;
+	f.scheduleability[scheduleability].checked = true;
+
+	daysmask = <%=lua_daysmask%>;
+	for (i=0; i<7; i++) {
+		if (daysmask & 1<<i)
+			eval("f.schedule_"+i).checked = true;
+	}
+
+	startTimeHour = <%=lua_startTimeHour%>;
+	f.startTimeHour.value = startTimeHour;
+
+	startTimeMin = <%=lua_startTimeMin%>;
+	f.startTimeMin.value = startTimeMin;
+
+	updateChanged();
+}
+
+function btnCancel()
+{
+	location.href = currentUrl;
+	return true;
+}
+
+<%
+	--MBA Sean, get the waiting time, default is 30 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+	local waiting_time_uci = uci_t.get("web", "gui_config", "network_apply_waiting_time")
+	local waiting_time = 30;
+
+	if waiting_time_uci then
+		waiting_time = waiting_time_uci
+	end
+
+	uci_t.set_confdir(original_confdir)
+%>
+
+var seconds=<%=waiting_time%>;
+url = currentUrl;
+function waiting()
+{
+	(seconds<=0) ? seconds=0 : seconds-=1;
+	document.getElementById("wait_time").value = seconds;
+	if(seconds == 0)
+	{
+		location.href = url;
+		return true;
+	};
+	setTimeout('waiting()', 1000);
+}
+
+function showWaitingAndRedirect()
+{
+	//MBA Sean, show the waiting page & hide the original content
+	document.getElementById("top_menu").style.display = 'none';
+	document.getElementById("content").style.display = 'none';
+	document.getElementById("waiting").style.display = 'block';
+
+	seconds = <%=waiting_time%>;
+	//MBA Sean, start to countdown.
+	url = currentUrl;
+	waiting();
+}
+
+function frmLoad()
+{
+	loadCurrentSetting();
+}
+
+</script>
+
+
+<div id="content">
+
+<blockquote>
+<p class="title"><%:The firmware of this product can be updated.%></p>
+<form enctype="multipart/form-data"  id="content_send" name="upload" method="post">
+<input name="sendbutton" type="hidden">
+<input name="hdaysmask" value="0" type="hidden">
+<table border="0" cellpadding="0" cellspacing="0" width="575px">
+	<tbody>
+		<tr>
+			<td valign="top"><p align="center"><input size="25" maxlength="31" name="filePath" type="file"></p></td>
+		</tr>
+	</tbody>
+</table>
+<table height="50" border="0" cellpadding="0" cellspacing="0" width="575px">
+	<tbody>
+		<tr>
+		<td>
+			<div align="right">
+			<input type="button" value="<%:Update%>" onclick="btnApply(0)">
+			<input type="button" value="<%:Cancel%>" onclick="window.location.reload()">
+			</div>
+		</td>
+		</tr>
+	</tbody>
+</table>
+
+<table border="0" cellpadding="5" cellspacing="2" width="575">
+	<tbody>
+		<tr>
+			<td class="background" width="30%"><%:Firmware update function:%></td>
+			<td colspan="7" width="70%">
+				<input name="updateability" value="0" onclick="updateChanged();" type="radio"><%:Disabled%>
+				<input name="updateability" value="1" onclick="updateChanged();" type="radio"><%:Checking If New Firmware available%>
+				<input name="updateability" value="2" onclick="updateChanged();" type="radio" checked="checked"><%:Auto Update%>
+			</td>
+		</tr>
+		<tr id="manual_block1" style="">
+			<td class="background" width="30%"><%:The schedule function:%></td>
+			<td colspan="7" width="70%">
+				<input name="scheduleability" value="0" onclick="updateChanged();" type="radio"><%:User-defined%>
+				<input name="scheduleability" value="1" onclick="updateChanged();" type="radio" checked="checked"><%:Predefined%>
+			</td>
+		</tr>
+		<tr id="manual_block2" style="">
+			<td class="background" width="30%"><%:Day of the week:%></td>
+			<td>
+			<div style="float:left"><input disabled="disabled" name="schedule_1" onclick=";" type="checkbox">
+			<b><%:Monday%>&nbsp;</b></div>
+			<div style="float:left"><input disabled="disabled" name="schedule_2" onclick=";" type="checkbox">
+			<b><%:Tuesday%>&nbsp;</b></div>
+			<div style="float:left"><input disabled="disabled" name="schedule_3" onclick=";" type="checkbox">
+			<b><%:Wednesday%>&nbsp;</b></div>
+			<div style="float:left"><input disabled="disabled" name="schedule_4" onclick=";" type="checkbox">
+			<b><%:Thursday%>&nbsp;</b></div>
+			<div style="float:left"><input disabled="disabled" name="schedule_5" onclick=";" type="checkbox">
+			<b><%:Friday%>&nbsp;</b></div>
+			<div style="float:left"><input disabled="disabled" name="schedule_6" onclick=";" type="checkbox">
+			<b><font color="blue"><%:Saturday%>&nbsp;</font></b></div>
+			<div style="float:left"><input disabled="disabled" name="schedule_0" onclick=";" type="checkbox">
+			<b><font color="red"><%:Sunday%>&nbsp;</font></b></div>
+			</td>
+		</tr>
+		<tr id="manual_block3" style="">
+			<td class="background" width="30%"><%:Time:%></td>
+			<td colspan="7">
+			<input value="0" disabled="disabled" name="startTimeHour" maxlength="2" style="width:50px" type="text"><%:Hour%>
+			<input value="0" disabled="disabled" name="startTimeMin" maxlength="2" style="width:50px" type="text"><%:Minute%>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="575px">
+	<tbody><tr>
+		<td>
+		<div align="right">
+		<input type="button" value="<%:Apply%>" onclick="btnApply(1)">
+		<font face="Arial" size="4"><b>
+		<input type="button" value="<%:Reset%>" onclick="window.location.reload()">
+		</b></font>
+		</div>
+		</td>
+		</tr>
+	</tbody>
+</table>
+<input type="hidden" name="apply" value="apply">
+</span>
+</form>
+</blockquote>
+
+</div>
+
+<%+footer%>

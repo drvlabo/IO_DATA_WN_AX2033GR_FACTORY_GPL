@@ -1,0 +1,542 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: header.htm 4891 2009-06-22 10:23:21Z jow $
+
+-%>
+<%
+require("luci.http").prepare_content("text/html")
+local uci = require("luci.model.uci").cursor()
+local i18n = require("luci.i18n")
+local lang = uci:get("luci","main","lang") 
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+-%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
+<head>
+<title>QoS/Bandwidth Management Settings</title>
+<link href="<%=media%>/css/inside.css" rel="stylesheet" type="text/css" />
+<link href="<%=media%>/css/table.css" rel="stylesheet" type="text/css" />
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<style>
+td {white-space: nowrap;}
+</style>
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<meta http-equiv="Pragma" content="no-cache">
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script language="JavaScript" type="text/javascript">
+
+function doFindCurrentRule(CurrentIndex)
+{
+	num = parseInt(CurrentIndex);
+	document.forms[0].BW_rtnCurIndex.value = num;
+}
+function doEditRule()
+{
+	document.forms[0].BW_rtnFlag.value = 1;
+}
+function doDeleteRule()
+{
+	document.forms[0].BW_rtnFlag.value = 2;
+}
+function doFindAppRule(CurrentIndex)
+{
+	num = parseInt(CurrentIndex);
+	document.forms[0].BW_rtnAppIndex.value = num;
+}
+function doEditAppRule()
+{
+	document.forms[0].BW_rtnAppFlag.value = 1;
+}
+
+function checkBWVal( portObj)
+{
+	if (portObj.value == "")
+	{
+		alert("The value of bandwitdth can not accept empty.");
+		portObj.value = 100000;
+		return;
+	}
+	var portVal=atoi(portObj.value, 1);
+	if ( isNaN(portVal) || portVal < 0 )
+	{
+		alert("The value of bandwitdth is not valid value.");
+		portObj.value = 100000;
+		return;
+	}
+}
+
+function checkPriority()
+{
+	var ret=true;
+	var i;
+	var j;
+	
+	with ( document.forms[0] ){
+		for (i=1;i<=6;i++){
+			idx = document.getElementById("appPrio" + i).selectedIndex;
+			for(j=i+1;j<=7;j++){
+				if(idx == document.getElementById("appPrio" + j).selectedIndex){
+					ret = false;
+					break;
+				}
+			}
+		}
+		
+		return ret;
+	}
+	
+}
+function btnApply()
+{
+	var i,j;
+	var idx;
+	var appPrio = "";
+	var appEnable = "";
+	var userEnable = "";
+	var userCategory = "";
+	var userDir = "";
+	var userName = "";
+	var submit_url = '<%=luci.dispatcher.build_url("expert","configuration","management","qos","advance")%>';
+	var loc = submit_url + '?apply=Apply';
+	
+	with ( document.forms[0] ){
+		
+		/* priority validation */
+		if(false == checkPriority()){
+			alert(" <%:Bandwidth_MGMT_Error_1%>");
+			return;
+		}
+				
+		/* for pre-defined app */
+		for (i=1;i<=7;i++){
+			idx = document.getElementById("appPrio" + i).selectedIndex;
+			appPrio += document.getElementById("appPrio" + i).options[idx].value + ",";
+			
+			if(i == 7){
+				break;
+			}
+			
+			if(i == 1){
+				for(j=1;j<=4;j++){
+					if(document.getElementById("appEnable" + i + "_" + j).checked == true){
+						appEnable += "1,";
+					}
+					else{
+						appEnable += "0,";
+					}
+				}
+			}
+			else{
+				if(document.getElementById("appEnable" + i).checked == true){
+					appEnable += "1,";
+				}
+				else{
+					appEnable += "0,";
+				}
+			}
+		}
+		
+		/* for user-defined cfg */
+		for (i=1;i<=8;i++){
+			
+			idx = document.getElementById("userPrio" + i).selectedIndex;
+			userCategory += document.getElementById("userPrio" + i).options[idx].value + ",";
+			
+			idx = document.getElementById("userDir" + i).selectedIndex;
+			userDir += document.getElementById("userDir" + i).options[idx].value + ",";
+			
+			if(document.getElementById("userEnable" + i).checked == true){
+				userEnable += "1,";
+			}
+			else{
+				userEnable += "0,";
+			}
+			
+			userName += document.getElementById("userName" + i).value + ",";
+				
+		}
+	 
+	 loc += '&app_prio=' + appPrio;
+	 loc += '&app_enable=' + appEnable;
+	 loc += '&user_category=' + userCategory;
+	 loc += '&user_name=' + userName;
+	 loc += '&user_enable=' + userEnable;
+	 loc += '&user_dir=' + userDir;
+	
+   	 var code = 'location="' + loc + '"';
+     eval(code);	
+	}
+}
+
+</script>
+</head>
+<!--     body      -->
+<body onload="MM_preloadImages('<%=media%>/admin/images/i_edit_on.gif','<%=media%>/admin/images/i_delete_on.gif')">
+<!--<h1 id="QoSTitleStr">Quality of Service Settings </h1>
+<p id="QoSIntroStr"> You may setup rules to provide Quality of Service guarantees for specific applications.</p>
+<hr>-->
+<form method="post" name="QoSSetup" action="<%=controller%>/expert/configuration/management/qos/advance">
+<div id="tabs">
+  <ul>
+  	<li><a  href="<%=controller%>/expert/configuration/management/qos" title="<%:General%>"><span><%:General%></span></a></li>
+    <li class="hightline"><a title="<%:Advanced%>"><span><%:Advanced%></span></a></li>
+  </ul>
+  <br class="clearfloat" />
+</div>
+<input type="hidden" id="App_Prio" name="app_prio" value="">
+<input type="hidden" id="App_Enable" name="app_enable" value="">
+<input type="hidden" id="User_Category" name="user_category" value="">
+<input type="hidden" id="User_Name" name="user_name" value="">
+<input type="hidden" id="User_Enable" name="user_enable" value="">
+<input type="hidden" id="User_Dir" name="user_dir" value="">
+
+
+<div id="table">
+	<ul>
+  	<!--<li class="table_top"></li>-->
+    <li class="table_content">
+    <!--<br />-->
+    	<div class="data">
+      	<ul>
+ 		<li class="title">
+                  <table border="0" cellpadding="0" cellspacing="0">
+                   <tr><td nowrap id="advTitle2"><%:Application_List%></td>
+                   </tr>
+                   </table>
+			</li>
+			<li></li>
+			<li class="w_text2">
+    			<table width="95%" border="0" align="center" cellpadding="0" cellspacing="0">
+<tr>
+<td height="26" colspan="3"><table width="100%" border="0" cellspacing="0" cellpadding="0">
+<tr>
+<td width="5" height="26"><img src="<%=media%>/admin/images/table_top_left.gif" width="5" height="26" /></td>
+<td background="<%=media%>/admin/images/table_top_center.gif"class="table_title"><font id ="advTitle2_1"><%:Application_List%></font></td>
+<td width="5" height="26"><img src="<%=media%>/admin/images/table_top_right.gif" width="5" height="26" /></td>
+</tr>
+</table></td>
+</tr>
+
+      				<tr>
+        				<td>
+        						<table width="100%" cellpadding="0" cellspacing="0" >
+							        <tr >
+							          <td width="5%"><center>
+							            <span class="top_left">#</span>
+							          </center>                            </td>
+							          <td width="20%"><center>
+							            <span class="top_font" id="advAppPrio"><%:Priority%></span>
+							          </center>                            </td>
+							          <td width="35%"><center>
+							            <span class="top_font" id="advAppCategory"><%:Category%></span>
+							          </center>                            </td>
+							          <td width="40%"><center>
+							            <span class="top_right" id="advAppService"><%:Service%></span>
+							          </center>		                       </td>
+							        </tr>
+
+		    <tr><td><center><span class=table_left>1</span></center></td>
+			<td><center><span class=table_font><select id="appPrio1" size=1>
+			<%
+				prio = uci:get("qos","priority","game")
+			%> 
+			<option value="1" <%if prio == "1" then%> selected <%end%> >1</option>
+			<option value="2" <%if prio == "2" then%> selected <%end%> >2</option>
+			<option value="3" <%if prio == "3" then%> selected <%end%> >3</option>
+			<option value="4" <%if prio == "4" then%> selected <%end%> >4</option>
+			<option value="5" <%if prio == "5" then%> selected <%end%> >5</option>
+			<option value="6" <%if prio == "6" then%> selected <%end%> >6</option>
+			<option value="7" <%if prio == "7" then%> selected <%end%> >7</option>
+			</select></span></center></td>
+			
+			<td><center><span class=table_font><%:Game_Console%></span></center></td>
+			<%
+				enable = uci:get("qos","XBox_Live","enable")
+			%>
+			<td><span class=table_right><input type=checkbox id="appEnable1_1" value=1 <%if enable == "1" then%>checked<%end%> >  <%:XBox_Live%></span></td>
+		    </tr>
+		    
+			<tr><td><center><span class=table_left> </span></center></td>
+			<td><center><span class=table_font> </span></center></td>
+			<td><center><span class=table_font> </span></center></td>
+			<%
+				enable = uci:get("qos","PlayStation","enable")
+			%>
+			<td><span class=table_right><input type=checkbox id="appEnable1_2" value=1 <%if enable == "1" then%>checked<%end%> >  <%:PlayStation%></span></td>
+			</tr>
+			
+			<tr><td><center><span class=table_left> </span></center></td>
+			<td><center><span class=table_font> </span></center></td>
+			<td><center><span class=table_font> </span></center></td>
+			<%
+				enable = uci:get("qos","MSN_Game_Zone","enable")
+			%>
+			<td><span class=table_right><input type=checkbox id="appEnable1_3" value=1 <%if enable == "1" then%>checked<%end%> >  <%:MSN_Game_Zone%></span></td>
+			</tr>
+			
+			<tr><td><center><span class=table_left> </span></center></td>
+			<td><center><span class=table_font> </span></center></td>
+			<td><center><span class=table_font> </span></center></td>
+			<%
+				enable = uci:get("qos","Battlenet","enable")
+			%>
+			<td><span class=table_right><input type=checkbox id="appEnable1_4" value=1 <%if enable == "1" then%>checked<%end%> >  <%:Battlenet%></span></td>
+			</tr>
+			
+			<tr><td><center><span class=table_left>2</span></center></td>
+			<td><center><span class=table_font><select id=appPrio2 size=1> 
+			<%
+				prio = uci:get("qos","priority","voip")
+			%>
+			<option value="1" <%if prio == "1" then%> selected <%end%> >1</option>
+			<option value="2" <%if prio == "2" then%> selected <%end%> >2</option>
+			<option value="3" <%if prio == "3" then%> selected <%end%> >3</option>
+			<option value="4" <%if prio == "4" then%> selected <%end%> >4</option>
+			<option value="5" <%if prio == "5" then%> selected <%end%> >5</option>
+			<option value="6" <%if prio == "6" then%> selected <%end%> >6</option>
+			<option value="7" <%if prio == "7" then%> selected <%end%> >7</option>
+			</select></span></center></td>
+			
+			<td><center><span class=table_font><%:VoIP%></span></center></td>
+			<%
+				enable = uci:get("qos","VoIP","enable")
+			%>
+			<td><span class=table_right><input type=checkbox id="appEnable2" value=1 <%if enable == "1" then%>checked<%end%> >  <%:VoIP%></span></td>
+			</tr>
+			
+			<tr><td><center><span class=table_left>3</span></center></td>
+			<td><center><span class=table_font><select id="appPrio3" size=1>
+			<%
+				prio = uci:get("qos","priority","media")
+			%> 
+			<option value="1" <%if prio == "1" then%> selected <%end%> >1</option>
+			<option value="2" <%if prio == "2" then%> selected <%end%> >2</option>
+			<option value="3" <%if prio == "3" then%> selected <%end%> >3</option>
+			<option value="4" <%if prio == "4" then%> selected <%end%> >4</option>
+			<option value="5" <%if prio == "5" then%> selected <%end%> >5</option>
+			<option value="6" <%if prio == "6" then%> selected <%end%> >6</option>
+			<option value="7" <%if prio == "7" then%> selected <%end%> >7</option>
+			</select></span></center></td>
+			
+			<td><center><span class=table_font><%:Instant_Messenger%></span></center></td>
+			<%
+				enable = uci:get("qos","Instant_Messanger","enable")
+			%>
+			<td><span class=table_right><input type=checkbox id="appEnable3" value=1 <%if enable == "1" then%>checked<%end%> >  <%:Instant_Messenger%></span></td>
+			</tr>
+			
+			<tr><td><center><span class=table_left>4</span></center></td>
+			<td><center><span class=table_font><select id="appPrio4" size=1>
+			<%
+				prio = uci:get("qos","priority","web")
+			%> 
+			<option value="1" <%if prio == "1" then%> selected <%end%> >1</option>
+			<option value="2" <%if prio == "2" then%> selected <%end%> >2</option>
+			<option value="3" <%if prio == "3" then%> selected <%end%> >3</option>
+			<option value="4" <%if prio == "4" then%> selected <%end%> >4</option>
+			<option value="5" <%if prio == "5" then%> selected <%end%> >5</option>
+			<option value="6" <%if prio == "6" then%> selected <%end%> >6</option>
+			<option value="7" <%if prio == "7" then%> selected <%end%> >7</option>
+			</select></span></center></td>
+			
+			<td><center><span class=table_font><%:Web_Surfing%></span></center></td>
+			<%
+				enable = uci:get("qos","Web_Surfing","enable")
+			%>
+			<td><span class=table_right><input type=checkbox id="appEnable4" value=1 <%if enable == "1" then%>checked<%end%> >  <%:Web_Surfing%></span></td>
+			</tr>
+			
+			<tr><td><center><span class=table_left>5</span></center></td>
+			<td><center><span class=table_font><select id="appPrio5" size=1>
+			<%
+				prio = uci:get("qos","priority","ftp")
+			%> 
+			<option value="1" <%if prio == "1" then%> selected <%end%> >1</option>
+			<option value="2" <%if prio == "2" then%> selected <%end%> >2</option>
+			<option value="3" <%if prio == "3" then%> selected <%end%> >3</option>
+			<option value="4" <%if prio == "4" then%> selected <%end%> >4</option>
+			<option value="5" <%if prio == "5" then%> selected <%end%> >5</option>
+			<option value="6" <%if prio == "6" then%> selected <%end%> >6</option>
+			<option value="7" <%if prio == "7" then%> selected <%end%> >7</option>
+			</select></span></center></td>
+			
+			<td><center><span class=table_font><%:FTP%></span></center></td>
+			<%
+				enable = uci:get("qos","FTP","enable")
+			%>
+			<td><span class=table_right><input type=checkbox id="appEnable5" value=1 <%if enable == "1" then%>checked<%end%> > <%:FTP%></span></td>
+			</tr>
+			
+			<tr><td><center><span class=table_left>6</span></center></td>
+			<td><center><span class=table_font><select id="appPrio6" size=1>
+			<%
+				prio = uci:get("qos","priority","mail")
+			%> 
+			<option value="1" <%if prio == "1" then%> selected <%end%> >1</option>
+			<option value="2" <%if prio == "2" then%> selected <%end%> >2</option>
+			<option value="3" <%if prio == "3" then%> selected <%end%> >3</option>
+			<option value="4" <%if prio == "4" then%> selected <%end%> >4</option>
+			<option value="5" <%if prio == "5" then%> selected <%end%> >5</option>
+			<option value="6" <%if prio == "6" then%> selected <%end%> >6</option>
+			<option value="7" <%if prio == "7" then%> selected <%end%> >7</option>
+			</select></span></center></td>
+			
+			<td><center><span class=table_font><%:E_Mail%></span></center></td>
+			<%
+				enable = uci:get("qos","E_Mail","enable")
+			%>
+			<td><span class=table_right><input type=checkbox id="appEnable6" value=1 <%if enable == "1" then%>checked<%end%> >  <%:E_Mail%></span></td>
+			</tr>
+			
+			<tr><td><center><span class=table_left>7</span></center></td>
+			<td><center><span class=table_font><select id="appPrio7" size=1>
+			<%
+				prio = uci:get("qos","priority","others")
+			%> 
+			<option value="1" <%if prio == "1" then%> selected <%end%> >1</option>
+			<option value="2" <%if prio == "2" then%> selected <%end%> >2</option>
+			<option value="3" <%if prio == "3" then%> selected <%end%> >3</option>
+			<option value="4" <%if prio == "4" then%> selected <%end%> >4</option>
+			<option value="5" <%if prio == "5" then%> selected <%end%> >5</option>
+			<option value="6" <%if prio == "6" then%> selected <%end%> >6</option>
+			<option value="7" <%if prio == "7" then%> selected <%end%> >7</option>
+			</select></span></center></td>
+			
+			<td><center><span class=table_font><%:Others%></span></center></td>
+                        <td><span class=table_right></span></td>
+			</tr>
+
+        <tr>
+         	<td height="5" colspan="9">
+		         <table width="100%" height="5" border="0" cellpadding="0" cellspacing="0">
+			         <tr>
+				         <td width="5" height="5"><img src="<%=media%>/admin/images/table_bottom_left.gif" width="5" height="5" /></td>
+				         <td height="5" background="<%=media%>/admin/images/table_bottom_center.gif"><img src="<%=media%>/admin/images/table_bottom_center.gif" width="1" height="5" /></td>
+				         <td width="5"><img src="<%=media%>/admin/images/table_bottom_right.gif" width="5" height="5" /></td>
+				         </tr>
+				         </table></td>
+			         </tr>
+		         </table>
+		       <div class="spaceair"></div>
+               <div class="w_text"> <span class="i_note"><%:Bandwidth_MGMT_Note%></span>
+               </div>
+               <div class="spaceair"></div>
+
+		         </td>
+         </tr>
+        </table>
+			    </li>
+				<li></li>
+				<li class="space3"></li>
+				<li class="title">
+                  <table border="0" cellpadding="0" cellspacing="0">
+                   <tr><td nowrap id="advTitle3"><%:User_defined_Service%></td>
+                   </tr></table>
+				</li>
+				<li></li>
+				<li class="w_text2">
+        	<table width="95%" border="0" align="center" cellpadding="0" cellspacing="0">
+<tr>
+<td height="26" colspan="6"><table width="100%" border="0" cellspacing="0" cellpadding="0">
+<tr>
+<td width="5" height="26"><img src="<%=media%>/admin/images/table_top_left.gif" width="5" height="26" /></td>
+<td background="<%=media%>/admin/images/table_top_center.gif"class="table_title"><font id ="advTitle3_1"><%:User_defined_Service%></font></td>
+<td width="5" height="26"><img src="<%=media%>/admin/images/table_top_right.gif" width="5" height="26" /></td>
+</tr>
+</table></td>
+</tr>
+             <tr >
+               <td width="5%"><center>
+                 <span class="top_left">#</span>
+               </center>                            </td>
+               <td width="10%"><center>
+                 <span class="top_font" id="advUserEnable"><%:Enable%></span>
+               </center>                            </td>
+               <td width="20%"><center>
+                 <span class="top_font" id="advUserDir"><%:Direction%></span>
+               </center>                            </td>
+               <td width="30%"><center>
+                 <span class="top_font" id="advUserName"><%:Service_Name%></span>
+               </center>                            </td>
+               <td width="15%"><center>
+                 <span class="top_font" id="advUserCategory"><%:Category%></span>
+               </center>                            </td>
+               <td width="15%"><center>
+                 <span class="top_right" id="advUserModify"><%:Modify%></span>
+               </center>                            </td>
+             </tr>
+			 <% for i=1,8 do %>
+			 <% userCfg = uci:get_all("qos","eg_policy_" .. i)%>
+			 <tr ><td><center><span class=table_left><%=i%></span></center></td>
+				<td><center><span class=table_font><input type=checkbox id="userEnable<%=i%>" value=1 <%if userCfg["enable"] == "1" then %>checked<%end%> ></span></center></td>
+				<td><center><span class=table_font><select id="userDir<%=i%>" >
+				<option value="lan" <%if userCfg["from_intf"] == "lan" then%> selected <%end%> ><%:From_LAN_WLAN%></option>
+				<option value="wan" <%if userCfg["from_intf"] == "wan" then%> selected <%end%> ><%:From_WAN%></option>
+				<td><center><span class=table_font><input type=text size=12 maxlength=19 id="userName<%=i%>" <% if userCfg["name"] == "" then %>value=""<%else%>value='<%=userCfg["name"]%>'<%end%> ></span></center></td><td><center><span class=table_font>
+				<select id="userPrio<%=i%>" size=1>
+				<option value="game" <%if userCfg["category"] == "game" then%> selected <%end%> ><%:Game_Console%></option>
+				<option value="voip" <%if userCfg["category"] == "voip" then%> selected <%end%> ><%:VoIP%></option>
+				<option value="media" <%if userCfg["category"] == "media" then%> selected <%end%> ><%:Instant_Messenger%></option>
+				
+				<option value="web" <%if userCfg["category"] == "web" then%> selected <%end%> ><%:Web_Surfing%></option>
+				<option value="ftp" <%if userCfg["category"] == "ftp" then%> selected <%end%> ><%:FTP%></option>
+				<option value="mail" <%if userCfg["category"] == "mail" then%> selected <%end%> ><%:E_Mail%></option>
+				<option value="others" <%if userCfg["category"] == "others" then%> selected <%end%> ><%:Others%></option>
+				</select></span></center></td>
+				<td><center><span class=table_right>
+				<a href="<%=controller%>/expert/configuration/management/qos/advance?edit=eg_policy_<%=i%>" 
+				onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('userEditImage<%=i%>','','<%=media%>/admin/images/i_edit_on.gif',1)">
+				<img src="<%=media%>/admin/images/i_edit.gif" width=18 height=18 border=0 title=<%:Edit%> ></a>
+				&nbsp;&nbsp;<a href="<%=controller%>/expert/configuration/management/qos/advance?delete=eg_policy_<%=i%>" 
+				onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('userDelImage<%=i%>','','<%=media%>/admin/images/i_delete_on.gif',1)"> 
+				<img src="<%=media%>/admin/images/i_delete.gif" width=18 height=18 border=0 title=<%:Delete%> /></a></span></center></td>
+			 </tr>
+			 <% end %>
+
+             <tr>
+             	<td height="5" colspan="6">
+             		<table width="100%" height="5" border="0" cellpadding="0" cellspacing="0">
+             			<tr>
+             				<td width="5" height="5"><img src="<%=media%>/admin/images/table_bottom_left.gif" width="5" height="5" /></td>
+                    <td height="5" background="<%=media%>/admin/images/table_bottom_center.gif"><img src="<%=media%>/admin/images/table_bottom_center.gif" width="1" height="5" /></td>
+                    <td width="5"><img src="<%=media%>/admin/images/table_bottom_right.gif" width="5" height="5" /></td>
+                  </tr>
+                </table>
+             	</td>
+             </tr>
+             </table></td>
+             </tr>
+            </table>
+			    </li>
+				<li></li>
+				<li></li>
+       </ul>
+     </div>
+    </li>
+    <center>
+        <li class="table_button">
+		<input type="button" value="<%:Apply%>" id="advApply" name="apply" onClick="btnApply()"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<input type="reset" value="<%:cancel%>" id="advReset" name="reset" onClick="window.location.reload()" >
+        </li>
+        </center>
+  </ul>
+</div>
+</form>
+</body>
+<script language="JavaScript">
+	showFullPath(' <%:Management%> > <%:Bandwidth_MGMT%> > <%:Advanced%>');
+</script>
+</html>
+

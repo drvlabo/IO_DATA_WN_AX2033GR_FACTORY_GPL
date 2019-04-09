@@ -1,0 +1,136 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<title>.::Welcome to the Web-Based Configurator::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script type="text/javascript" src="<%=media%>/js/jquery-1.3.1.min.js"></script>
+<script type="text/javascript" src="<%=media%>/js/jquery.blockUI.js" ></script>
+<script language="JavaScript" type="text/javascript">
+
+function path_msg_init(){
+	showFullPath(' <%:LTE%> > <%:APN%> ');
+	showWebMessage( 0, '<%:Message%>', '<%:Ready%>' );
+}
+</script>
+
+</head>
+<body onload="MM_preloadImages('<%=media%>/admin/images/i_delete_on.gif');path_msg_init();closewaitblock();" >
+<form method="post" name="" action="<%=controller%>/expert/configuration/lte/APN" >
+<div id="tabs">
+  <ul>
+    <li class="hightline"><a  title="<%:APN%>"><span><%:APN%></span></a></li>
+  </ul>
+  <br class="clearfloat" />
+</div>
+<div id="table">
+  <ul>
+    <li class="table_top"></li>     <li class="table_content">
+        <div class="data">
+        <ul>
+          <div class="title"><span class="cTitle"><%:APN_Setup%></span></div>
+
+		
+          <div class="tableframe">
+            <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0" class="table_frame">
+              <tr>
+                <td><table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td><table width="100%" cellpadding="0" cellspacing="0" >
+                          <tr>
+                            <td height="26" colspan="8"><table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                  <td height="26"class="table_title"><span class="cTitle"></span></td>
+                                </tr>
+                              </table></td>
+                          </tr>
+                          <tr class="top_font" align="center">
+                            <td width="35" >#</td>
+                            <td width="80"><%:Status%></td>
+                            <td><%:Name%></td>
+							<td><%:APN%></td>
+                           
+                            <td><%:IPv6_IPv4_Mode%></td>                      
+                            <td width="100"><%:Modify%></td>
+                          </tr>
+						 	
+								<%							
+								local CID_1_NAME = uci.get("wanconfig","pdp1","name")
+								local CID_1_APN_ENABLE = uci.get("wanconfig","pdp1","enable")
+								local CID_1_APN = uci.get("wanconfig","pdp1","apn")
+								local CID_1_AUTO_APN = uci.get("wanconfig","pdp1","auto_apn")
+								local CID_1_TYPE = uci.get("wanconfig","pdp1","type")
+								local CID_2_NAME = uci.get("wanconfig","pdp2","name")
+								local CID_2_APN_ENABLE = uci.get("wanconfig","pdp2","enable")	
+								local CID_2_APN = uci.get("wanconfig","pdp2","apn")
+								local CID_2_AUTO_APN = uci.get("wanconfig","pdp2","auto_apn")
+								local CID_2_TYPE = uci.get("wanconfig","pdp2","type")
+								%>
+
+							
+                          <tr class="table_font" align="center">
+                            <td >1</td>
+                            <td><img <% if CID_1_APN_ENABLE == "1" then %>src="<%=media%>/admin/images/i_active_on.gif" title="<%:On%>"<%else%>src="<%=media%>/admin/images/i_active_off.gif" title="<%:Off%>"<% end %> width="18" height="18" /> </td>
+                            <td><%if CID_1_NAME == nil or CID_1_NAME == "" then%>N/A<%else%><%=CID_1_NAME%><%end%></td>							
+							<%  if CID_1_TYPE == nil or CID_1_TYPE == "" then
+									CID_1_TYPE_SHOW = "N/A"
+								elseif CID_1_TYPE == "v4" then
+									CID_1_TYPE_SHOW = "IPv4"
+								elseif CID_1_TYPE == "v6" then
+									CID_1_TYPE_SHOW = "IPv6"
+								elseif CID_1_TYPE == "v4v6" then
+									CID_1_TYPE_SHOW = "IPv4/IPv6"
+								end
+							%>
+							<td><%if CID_1_AUTO_APN == "1" then%><%:Auto_APN%><%else%><%=CID_1_APN%><%end%></td>
+							<td><%=CID_1_TYPE_SHOW%></td>
+							
+							<td>
+                            	<a href="<%=controller%>/expert/configuration/lte/APN/apn_edit?edit=1" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image19','','<%=media%>/admin/images/i_edit_on.gif',1)" ><img src="<%=media%>/admin/images/i_edit.gif" name="Image19" width="18" height="18" border="0" id="Image19"  title="<%:Edit%>"/></a>
+                            </td>													
+                          
+						  </tr>
+						  
+                         <tr class="table_font" align="center" style="display:none;">
+                            <td >2</td>
+                            <td><img <% if CID_2_APN_ENABLE == "1" then %>src="<%=media%>/admin/images/i_active_on.gif" title="<%:On%>"<%else%>src="<%=media%>/admin/images/i_active_off.gif" title="<%:Off%>"<% end %> width="18" height="18" /> </td>
+                            <td><%if CID_2_NAME == nil or CID_2_NAME == "" then%>N/A<%else%><%=CID_2_NAME%><%end%></td>
+							<%  if CID_2_TYPE == nil or CID_2_TYPE == "" then
+									CID_2_TYPE_SHOW = "N/A"
+								elseif CID_2_TYPE == "v4" then
+									CID_2_TYPE_SHOW = "IPv4"
+								elseif CID_2_TYPE == "v6" then
+									CID_2_TYPE_SHOW = "IPv6"
+								elseif CID_2_TYPE == "v4v6" then
+									CID_2_TYPE_SHOW = "IPv4/IPv6"
+								end
+							%>
+							<td><%if CID_2_AUTO_APN == "1" then%><%:Auto_APN%><%else%><%=CID_2_APN%><%end%></td>
+							<td><%=CID_2_TYPE_SHOW%></td>                    							
+							
+                            <td>
+                            	<a href="<%=controller%>/expert/configuration/lte/APN/apn_edit?edit=2" onmouseout="MM_swapImgRestore()" onmouseover="MM_swapImage('Image19','','<%=media%>/admin/images/i_edit_on.gif',1)" ><img src="<%=media%>/admin/images/i_edit.gif" name="Image19" width="18" height="18" border="0" id="Image19"  title="<%:Edit%>"/></a>
+                            </td>
+                          </tr>
+						  
+						 
+                        </table></td>
+                    </tr>
+                  </table></td>
+              </tr>
+            </table>
+          </div>
+          <div class="spaceair"> </div>
+        </ul>
+      </div>
+	 
+  </ul>
+  <br/>
+  <br/>
+</div>
+
+</form>
+</body>
+</html>

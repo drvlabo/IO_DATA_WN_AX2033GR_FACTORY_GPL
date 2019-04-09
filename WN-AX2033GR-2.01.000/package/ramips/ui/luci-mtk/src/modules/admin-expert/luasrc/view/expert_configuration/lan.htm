@@ -1,0 +1,382 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: header.htm 4891 2009-06-22 10:23:21Z jow $
+
+-%>
+<%
+require("luci.http").prepare_content("text/html")
+local i18n = require("luci.i18n")
+local uci = require("luci.model.uci").cursor()
+local http = require("luci.http")
+local lang = uci:get("luci","main","lang")
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+-%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"  />
+<title>.::Welcome to the Web-Based Configurator::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script type="text/javascript">
+//<![CDATA[
+<%
+	local http_port=uci:get("uhttpd", "main", "listen_http")
+	local config_lan_ip=uci:get("network", "lan", "ipaddr")
+	local config_lan_mask=uci:get("network", "lan", "netmask")
+%>	
+function checkIPFormat( value )
+{
+  return /^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$/.test( value );
+}
+
+function checkNetmaskFormat( value )
+{
+  return /^255\.255\.255\.(255|252|248|240|224|192|128|0)|255\.255\.(254|252|248|240|224|192|128|0)\.0|255\.(254|252|248|240|224|192|128|0)\.0\.0|(254|252|248|240|224|192|128)\.0\.0\.0$/.test( value );
+}
+
+function chkIP(address) { 
+        
+		var IP = address;        
+        IP = IP.replace(/ /g, "");
+        //address.value = IP;
+        var IPsplit = IP.split(".");
+        if(IPsplit.length != 4) {
+            alert("<%:LAN_Error_1%>");
+            return false;
+        }
+        //check first,and last byte is zero
+        if((IPsplit[0] == "0") || (IPsplit[3] == "0")){
+            alert("<%:LAN_Error_1%>");
+                return false;
+        }
+        for(i = 0; i < 4; i++)
+            if((isNaN(IPsplit[i])) || (IPsplit[i] == undefined) || (IPsplit[i] == "")) {
+                alert("<%:LAN_Error_1%>");
+                return false;
+        } else
+        if((parseInt(IPsplit[i], 10) > 255) || (parseInt(IPsplit[i], 10) < 0)) {
+                    alert("<%:LAN_Error_1%>");
+                    return false;
+        }
+        return true;
+        
+}
+
+function chkSubnetMask(object) {  //dedy this func is call at line 814,1246
+        var SNMask = object.value;
+        var SNMaskRanhge=[255,254,252,248,240,224,192,182,128];
+        var Valid=0;
+        SNMask = SNMask.replace(/ /g, "");
+        //address.value = SNMask;
+        var SNMaskSplit = SNMask.split(".");
+        if(SNMaskSplit.length != 4) {
+            alert("<%:LAN_Error_2%>");
+            object.value ="255.255.255.0";
+            object.focus();
+            return false;
+        }
+        for(i = 3; i >= 0; i--){
+            if(Valid==0){
+                for(j=0;j<SNMaskRanhge.length;j++){
+                    if(parseInt(SNMaskSplit[i], 10) == SNMaskRanhge[j]) {
+                        Valid=1;
+                    }
+                }
+                if((Valid==0) && (parseInt(SNMaskSplit[i], 10) != 0)) break;
+            }else{
+                if(parseInt(SNMaskSplit[i], 10) != 255)  {
+                        Valid=0;
+                        break;
+                }                
+            }
+            if(isNaN(SNMaskSplit[i])) {
+                Valid=0;
+                break;
+            }
+        }
+        if(Valid==0){
+            alert("<%:LAN_Error_2%>");
+            object.value ="255.255.255.0";
+            object.focus();
+            return false;                    
+        }
+        return true;
+}
+
+function ip2uint(ip)
+{
+	var ip_num = 0;
+	ip = ip.split(".");
+	for (var i = 0; i < 4; i++) {
+		ip_num += parseInt(ip[i]) << ((ip.length - 1 - i) * 8);
+	}
+	if (ip_num < 0) {
+		ip_num += Math.pow(2, 32);
+	}
+	return ip_num;
+}
+
+function uint2ip(ip_num)
+{
+	var ip = '';
+	for (var i = 0; i < 4; i++) {
+		ip_tmp = (ip_num & 0xff);
+		ip_num >>= 8;
+		if(i == 0) {
+			ip = ip_tmp;
+		} else {
+			ip = ip_tmp + "." + ip;
+		}
+	}
+	return ip;
+}
+
+
+function hostIDCheck(ip, lanMask)
+{
+	if ((ip2uint(ip) & (~ip2uint(lanMask))) == 0) {
+		alert("<%:LAN_Error_1%>");
+		return false;
+	}
+	if (~(ip2uint(ip) | ip2uint(lanMask)) == 0) {
+		alert("<%:LAN_Error_1%>");
+		return false;
+	}
+	return true;
+}
+
+function getLanStartIPNum(lanIp, lanMask)
+{
+	var lanStartIP = (ip2uint(lanIp) & ip2uint(lanMask)) + 1;
+	if (lanStartIP < 0) {
+		lanStartIP += Math.pow(2, 32);
+	}
+	return lanStartIP;
+}
+
+function getLanEndIPNum(lanIp, lanMask)
+{
+	var lanEndIP = (ip2uint(lanIp) | (~ip2uint(lanMask))) - 1;
+	if (lanEndIP < 0) {
+		lanEndIP += Math.pow(2, 32);
+	}
+	return lanEndIP;
+}
+
+function getDHCPStartIP(lanip)
+{
+	var IP = lanip;
+	<%local dhcp_start = uci.get("dhcp","lan","start")
+		if dhcp_start== nil then
+			dhcp_start="1"
+		end
+	%>
+    IP = IP.replace(/ /g, "");
+    var IPsplit = IP.split(".");
+	return IPsplit[0]+"."+IPsplit[1]+"."+IPsplit[2]+"."+<%=dhcp_start%>;
+
+}
+
+function getDHCPEndIP(startip)
+{
+		var IP = startip;
+		<%local dhcp_end = uci.get("dhcp","lan","limit")
+			if dhcp_end== nil then
+				dhcp_end="1"
+			end
+		%>        
+        IP = IP.replace(/ /g, "");
+        var IPsplit = IP.split(".");
+		ipend = parseInt(IPsplit[3], 10) + parseInt(<%=dhcp_end%>,10) -1;
+
+		return IPsplit[0]+"."+IPsplit[1]+"."+IPsplit[2]+"."+ipend
+
+			
+}
+
+function DHCP_pool_change()
+{
+	with(document.lanIpCfg){
+ 		var lanStartIP = getLanStartIPNum(ipaddr.value, netmask.value);
+		var lanEndIP = getLanEndIPNum(ipaddr.value, netmask.value);
+		var lanIp = ip2uint(ipaddr.value);
+		//alert("It should be between "+uint2ip(lanStartIP)+" and"+uint2ip(lanEndIP) +".");
+		var dhcpStartIp = ip2uint(getDHCPStartIP(ipaddr.value));
+
+		var dhcpEndIp = ip2uint(getDHCPEndIP(getDHCPStartIP(ipaddr.value)));
+	
+		if (dhcpStartIp < lanStartIP) {
+			dhcpStartIp = lanStartIP;
+		}
+		if (dhcpEndIp < lanStartIP) {
+			dhcpEndIp = lanStartIP;
+		}
+		if (dhcpStartIp > lanEndIP) {
+			dhcpStartIp = lanEndIP;
+		}
+		if (dhcpEndIp > lanEndIP) {
+			dhcpEndIp = lanEndIP;
+		}
+		if (dhcpStartIp == dhcpEndIp) {
+			dhcpStartIp = lanStartIP;
+			dhcpEndIp = lanEndIP;
+		}
+		if ((lanIp >= dhcpStartIp) && (lanIp <= dhcpEndIp)) {
+			if ((lanIp - dhcpStartIp) > (dhcpEndIp - lanIp)) {
+				dhcpEndIp = lanIp - 1;
+			} else {
+				dhcpStartIp = lanIp + 1;
+			}
+		}
+		
+		dhcpstart.value=uint2ip(dhcpStartIp);
+		dhcpend.value=uint2ip(dhcpEndIp);
+	
+	}
+}
+
+
+function verifySubmitData()
+{
+	with(document.lanIpCfg){
+		if(chkIP(ipaddr.value) && chkSubnetMask(netmask) && hostIDCheck(ipaddr.value,netmask.value) )
+		{
+			DHCP_pool_change();
+			showWebMessage( 1 , "<%:Message%>" , "<%:msg_config%>" );
+			return true;
+		}
+		
+	}
+  return false;
+}
+function frmLoad()
+{
+	//document.getElementById("popup_wait").style.visibility='hidden';
+}
+function relogin()
+{
+	var submit_url = 'http://' + document.getElementById("ipaddr").value + ':' + '<%=http_port%>';
+	top.window.location.href = submit_url; 
+}
+function btnApply()
+{
+		
+        var verifyFlag = verifySubmitData();
+		//verifyFlag=0;
+        if (verifyFlag){
+		with(document.lanIpCfg){
+			
+		
+			var submit_url = '<%=luci.dispatcher.build_url("expert","configuration","network", "lan")%>';
+			var loc = submit_url + '?apply=Apply';
+		
+			loc += '&ipaddr=' + ipaddr.value;
+			loc += '&netmask=' + netmask.value;
+			loc += '&dhcpstart=' + dhcpstart.value;
+			loc += '&dhcpend=' + dhcpend.value;
+		
+			//document.getElementById("popup_wait").style.visibility='visible';
+		
+			if (ipaddr.value == "<%=config_lan_ip%>" && netmask.value == "<%=config_lan_mask%>")
+			{
+				var code = 'location="' + loc + '"';
+				eval(code);				
+			}
+			else
+			{
+				alert("<%:msg_relogin%>");
+				var objXMLHTTP;
+				if (window.XMLHttpRequest) {
+					objXMLHTTP=new XMLHttpRequest();
+				}// code for IE
+				else if (window.ActiveXObject)  {
+					objXMLHTTP=new ActiveXObject("Microsoft.XMLHTTP");
+				}	
+		
+				objXMLHTTP.open("GET",loc,true);
+
+	    		/*let IE refresh page */
+	    		objXMLHTTP.setRequestHeader("If-Modified-Since",new Date(0));
+	    		objXMLHTTP.setRequestHeader("Content-Type", "text/plain");
+	    
+	    		objXMLHTTP.send(null);
+
+	    		setTimeout("relogin()", 5000);
+			}
+			}//end with
+        }//end if (verifyFlag)
+}
+
+function path_msg_init(){
+   showFullPath(' <%:Network%> > <%:LAN%> ');
+   showWebMessage( 0, '<%:Message%>', '<%:Ready%>' );
+}
+//]]>
+</script>
+</head>
+<body onload="frmLoad();path_msg_init();">
+<div id="tabs"> 
+  <ul> 
+    <li class="hightline"><a title="<%:LAN%>"><span><%:LAN%></span></a></li>
+	<li><a href="<%=controller%>/expert/configuration/network/lan/ipv6" title="<%:lan_ipv6%>"><span><%:lan_ipv6%></span></a></li> 	
+	<!--
+    <li><a href="<%=controller%>/expert/configuration/network/lan/ipalias" title="<%:IP_Alias%>"><span><%:IP_Alias%></span></a></li> 
+	-->
+  </ul> 
+  <br class="clearfloat" /> 
+</div> 
+<!-- Tab --> 
+<div id="table"> 
+  <form method="post" name="lanIpCfg" action="<%=controller%>/expert/configuration/network/lan"> 
+    <ul> 
+      <li class="table_top"></li> 
+      <li class="table_content"> 
+          <div class="data"> 
+            <ul><div class="w_text"> 
+              <ul> 
+                <li class="left_table"><%:IP_Address%> :</li> 
+                <li class="right_table"> 
+				<% local ipaddr = uci:get("network", "lan", "ipaddr") %>
+                  <input name="ipaddr" id="ipaddr" maxlength="15" size="15" <%if ipaddr then%> value="<%= ipaddr %>" <%end%> /> 
+                </li> 
+              </ul> 
+              </div> 
+              <div class="w_text"> 
+                <ul> 
+                  <li class="left_table"><%:IP_Subnet_Mask%> :</li> 
+                  <li class="right_table"> 
+				 <% local netmask = uci:get("network", "lan", "netmask") %>
+                    <input name="netmask" id="netmask" maxlength="15" size="15" <%if netmask then%> value="<%= netmask %>" <%end%> /> 
+					<input name="dhcpstart" id="dhcpstart" type="hidden" /> 
+					<input name="dhcpend" id="dhcpend" type="hidden" /> 
+                  </li> 
+                </ul> 
+              </div> 
+              <div class="spaceair"></div>	
+            </ul> 
+        </div> 
+      </li> 
+        <li class="table_button"> 
+          <div class="button" align="center"> 
+            <input name="apply" value="<%:Apply%>" type="button" onclick="btnApply()"/>    &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;<input name="Cancel" value="<%:Cancel%>" type="reset" /> 
+          </div> 
+        </li> 
+    </ul>
+
+
+  </form> 
+</div>
+</body>
+</html>

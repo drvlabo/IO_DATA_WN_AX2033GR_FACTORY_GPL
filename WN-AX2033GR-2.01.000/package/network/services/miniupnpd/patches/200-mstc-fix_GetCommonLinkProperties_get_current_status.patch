@@ -1,0 +1,111 @@
+Index: miniupnpd-2.0.20161216/upnpsoap.c
+===================================================================
+--- miniupnpd-2.0.20161216.orig/upnpsoap.c	2016-02-21 03:14:07.000000000 +0800
++++ miniupnpd-2.0.20161216/upnpsoap.c	2017-01-24 18:12:18.503909081 +0800
+@@ -211,6 +211,98 @@
+ 	BuildSendAndCloseSoapResp(h, body, bodylen);
+ }
+ 
++#if 1	// Terence, MSTC, Fix GetCommonLinkProperties get current status, not from config
++int str2Hex(unsigned char * str)
++{
++        int val=0;
++        int i;
++        for (i=0; i<strlen(str); i++)
++        {
++                if (str[i]>='A' && str[i]<='F')
++                        val = (val<<4) + str[i]-'A' +10;
++                else if (str[i]>='a' && str[i]<='f')
++                        val = (val<<4) + str[i]-'a' +10;
++                else if (str[i]>='0' && str[i]<='9')
++                        val = (val<<4) + str[i]-'0';
++        }
++        return val;
++}
++
++#ifdef CONFIG_PACKAGE_switch_WLLLL
++#define WAN_PORT_NUM 0
++#elif defined (CONFIG_PACKAGE_switch_LLLLW)
++#define WAN_PORT_NUM 4
++#endif
++static void
++GetCommonLinkProperties(struct upnphttp * h, const char * action, const char * ns)
++{
++	/* WANAccessType : set depending on the hardware :
++	 * DSL, POTS (plain old Telephone service), Cable, Ethernet */
++	static const char resp[] =
++		"<u:%sResponse "
++		"xmlns:u=\"%s\">"
++		/*"<NewWANAccessType>DSL</NewWANAccessType>"*/
++		"<NewWANAccessType>Cable</NewWANAccessType>"
++		"<NewLayer1UpstreamMaxBitRate>%lu</NewLayer1UpstreamMaxBitRate>"
++		"<NewLayer1DownstreamMaxBitRate>%lu</NewLayer1DownstreamMaxBitRate>"
++		"<NewPhysicalLinkStatus>%s</NewPhysicalLinkStatus>"
++		"</u:%sResponse>";
++
++	char body[2048];
++	int bodylen;
++	FILE *pp;
++	char buf[128];
++	char cmdbuf[128]={0};
++	char status[8]={0};
++	int link = 0;
++	unsigned int reg_val = 0;
++	unsigned char *pch;
++	char ext_ip_addr[INET_ADDRSTRLEN];
++
++#ifdef CONFIG_TARGET_ramips_mt7621	// MSTC, Terence, depending by mii_mgr for get register value
++	snprintf(cmdbuf, sizeof(cmdbuf), "%s %x", "mii_mgr -g -p 31 -r", (0x3008 + (WAN_PORT_NUM*0x100)));
++#else
++	snprintf(cmdbuf, sizeof(cmdbuf), "%s %d", "mii_mgr -g -p 31 -r", (0x3008 + (WAN_PORT_NUM*0x100)));
++#endif
++
++	pp = popen(cmdbuf, "r");
++	if (pp) {
++		memset(buf, 0, 128);
++		fread(buf, 1, 128, pp);
++		pclose(pp);
++
++		pch = strstr(buf, "=") + 2;
++		reg_val = str2Hex(pch);
++	}
++	
++	link = 0;
++	/* (bit0: force_mode_P5 = 1) = Link up*/
++	if(reg_val & 0x1) {
++		/* When (force_mode_P5 = 1), these 2-3 bits are used to control MAC speed of PORT #.
++		 00: 10Mbps 01: 100Mbps 10: 1000Mbps 11: Reserved */
++		if((reg_val & 0x4) == 0x4)
++			link = 100;
++		else if ((reg_val & 0x8) == 0x8)
++			link = 1000;
++		else
++			link = 10;
++
++		strcpy(status, "Up");
++	}
++	else {
++		strcpy(status, "Down");
++	}
++	
++	downstream_bitrate = link * 1000000;
++	upstream_bitrate = link * 1000000;
++	
++	bodylen = snprintf(body, sizeof(body), resp,
++	    action, "urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1",
++		upstream_bitrate, downstream_bitrate,
++	    status, action);
++	BuildSendAndCloseSoapResp(h, body, bodylen);
++}
++#else
+ static void
+ GetCommonLinkProperties(struct upnphttp * h, const char * action, const char * ns)
+ {
+@@ -251,6 +343,7 @@
+ 	    status, action);
+ 	BuildSendAndCloseSoapResp(h, body, bodylen);
+ }
++#endif
+ 
+ static void
+ GetStatusInfo(struct upnphttp * h, const char * action, const char * ns)

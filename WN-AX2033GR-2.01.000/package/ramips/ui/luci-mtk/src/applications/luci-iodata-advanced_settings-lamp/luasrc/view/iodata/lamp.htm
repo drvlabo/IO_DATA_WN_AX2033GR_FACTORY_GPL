@@ -1,0 +1,102 @@
+<%+header%>
+
+<script type="text/javascript">
+
+var url ="<%=controller%>/content/advanced_settings/lamp"; //current page url
+
+//MBA Sean, Cancel Button script
+function btnCancel()
+{
+	location.href=url;
+	return true;
+}
+
+//MBA Olivia, Apply Button script
+function btnApply()
+{
+	funcEnable = $("input[name='enableLamp']:checked").val();
+	
+	$("#lampDataStr").val(funcEnable);
+
+	//MBA Sean, show the waiting page & hide the original content
+	document.getElementById("top_menu").style.display = 'none';
+	document.getElementById("content").style.display = 'none';
+	document.getElementById("waiting").style.display = 'block';
+	//MBA Sean, start to countdown.
+	waiting();
+
+	//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+	$.ajax({
+		type:"POST",
+		url: url,
+		data: $("#content_send").serialize(),// serializes the form's elements.
+	});
+	
+	return false;
+}
+
+<%
+	--MBA Sean, get the waiting time, default is 30 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+	uci_t.set_confdir(original_confdir)
+%>
+
+var seconds=5;
+function waiting()
+{
+	(seconds <= 0) ? seconds=0 : seconds-=1;
+	document.getElementById("wait_time").value = seconds;
+
+	if(seconds == 0){
+		location.href = url;
+		return true;
+	}
+	
+	setTimeout('waiting()',1000);
+}
+
+</script>
+<div id="content">
+<form id="content_send" name="lamp">
+<blockquote>
+<p class="title"><%:Make the Lamp settings.%></p>
+<table border="0" width="90%">
+	<tbody>
+		<tr align="left">			   
+			<td width="30%" class="background"><%:Lamp%>：</td>
+<%
+local enable_led_light = uci.get("system", "lamp", "led_light")
+
+local enableCheckedStr = ""
+local disableCheckedStr = ""
+if enable_led_light ~= "1" then
+    disableCheckedStr = "checked"
+else
+    enableCheckedStr = "checked"
+end
+%>
+			<td width="70%">
+				<input type="radio" name="enableLamp" value="1" <%=enableCheckedStr%>/><%:Enable_lamp%>
+				<input type="radio" name="enableLamp" value="0" <%=disableCheckedStr%>/><%:Disable_lamp%>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<br/>
+<table width="300" border="0" cellspacing="0" cellpadding="0" align="right">
+	<tr>
+		<td align="right">
+			<input type="submit" value="<%:Apply%>" onClick="return btnApply()" width="105" height="30" border="0"/>
+			<input type="reset" value="<%:Cancel%>" onclick="window.location.reload()"/>
+			<input type="hidden" value="" id="lampDataStr" name="lampDataStr"/>
+			<input type="hidden" value="1" name="isApply"/>
+		</td>
+	</tr>
+</table>
+</blockquote>
+</form> 
+</div>
+
+<%+footer%>

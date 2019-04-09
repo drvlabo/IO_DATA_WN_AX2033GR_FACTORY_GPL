@@ -1,0 +1,71 @@
+msgid "Log"
+msgstr "Log"
+
+msgid "all_logs"
+msgstr "All Logs"
+
+msgid "log"
+msgstr "Log"
+
+msgid "log_SysAlert"
+msgstr "System Alert"
+
+msgid "log_SysCritical"
+msgstr "System Critical"
+
+msgid "log_SysDebug"
+msgstr "System Debug"
+
+msgid "log_SysEmergency"
+msgstr "System Emergency"
+
+msgid "log_SysError"
+msgstr "System Error"
+
+msgid "log_SysInfo"
+msgstr "System Info"
+
+msgid "log_SysNotice"
+msgstr "System Notice"
+
+msgid "log_SysWarning"
+msgstr "System Warning"
+
+msgid "log_clear"
+msgstr "Clear Log"
+
+msgid "log_display"
+msgstr "Display"
+
+msgid "log_refresh"
+msgstr "Refresh"
+
+msgid "log_setting"
+msgstr "Log Setting"
+
+msgid "log_summary"
+msgstr "Summary"
+
+msgid "log_summary_msg"
+msgstr "Message"
+
+msgid "log_summary_time"
+msgstr "Time"
+
+msgid "msg_config"
+msgstr "Configuration Update is proceeding. Please Wait..."
+
+msgid "view_log"
+msgstr "View Log"
+
+msgid "active_log_alert"
+msgstr "Active Log and Alert"
+
+msgid "Display the log."
+msgstr "Display the log."
+
+msgid "Refresh"
+msgstr "Refresh"
+
+msgid "Clean"
+msgstr "Clean"

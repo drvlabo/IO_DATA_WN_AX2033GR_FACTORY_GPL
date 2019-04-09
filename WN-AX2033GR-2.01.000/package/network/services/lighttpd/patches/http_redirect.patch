@@ -1,0 +1,298 @@
+#MSTC Marco, support http redirect
+
+
+diff -Naur lighttpd-1.4.38.orig/src/connections.c lighttpd-1.4.38/src/connections.c
+--- lighttpd-1.4.38.orig/src/connections.c	2015-11-23 03:03:10.000000000 +0800
++++ lighttpd-1.4.38/src/connections.c	2016-06-06 17:29:19.636078808 +0800
+@@ -487,6 +487,44 @@
+ 		}
+ 
+ 		if (!con->file_finished) {
++			if(HTTP_redirect_enable ==1){
++				HTTPD_DBG("%s, %d, con->http_status = %d\n", __FUNCTION__, __LINE__, con->http_status);
++				
++				char redirectPage[1024];
++				memset(redirectPage, 0, sizeof(redirectPage));
++
++				buffer *b;
++
++				buffer_reset(con->physical.path);
++
++				con->file_finished = 1;
++				b = buffer_init();
++
++
++				sprintf(redirectPage, 
++				           "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>\n"
++						   "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n"
++						   "         \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n"
++						   "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n"
++						   " <head>\n"
++						   "<meta http-equiv='refresh' content = '0; url=http://%s/ezinet_pre.htm'></head>"
++						   "</html>\n", cServerAddress);
++
++
++				buffer_copy_string_len(b, CONST_STR_LEN(redirectPage));
++			
++				if (con->http_status == 404){
++					con->http_status = 200;
++					HTTPD_DBG("%s, %d,  transfer con->http_status from 404 to %d\n", __FUNCTION__, __LINE__, con->http_status);
++				}
++
++				http_chunk_append_buffer(srv, con, b);
++				buffer_free(b);
++				http_chunk_close(srv, con);
++
++				response_header_overwrite(srv, con, CONST_STR_LEN("Content-Type"), CONST_STR_LEN("text/html"));
++
++			}else{
+ 			buffer *b;
+ 
+ 			buffer_reset(con->physical.path);
+@@ -526,6 +564,7 @@
+ 
+ 			response_header_overwrite(srv, con, CONST_STR_LEN("Content-Type"), CONST_STR_LEN("text/html"));
+ 		}
++		}
+ 		break;
+ 	}
+ 
+diff -Naur lighttpd-1.4.38.orig/src/request.c lighttpd-1.4.38/src/request.c
+--- lighttpd-1.4.38.orig/src/request.c	2015-11-23 03:01:48.000000000 +0800
++++ lighttpd-1.4.38/src/request.c	2016-06-06 17:28:49.242886074 +0800
+@@ -10,6 +10,89 @@
+ #include <stdio.h>
+ #include <ctype.h>
+ 
++#include <fcntl.h>
++#include <net/ethernet.h>
++#include <net/if.h>
++
++#define MAX_BUFF                        1024
++#define PATH_GETNETINF                  "LANG=C /sbin/ifconfig"
++
++int do_http_redirect=0;
++
++char	cServerAddress[20];
++
++
++typedef struct	cache_ip	{
++	unsigned char   dhcpclient;
++	struct in_addr	ip;
++	struct in_addr	mask;
++	struct in_addr	gw;
++	unsigned char   dnsmethod;
++	struct in_addr	dns1;
++	struct in_addr	dns2;
++	unsigned char	mac[6];
++}cache_ip, *pcache_ip;
++
++cache_ip laninfo;
++
++
++unsigned char atohex8(char *buf)	{
++	char          ch;
++	unsigned char res = 0;
++
++	while ( ( ch = *buf++ ) != '\0' )	{
++		if ( ch < '0' )		break;
++		if ( ( ch >='a' ) && ( ch <='f' ) )	ch -= 0x20;
++		if ( ( ch > '9' ) && ( ch < 'A' ) )	break;
++		if ( ch > 'F' )				break;
++		if ( ch <= '9' )	res = res * 16 + ( ch - '0' );
++		else			res = res * 16 + ( ch - 'A' + 10 );
++	}
++	return	res;
++}
++
++
++int LANGetIPAddr(char DeviceName[])
++{
++	int fd;
++	struct ifreq ifr;
++
++	fd = socket(AF_INET, SOCK_DGRAM, 0);
++	ifr.ifr_addr.sa_family = AF_INET;
++	strncpy(ifr.ifr_name, DeviceName, IFNAMSIZ-1);
++	ioctl(fd, SIOCGIFADDR, &ifr);
++	close(fd);
++	sprintf(cServerAddress,"%s",inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
++	memcpy(&laninfo.ip,&(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr),sizeof(laninfo.ip));
++
++	return 0;
++}
++
++
++/*
++*******************************************************************************
++ *
++ * FUNCTION NAME : check_http_redirect
++ *
++ * DESCRIPTION   : The function is used to check http redirect rule run or not
++ *				 
++ *
++ * RETURNS       : bool
++ *
++ ******************************************************************************/
++int check_http_redirect(void)
++{
++	if(access("/tmp/do_http_redirect",F_OK) == 0){
++		do_http_redirect =1;
++	}else{
++		do_http_redirect =0;
++	}
++
++	return do_http_redirect;
++
++}
++
++
+ static int request_check_hostname(server *srv, connection *con, buffer *host) {
+ 	enum { DOMAINLABEL, TOPLABEL } stage = TOPLABEL;
+ 	size_t i;
+@@ -22,6 +105,8 @@
+ 	UNUSED(srv);
+ 	UNUSED(con);
+ 
++	check_http_redirect();
++
+ 	/*
+ 	 *       hostport      = host [ ":" port ]
+ 	 *       host          = hostname | IPv4address | IPv6address
+@@ -36,6 +121,27 @@
+ 	/* no Host: */
+ 	if (buffer_is_empty(host)) return 0;
+ 
++	if(do_http_redirect){
++		char	cTemp[512];
++
++		if(LANGetIPAddr("br-lan")) {
++			perror("get ip");
++		}
++		sprintf(cTemp,"%s",inet_ntoa(laninfo.ip));
++		HTTPD_DBG("LAN IP = %s\n",cTemp);
++		HTTPD_DBG("host ptr = %s\n",host->ptr);
++		
++		if(strstr(cTemp, host->ptr) || strstr("iosupdate.iodata.jp", host->ptr)){
++			HTTP_redirect_enable = 0;
++		}else{
++			HTTP_redirect_enable = 1;
++			con->http_status=404;
++		}
++	}else{
++		HTTP_redirect_enable=0;
++	}
++
++
+ 	host_len = buffer_string_length(host);
+ 
+ 	/* IPv6 adress */
+diff -Naur lighttpd-1.4.38.orig/src/request.h lighttpd-1.4.38/src/request.h
+--- lighttpd-1.4.38.orig/src/request.h	2014-03-11 20:54:49.000000000 +0800
++++ lighttpd-1.4.38/src/request.h	2016-06-06 17:28:49.243933233 +0800
+@@ -6,4 +6,6 @@
+ int http_request_parse(server *srv, connection *con);
+ int http_request_header_finished(server *srv, connection *con);
+ 
++extern char	cServerAddress[20];
++
+ #endif
+diff -Naur lighttpd-1.4.38.orig/src/server.c lighttpd-1.4.38/src/server.c
+--- lighttpd-1.4.38.orig/src/server.c	2015-12-05 05:13:47.000000000 +0800
++++ lighttpd-1.4.38/src/server.c	2016-06-06 17:28:08.718687491 +0800
+@@ -76,6 +76,46 @@
+ # endif
+ #endif
+ 
++int debug_enable=0;
++FILE *log_fp;
++
++int HTTP_redirect_enable =0;
++
++
++int debug_control(void)
++{
++	FILE * fd;
++	char buf[128];
++
++	fd = popen("uci get system.lighttpd.debug", "r");
++	if(fd != NULL){
++		memset(buf, '\0', sizeof(buf));
++		fgets(buf, sizeof(buf), fd);
++		buf[strlen(buf)-1]='\0';
++		pclose(fd);
++	}
++
++	HTTPD_DBG("%s, %d, %s\n", __FUNCTION__, __LINE__,  buf);
++
++	if( buf != NULL ){
++		if(strcmp(buf, "1") == 0){
++//			system("echo debug_enable=1 >> /tmp/lighttpd_debug.log");
++			debug_enable =1;
++		}else if(strcmp(buf, "0") == 0){
++//			system("echo debug_enable=0 >> /tmp/lighttpd_debug.log");
++			debug_enable =0;
++		}else{
++			system("echo debug_enable_error >> /tmp/lighttpd_debug.log");
++			debug_enable =0;
++		}
++	}
++
++	return 0;
++}
++
++
++
++
+ static volatile sig_atomic_t srv_shutdown = 0;
+ static volatile sig_atomic_t graceful_shutdown = 0;
+ static volatile sig_atomic_t handle_sig_alarm = 1;
+@@ -1015,6 +1055,9 @@
+ 		pid_fd = -1;
+ 	}
+ 
++	//debug flag check based on uci config
++	debug_control();
++	
+ 	/* Close stderr ASAP in the child process to make sure that nothing
+ 	 * is being written to that fd which may not be valid anymore. */
+ 	if (-1 == log_error_open(srv)) {
+@@ -1586,5 +1629,10 @@
+ 	plugins_free(srv);
+ 	server_free(srv);
+ 
++	//close debug file
++	if( log_fp ){
++		fclose(log_fp);
++	}
++	
+ 	return 0;
+ }
+diff -Naur lighttpd-1.4.38.orig/src/server.h lighttpd-1.4.38/src/server.h
+--- lighttpd-1.4.38.orig/src/server.h	2015-11-23 02:59:02.000000000 +0800
++++ lighttpd-1.4.38/src/server.h	2016-06-06 17:27:28.194593426 +0800
+@@ -6,4 +6,24 @@
+ int config_read(server *srv, const char *fn);
+ int config_set_defaults(server *srv);
+ 
++extern int debug_enable;
++extern FILE *log_fp;
++
++
++#define LOG_FILENAME "/tmp/lighttpd_debug.log"
++
++#define HTTPD_DBG(arg...) \
++	if( debug_enable == 1 )	\
++	{ \
++	        if( log_fp == NULL )  \
++	        {                log_fp               \
++	            = fopen(LOG_FILENAME,"a");\
++	           setvbuf(log_fp, (char *) NULL, _IOLBF, 0);   \
++	        }                                \
++		fprintf ( log_fp, arg); \
++	}
++
++
++extern int HTTP_redirect_enable;
++
+ #endif

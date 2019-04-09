@@ -1,0 +1,179 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Configuration"
+msgstr "Configuration"
+
+msgid "Dashboard"
+msgstr "Dashboard"
+
+msgid "LAN"
+msgstr "LAN"
+
+msgid "LTE_ConnectionUpTime"
+msgstr "Connection Uptime"
+
+msgid "LTE_FWVersion"
+msgstr "LTE F/W Version"
+
+msgid "LTE_FrequencyBand"
+msgstr "Frequency Band"
+
+msgid "LTE_IMEI"
+msgstr "IMEI"
+
+msgid "LTE_IMSI"
+msgstr "IMSI"
+
+msgid "LTE_ServiceProvider"
+msgstr "Service Provider"
+
+msgid "LTE_SignalStrength"
+msgstr "Signal Strength"
+
+msgid "LTE_Status"
+msgstr "Link Status"
+
+msgid "Maintenance"
+msgstr "Maintenance"
+
+msgid "Monitor"
+msgstr "Monitor"
+
+msgid "WAN_Status"
+msgstr "Internet Status"
+
+msgid "channel"
+msgstr "Channel"
+
+msgid "cpu_usage"
+msgstr "CPU Usage"
+
+msgid "current_date_time"
+msgstr "Current Date/Time"
+
+msgid "battery_status"
+msgstr "Battery Status"
+
+msgid "battery_charging"
+msgstr "Charging"
+
+msgid "dashboard_data"
+msgstr "Data"
+
+msgid "dashboard_item"
+msgstr "Item"
+
+msgid "day"
+msgstr "day"
+
+msgid "device_host_name"
+msgstr "Host Name"
+
+msgid "device_info"
+msgstr "Device Information"
+
+msgid "device_model_name"
+msgstr "Model Number"
+
+msgid "device_status"
+msgstr "Status"
+
+msgid "fw_version"
+msgstr "Firmware Version"
+
+msgid "hw_version"
+msgstr "Hardware Version"
+
+msgid "hr"
+msgstr "hr"
+
+msgid "iface"
+msgstr "Interface"
+
+msgid "iface_down"
+msgstr "Down"
+
+msgid "iface_lan"
+msgstr "LAN"
+
+msgid "iface_status"
+msgstr "Status"
+
+msgid "iface_up"
+msgstr "Up"
+
+msgid "iface_wan"
+msgstr "WAN"
+
+msgid "iface_wlan"
+msgstr "WLAN"
+
+msgid "interface_status"
+msgstr "Interface Status"
+
+msgid "interval_select_none"
+msgstr "None"
+
+msgid "ip_addr"
+msgstr "IP Address"
+
+msgid "ip_subnet_mask"
+msgstr "IP Subnet Mask"
+
+msgid "lan_info"
+msgstr "LAN Information"
+
+msgid "lan_ipv6"
+msgstr "IPv6 LAN"
+
+msgid "mac_addr"
+msgstr "MAC Address"
+
+msgid "memory_usage"
+msgstr "Memory Usage"
+
+msgid "min"
+msgstr "min"
+
+msgid "msg_confirm_1"
+msgstr "Are you sure you want to do that?"
+
+msgid "refresh_interval"
+msgstr "Refresh Interval"
+
+msgid "refresh_now"
+msgstr "Refresh Now"
+
+msgid "sec"
+msgstr "sec"
+
+msgid "seconds"
+msgstr "seconds"
+
+msgid "serial_number"
+msgstr "Serial Number"
+
+msgid "system_resource"
+msgstr "System Resource"
+
+msgid "system_status"
+msgstr "System Status"
+
+msgid "system_up_time"
+msgstr "System Up Time"
+
+msgid "wan2_info"
+msgstr "WAN 2 Information"
+
+msgid "wan_info"
+msgstr "WAN Information"
+
+msgid "welcome"
+msgstr "Welcome"
+
+msgid "welcome_title_message"
+msgstr "Welcome to LTE Portable Router"
+
+msgid "wlan24G_info"
+msgstr "WLAN_2.4G Information"

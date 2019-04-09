@@ -1,0 +1,16 @@
+Index: miniupnpd-2.0.20161216/upnpglobalvars.c
+===================================================================
+--- miniupnpd-2.0.20161216.orig/upnpglobalvars.c	2016-02-09 17:39:00.000000000 +0800
++++ miniupnpd-2.0.20161216/upnpglobalvars.c	2017-01-24 18:16:16.589529749 +0800
+@@ -45,7 +45,11 @@
+ char uuidvalue_wcd[] = "uuid:00000000-0000-0000-0000-000000000000";
+ char serialnumber[SERIALNUMBER_MAX_LEN] = "00000000";
+ 
++#if 1	// MSTC, Terence, modelnumber default should be empty
++char modelnumber[MODELNUMBER_MAX_LEN] = {0};
++#else
+ char modelnumber[MODELNUMBER_MAX_LEN] = "1";
++#endif
+ 
+ /* presentation url :
+  * http://nnn.nnn.nnn.nnn:ppppp/  => max 30 bytes including terminating 0 */

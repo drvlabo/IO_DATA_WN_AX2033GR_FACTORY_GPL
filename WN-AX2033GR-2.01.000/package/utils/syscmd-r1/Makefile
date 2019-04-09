@@ -1,0 +1,176 @@
+include $(TOPDIR)/rules.mk
+PKG_NAME:=syscmd
+PKG_VERSION:=r1
+PKG_RELEASE:=1
+PKG_FLAGS:=essential
+
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+
+include $(INCLUDE_DIR)/package.mk
+
+ifeq ($(CONFIG_SYSCMD_CMD_ATSH),y)
+CFLAGS+=-DCONFIG_CMD_ATSH
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_ATWZ),y)
+CFLAGS+=-DCONFIG_CMD_ATWZ
+CFLAGS+=-DCONFIG_WAN_MAC_SHIFT=$(CONFIG_SYSCMD_WAN_MAC_SHIFT)
+CFLAGS+=-DCONFIG_WLAN1_MAC_SHIFT=$(CONFIG_SYSCMD_WLAN1_MAC_SHIFT)
+CFLAGS+=-DCONFIG_WLAN2_MAC_SHIFT=$(CONFIG_SYSCMD_WLAN2_MAC_SHIFT)
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_IF),y)
+CFLAGS+=-DCONFIG_CMD_IF
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_ATSN),y)
+CFLAGS+=-DCONFIG_CMD_ATSN
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_IMEI),y)
+CFLAGS+=-DCONFIG_CMD_IMEI
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_IMSI),y)
+CFLAGS+=-DCONFIG_CMD_IMSI
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_LEDCTL),y)
+CFLAGS+=-DCONFIG_CMD_LEDCTL
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_BTT),y)
+CFLAGS+=-DCONFIG_CMD_BTT
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_RSSI),y)
+CFLAGS+=-DCONFIG_CMD_RSSI
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_SIM),y)
+CFLAGS+=-DCONFIG_CMD_SIM
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_ROMRESET),y)
+CFLAGS+=-DCONFIG_CMD_ROMRESET
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_BUZZ),y)
+CFLAGS+=-DCONFIG_CMD_BUZZ
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_LTEFW),y)
+CFLAGS+=-DCONFIG_CMD_LTEFW
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_ATLTE),y)
+CFLAGS+=-DCONFIG_CMD_ATLTE
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_SDCC),y)
+CFLAGS+=-DCONFIG_CMD_SDCC
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_OLEDCTL),y)
+CFLAGS+=-DCONFIG_CMD_OLEDCTL
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_FDANT),y)
+CFLAGS+=-DCONFIG_CMD_FDANT
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_ATHWVER),y)
+CFLAGS+=-DCONFIG_CMD_ATHWVER
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_USB),y)
+CFLAGS+=-DCONFIG_CMD_USB
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_SETIMEI),y)
+CFLAGS+=-DCONFIG_CMD_SETIMEI
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_PHONETEST),y)
+CFLAGS+=-DCONFIG_CMD_PHONETEST
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_PSPEED),y)
+CFLAGS+=-DCONFIG_CMD_PSPEED
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_CALCHK),y)
+CFLAGS+=-DCONFIG_CMD_CALCHK
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_MRD),y)
+CFLAGS+=-DCONFIG_CMD_MRD
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_HTP),y)
+CFLAGS+=-DCONFIG_CMD_HTP
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_LOADROM),y)
+CFLAGS+=-DCONFIG_CMD_LOADROM
+endif
+
+ifeq ($(CONFIG_SYSCMD_CMD_DEBUGFLAG),y)
+CFLAGS+=-DCONFIG_CMD_DEBUGFLAG
+endif
+
+ifeq ($(CONFIG_TARGET_ramips_mt7621),y)
+CFLAGS+=-DCONFIG_RALINK_MT7621
+endif
+
+ifeq ($(CONFIG_PACKAGE_mstc_dual_config),y)
+CFLAGS+=-DCONFIG_MSTC_DUAL_CONFIG
+endif
+
+ifeq ($(CONFIG_MSTC_DUAL_IMAGE_WITH_PERSIST),y)
+CFLAGS+=-DCONFIG_MSTC_DUAL_IMAGE
+endif
+
+MAKE_ARGS:= \
+	CC="$(TARGET_CROSS)gcc"
+	
+LIBPATH:=$(PKG_BUILD_DIR)/libsyscmd
+MAKE_ARGS+=LIBPATH="$(LIBPATH)"
+CFLAGS+=-I$(LIBPATH)
+
+define Package/$(PKG_SOURCE_SUBDIR)
+  SECTION:=base
+  CATEGORY:=Private/others
+  SUBMENU:=mstc
+  TITLE:=sys command
+  MENU:=1
+endef
+
+define Package/$(PKG_SOURCE_SUBDIR)/description
+  sys command
+endef
+
+define Package/$(PKG_SOURCE_SUBDIR)/config
+	source "$(SOURCE)/Config.in"
+endef
+
+define Build/Prepare
+	mkdir -p $(PKG_BUILD_DIR)/
+	$(CP) ./file/sys $(PKG_BUILD_DIR)/
+	$(CP) ./file/libsyscmd.so $(PKG_BUILD_DIR)/
+endef	
+
+define Build/Compile/Default
+endef
+
+define Package/$(PKG_SOURCE_SUBDIR)/install
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) file/mstc_syscmd_loadrom $(1)/usr/bin
+	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/sys $(1)/usr/sbin/
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/libsyscmd.so $(1)/usr/lib/
+endef
+
+$(eval $(call BuildPackage,$(PKG_SOURCE_SUBDIR)))

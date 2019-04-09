@@ -1,0 +1,12 @@
+#!/bin/sh /etc/rc.common
+
+START=19
+
+
+start() {
+	wan_mode=`/sbin/uci -q get network.wan.mode`
+	if [ $wan_mode == "repeater" ] || [ $wan_mode == "ap" ]; then
+		/bin/echo 0 > /proc/sys/net/ipv4/ip_forward
+	fi
+}
+

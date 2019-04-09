@@ -1,0 +1,182 @@
+Index: ppp-2.4.7/linux/Makefile.top
+===================================================================
+--- ppp-2.4.7.orig/linux/Makefile.top	2016-05-27 19:54:11.857645438 +0800
++++ ppp-2.4.7/linux/Makefile.top	2016-05-27 19:55:00.950924000 +0800
+@@ -9,6 +9,11 @@
+ # uid 0 = root
+ INSTALL= install
+ 
++# MSTC, Terence, 20160527 Append simple log
++ifeq ($(HAVE_SIMPLE_LOG), y)
++  export HAVE_SIMPLE_LOG
++endif
++
+ all:
+ 	cd chat; $(MAKE) $(MFLAGS) all
+ 	cd pppd/plugins; $(MAKE) $(MFLAGS) all
+Index: ppp-2.4.7/pppd/Makefile.linux
+===================================================================
+--- ppp-2.4.7.orig/pppd/Makefile.linux	2016-05-27 19:54:30.749234064 +0800
++++ ppp-2.4.7/pppd/Makefile.linux	2016-05-27 19:55:21.495533000 +0800
+@@ -212,6 +212,11 @@
+      CFLAGS += -DMAXOCTETS
+ endif
+ 
++# MSTC, Terence, 20160527 Append simple log
++ifeq ($(HAVE_SIMPLE_LOG), y)
++  CFLAGS += -DHAVE_SIMPLE_LOG
++endif
++
+ INSTALL= install
+ 
+ all: $(TARGETS)
+Index: ppp-2.4.7/pppd/auth.c
+===================================================================
+--- ppp-2.4.7.orig/pppd/auth.c	2016-10-03 18:36:35.138083703 +0800
++++ ppp-2.4.7/pppd/auth.c	2016-10-03 18:37:48.841680436 +0800
+@@ -984,6 +984,24 @@
+         network_phase(unit);
+ }
+ 
++
++#ifdef HAVE_SIMPLE_LOG
++char *get_protocol_name(int protocol)
++{
++	int i;
++	struct protent *protp;
++
++	for (i = 0; (protp = protocols[i]) != NULL; ++i) {
++		if (protp->protocol == protocol) {
++			return protp->name;
++		}
++	}
++	
++	return NULL;
++}
++#endif
++
++
+ /*
+  * We have failed to authenticate ourselves to the peer using `protocol'.
+  */
+@@ -1001,6 +1019,18 @@
+      */
+     status = EXIT_AUTH_TOPEER_FAILED;
+     lcp_close(unit, "Failed to authenticate ourselves to peer");
++
++#ifdef HAVE_SIMPLE_LOG
++	{
++		char wanProto[32];
++		char cmdbuf[128] = {0};
++
++		if (getWanProto(&wanProto)==0 && !strcmp(wanProto, "pppoe")) {
++			sprintf(cmdbuf, "simple_logrec.sh -w \"PPP, %s Authentication Failed, Please Check ISP Account\"", get_protocol_name(protocol));
++			system(cmdbuf);
++		}
++	}
++#endif
+ }
+ 
+ /*
+@@ -1048,6 +1078,17 @@
+ 
+     notice("%s authentication succeeded", prot);
+ 
++#ifdef HAVE_SIMPLE_LOG
++	{
++		char wanProto[32];
++		char cmdbuf[128] = {0};
++		if (getWanProto(&wanProto)==0 && !strcmp(wanProto, "pppoe")) {
++			sprintf(cmdbuf, "simple_logrec.sh -w \"PPP, %s Authentication Succeeded\"", get_protocol_name(protocol));
++			system(cmdbuf);
++		}
++	}
++#endif
++
+     /* Save the authentication method for later. */
+     auth_done[unit] |= bit;
+ 
+Index: ppp-2.4.7/pppd/ipcp.c
+===================================================================
+--- ppp-2.4.7.orig/pppd/ipcp.c	2016-10-03 18:36:52.053619966 +0800
++++ ppp-2.4.7/pppd/ipcp.c	2016-10-03 18:37:48.847399907 +0800
+@@ -1946,6 +1946,18 @@
+ 
+ 	ipcp_wantoptions[0].ouraddr = go->ouraddr;
+ 
++#ifdef HAVE_SIMPLE_LOG
++	{
++		char wanProto[32];
++		char cmdbuf[128] = {0};
++		if (getWanProto(&wanProto)==0 && !strcmp(wanProto, "pppoe")) {
++			sprintf(cmdbuf, "simple_logrec.sh -w \"WAN, WAN New IP = %s\"", inet_ntoa(*(struct in_addr*)&go->ouraddr));
++			system(cmdbuf);
++			system("simple_logrec.sh -w \"WAN, WAN IP changed, restart services\"");
++		}
++	}
++#endif
++	
+ 	notice("local  IP address %I", go->ouraddr);
+ 	if (ho->hisaddr != 0)
+ 	    notice("remote IP address %I", ho->hisaddr);
+Index: ppp-2.4.7/pppd/main.c
+===================================================================
+--- ppp-2.4.7.orig/pppd/main.c	2016-10-03 18:36:31.114955689 +0800
++++ ppp-2.4.7/pppd/main.c	2016-10-03 18:37:48.847399907 +0800
+@@ -586,6 +586,16 @@
+ 	}
+     }
+ 
++#ifdef HAVE_SIMPLE_LOG
++	{
++		char wanProto[32];
++		if (getWanProto(&wanProto)==0 && !strcmp(wanProto, "pppoe")) {
++			/* MSTC, Terence, 20160527 Append simple log */
++			system("simple_logrec.sh -w \"WAN, stop PPPoE mode\"");
++		}
++	}
++#endif
++
+     /* Wait for scripts to finish */
+     reap_kids();
+     if (n_children > 0) {
+Index: ppp-2.4.7/pppd/pppd.h
+===================================================================
+--- ppp-2.4.7.orig/pppd/pppd.h	2016-10-03 18:37:00.970463351 +0800
++++ ppp-2.4.7/pppd/pppd.h	2016-10-03 18:37:57.054278790 +0800
+@@ -554,6 +554,9 @@
+ 				/* dump packet to debug log if interesting */
+ ssize_t complete_read __P((int, void *, size_t));
+ 				/* read a complete buffer */
++#ifdef HAVE_SIMPLE_LOG
++int getWanMode(char *wanmode);
++#endif
+ 
+ /* Procedures exported from auth.c */
+ void link_required __P((int));	  /* we are starting to use the link */
+Index: ppp-2.4.7/pppd/utils.c
+===================================================================
+--- ppp-2.4.7.org/pppd/utils.c	2016-10-03 18:37:10.942055892 +0800
++++ ppp-2.4.7/pppd/utils.c	2016-10-03 18:37:48.847399907 +0800
+@@ -1039,3 +1039,21 @@
+     }
+ }
+ 
++#ifdef HAVE_SIMPLE_LOG
++int
++getWanProto(char *wanProto)
++{
++	char buf[32], cmd[64];
++	int ret = -1;
++	FILE *fp = popen("/sbin/uci get network.wan.proto", "r");
++	if (fp) {
++		if (fgets(buf, sizeof(buf), fp)){
++			strcpy(wanProto, buf);
++			if (wanProto[strlen(wanProto)-1] == '\n') wanProto[strlen(wanProto)-1] = 0;
++			ret = 0;
++		}
++		pclose(fp);
++	}
++	return ret;
++}
++#endif

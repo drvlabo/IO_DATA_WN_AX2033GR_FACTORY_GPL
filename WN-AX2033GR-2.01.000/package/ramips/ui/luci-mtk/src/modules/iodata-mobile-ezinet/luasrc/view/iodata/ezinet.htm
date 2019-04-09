@@ -1,0 +1,179 @@
+
+<html lang="<%=luci.i18n.context.lang%>">
+<head><title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Cache-Control" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<!--script type="text/javascript" src="<%=media%>/getlanguagejs.html"></script-->
+<script type="text/javascript" src="<%=media%>/functionjs.html"></script>
+<script language="JavaScript">mobileCss();</script>
+<script language="JavaScript">
+var DISPLAY_EASY_START = 1;
+function pppoeUserPwdRule(){
+	var f = document.form1;
+	if (!strRule(f.pppoe_name, showText(930)))
+	return false;
+	if (!strRule(f.pppoe_pw, showText(931)))
+		return false;
+		if(!(COMMONSTR_1_64_NEW_REGX.test(f.pppoe_name.value))){
+			alert(showText(1008));
+			setFocus(f.pppoe_name);
+			return false;
+		}
+		if(!(PASSWDSTR_1_64_NEW_REGX.test(f.pppoe_pw.value))){
+			alert(showText(1008));
+			setFocus(f.pppoe_pw);
+			return false;
+		}
+			return true;
+}
+
+function pppoeUserPwdRuleMobile(){
+	var f = document.form1;
+	if (!strRule(f.pppoe_name_mobile, showText(930)))
+		return false;
+		if (!strRule(f.pppoe_pw_mobile, showText(931)))
+		return false;
+		if(!(COMMONSTR_1_64_NEW_REGX.test(f.pppoe_name_mobile.value))){
+			alert(showText(1008));
+			setFocus(f.pppoe_name_mobile);
+			return false;
+		}
+		if(!(PASSWDSTR_1_64_NEW_REGX.test(f.pppoe_pw_mobile.value))){
+			alert(showText(1008));
+			setFocus(f.pppoe_pw_mobile);
+			return false;
+		}
+		return true;
+}
+
+function easyAutoDetect(){
+	var f=document.form1;
+	var ifr_window = window.frames["if_ezinet"];
+	var ifr_form = ifr_window.document.form1;
+	getById("easystart").style.display = "1";
+	//adddot();
+	ifr_window.if_submit();
+}
+
+function copyto(){
+//showallbox();
+}
+
+function showallbox(){
+	getById("easystart").style.display = "";
+}
+
+function hideallbox(){
+	getById("easystart").style.display = "1";
+}
+
+var str = '.';
+function adddot(){
+	str = str +'.';
+	getById("runing").innerHTML = str;
+	setTimeout("adddot();",1000);
+}
+
+function display(idx){
+	var f=document.form1;
+	hideallbox();
+	switch(idx){	
+		case DISPLAY_EASY_START:
+		getById("easystart").style.display = "";
+		break;
+	}	
+}
+function RedirectToIndex(){
+	if(parent.iframe)
+		parent.iframe.location.href="stainfo.html";
+	else
+		location.href="index.htm";
+}
+
+function RedirectToMobileIndex(){
+	if(parent.iframe)
+		parent.iframe.location.href="mobile_stainfo.htm";
+	else
+		location.href="smartindex.htm";
+}
+
+function usercancel(idx){
+	var f=document.form1;
+	f.isMobile.value=idx;// ISMOBILE=1, NOTMOBILE=0
+	display(DISPLAY_EASY_USERCANCEL);
+	f.hsubmit_type.value = DISPLAY_EASY_USERCANCEL;
+	f.submit();
+}
+function SaveChanges(idx){
+	var f=document.form1;
+	f.isMobile.value=idx;// ISMOBILE=1, NOTMOBILE=0
+	if(f.hsubmit_type.value == DISPLAY_EASY_PPPOE){
+		//do pppoe check rule;
+		if(f.isMobile.value==1){
+			if(!pppoeUserPwdRuleMobile())
+			return false;
+		}	
+		else{
+			if(!pppoeUserPwdRule()){
+			return false;
+			}
+		}
+	}
+		f.submit();
+}
+
+function backSmartIndexPage(){
+	return window.location.href='<%=controller%>/smartindex';
+}
+</script>
+</head>
+<script language="JavaScript">
+	isMobileBody();
+</script>
+<form name="form1" method="post" action="">
+<script language="javascript">
+	document.write('<input type="hidden" name="csrfmagic" value="afnpkxbmyfjhctj">')
+</script>
+	<input type="hidden" name="page" value="ezinet">
+	<input type="hidden" name="hsubmit_type" value="">
+	<input type="hidden" name="isMobile" value="">
+<script language="JavaScript">
+	isMobileImg();
+</script>
+<table width="100%" height="97%" border="0" cellpadding="1" cellspacing="1" >
+<tr>
+	<script language="JavaScript">
+		isMobileTd();
+	</script>
+<div id="easystart" style="display:1">
+<span id="easystart1">
+	<table width="500" border="1" align="center" cellpadding="5" cellspacing="0" >
+		<tr>
+		<td align="left" >
+			<script language="javascript">
+				dw(showText(1103)+'<br>'+showText(1104));
+			</script>
+		<br><br><br><br><br><br>
+		</td>
+		</tr>
+
+<!--tr>
+<td align="center" >
+<script language="javascript">
+dw('<input type="button" value="'+showText(1105)+'" onclick="easyAutoDetect()">');
+</script>
+</td>
+</tr-->
+	</table>
+</span>
+</div>
+</div>
+</td>
+</tr>	
+</table>
+<iframe id="if_ezinet" name="if_ezinet" src="ezinet_temp.htm" width="0" height="0" style="display:1"></iframe>
+</form>
+</body>
+</html>

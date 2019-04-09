@@ -1,0 +1,14 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Log"
+msgstr "ログ"
+
+msgid "Display the log."
+msgstr "ログを表示します。"
+
+msgid "Refresh"
+msgstr "更新"
+
+msgid "Clean"
+msgstr "クリア"

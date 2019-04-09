@@ -1,0 +1,26 @@
+<form name="easysetup" method="POST" action="/cgi-bin/sec/easysetup.cgi">
+<table width="500" border="1" align="center" cellpadding="5" cellspacing="0" >
+<tr>
+<td align="left" >
+<font size="2">
+ご利用のインターネット回線の種別を自動的に検出できませんでした。<br>
+ルーターモードに変更してください。(エラー1)<br><br>
+※既にインターネットに接続できている場合、以下の操作は必要ありません。<br>
+インターネット接続できない場合のみお試しください。<br><br>
+＜方法＞<br>
+・ルーターをリセットして初期化してください。<br>
+・スイッチ搭載ルーターは、スイッチを自動に変更してください。<br>
+・インターネットポートにモデムからのケーブルが接続されているか確認してください。<br>
+・モデムの電源が入っているか確認してください。<br>
+</font>
+</td>
+</tr>
+<tr>
+<td align="right">
+<input type="hidden" name="ottforcsrf">
+<input type="submit" name="EasySetupErrorFinish" value="　終了　">
+</td>
+</tr>
+</table>
+</form>
+

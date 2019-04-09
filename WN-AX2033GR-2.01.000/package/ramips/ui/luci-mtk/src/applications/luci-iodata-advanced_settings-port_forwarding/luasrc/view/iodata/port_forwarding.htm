@@ -1,0 +1,338 @@
+<%+header%>
+
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+<script type="text/javascript">
+
+var url ="<%=controller%>/content/advanced_settings/port_forwarding"; //current page url
+
+function addClick() {
+	var f = document.port_forwarding;
+	var dataNum = parseInt($("#listDataNum").val(),10) + 1;
+	
+	if ( f.rule_name.value.replace(/ /g, "") == "" ) {
+		alert("<%:Name is empty.%>");
+		return false;
+	}else if (!f.rule_name.value.match(available_char_16)) {
+		alert("<%:Description contains characters which cannot be input.%>");
+		setFocus(f.comment);
+		return false;
+	}
+	
+	if ( f.rule_ip.value.replace(/ /g, "") == "" ) {
+		alert("<%:IP address want to open is empty.%>");
+		return false;
+	}
+	
+	if ( f.rule_lan_port.value.replace(/ /g, "") == "" ) {
+		alert("<%:LAN Port is empty.%>");
+		return false;
+	}
+	
+	if ( f.rule_wan_port.value.replace(/ /g, "") == "" ) {
+		alert("<%:WAN Port is empty.%>");
+		return false;
+	}
+	
+	
+	var newName = f.rule_name.value.replace(/ /g, "");
+	var newIp = f.rule_ip.value.replace(/ /g, "");
+	var newProto = f.rule_proto.value.replace(/ /g, "");
+	var newLanPort = f.rule_lan_port.value.replace(/ /g, "");
+	var newWanPort = f.rule_wan_port.value.replace(/ /g, "");
+	
+	/* Check Rule Name is correct*/
+	
+	if ( (!checkInvalidIP(newIp)) || (!checkIpValid(newIp, "255.255.255.0"))) {
+		alert("<%:IP address want to open is not correct.%>");
+		return false;
+	}
+	
+	if ( parseInt(newLanPort, 10) < 1 || parseInt(newLanPort, 10) > 65535 ) {
+		alert("<%:LAN Port is not correct.%>");
+		return false;
+	}
+	
+	if ( parseInt(newWanPort, 10) < 1 || parseInt(newWanPort, 10) > 65535 ) {
+		alert("<%:WAN Port is not correct.%>");
+		return false;
+	}
+	
+	var conflict = false;
+	$("#ruleTable tr[name='ruleData']").each(function(){
+		dataIPAddr = $(this).find("td:eq(2) font").html();
+		dataProtoType = $(this).find("td:eq(3) font").html();
+		dataLanPort = $(this).find("td:eq(4) font").html();
+		dataWanPort = $(this).find("td:eq(5) font").html();
+		if ( dataWanPort ==  f.rule_wan_port.value ) {
+			if ( f.rule_proto.value == "tcpudp" || dataProtoType == "tcpudp" || f.rule_proto.value == dataProtoType){
+				conflict = true;
+				return false;
+			}else{
+				conflict = false;
+			}
+		}
+	});
+	if ( conflict ) {
+		alert("<%:The specified port is already in use%>");
+		return false;
+	}
+	
+	var newRow = "<tr name=\"ruleData\">";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"2\">" + dataNum + "</td>";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"2\">" + newName + "</td>";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"2\">" + newIp + "</td>";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"2\">" + newProto + "</td>";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"2\">" + newLanPort + "</td>";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"2\">" + newWanPort + "</td>";
+	newRow += "<td align=\"center\" class=\"table2\"><input type=\"checkbox\" name=\"select\" value=\"" + dataNum + "\"/></td>";
+	newRow += "</tr>";
+	$("#ruleTable tr:last").after(newRow)
+	$("#listDataNum").val(dataNum);
+	
+	f.rule_name.value = "";
+	f.rule_ip.value = "";
+	f.rule_proto.selectedIndex = "0";
+	f.rule_lan_port.value = "";
+	f.rule_wan_port.value = "";
+	ruleDataChange();
+	return true;
+}
+
+function clearTextbox() {
+	var f = document.port_forwarding;
+	f.rule_name.value = "";
+	f.rule_ip.value = "";
+	f.rule_proto.value = "";
+	f.rule_lan_port.value = "";
+	f.rule_wan_port.value = "";
+}
+
+function ruleDataChange(){
+	if ( $("input[name='select']").length == 0 ) {
+		$("input[name='deleteSelRule']").prop( "disabled", true );
+		$("input[name='deleteAllRule']").prop( "disabled", true );
+	}
+	else {
+		$("input[name='deleteSelRule']").prop( "disabled", false );
+		$("input[name='deleteAllRule']").prop( "disabled", false );
+	}
+
+	if ( $("input[name='select']").length >= 32 ) {
+		$("input[name='addPortFw']").prop( "disabled", true );
+		$("input[name='reset']").prop( "disabled", true );
+	}
+	else {
+		$("input[name='addPortFw']").prop( "disabled", false );
+		$("input[name='reset']").prop( "disabled", false );
+	}
+}
+
+function clearSelect(){	
+	$("input[name='select']").prop("checked", false);
+}
+
+function deleteAllClick(){
+	$("#ruleTable tr[name='ruleData']").each(function(){
+		$(this).remove();
+	});
+	$("#listDataNum").val("0");
+	ruleDataChange();
+}
+
+function deleteSelClick(){
+	var i = 0;
+	$("#ruleTable tr[name='ruleData']").each(function(){
+		if ( $(this).find("input[name='select']").prop("checked") == true ) {
+			$(this).remove();
+		}
+	});
+	
+	$("#ruleTable tr[name='ruleData']").each(function(){
+		i++;
+		$(this).find("td:first font").html(i);
+	});
+	$("#listDataNum").val(i);
+	ruleDataChange();
+}
+
+function btnApply()
+{
+	var dataCnt = 0;
+	var dataIp = "";
+	var dataMac = "";
+	var dataStr = "";
+	
+	$("#ruleTable tr[name='ruleData']").each(function(){
+		 dataName = $(this).find("td:eq(1) font").html().replace(/ /g, "");
+		 dataIp = $(this).find("td:eq(2) font").html().replace(/ /g, "");
+		 dataProto = $(this).find("td:eq(3) font").html().replace(/ /g, "");
+		 dataLanPort = $(this).find("td:eq(4) font").html().replace(/ /g, "");
+		 dataWanPort = $(this).find("td:eq(5) font").html().replace(/ /g, "");
+		 
+		 if ( dataStr != "" )
+			dataStr += ">";
+			
+		dataStr += dataName + "," + dataIp + "," + dataProto + "," + dataLanPort + "," + dataWanPort;
+		dataCnt++;
+	});
+
+	if ( dataCnt > 32 ) {
+		alert("<%:The maximum number of port forwarding entries is limited to 32.%>");
+		return false;
+	}
+
+	$("#pfRuleDataStr").val(dataStr);
+
+	//MBA Sean, show the waiting page & hide the original content
+	document.getElementById("top_menu").style.display = 'none';
+	document.getElementById("content").style.display = 'none';
+	document.getElementById("waiting").style.display = 'block';
+	//MBA Sean, start to countdown.
+	waiting();
+
+	//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+	$.ajax({
+		type:"POST",
+		url: url,
+		data: $("#content_send").serialize(),// serializes the form's elements.
+	});
+	
+	return false;
+}
+
+<%
+	--MBA Sean, get the waiting time, default is 30 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+	local waiting_time_uci = uci_t.get("web", "gui_config", "network_apply_waiting_time")
+	local waiting_time = 5;
+	
+	uci_t.set_confdir(original_confdir)
+%>
+
+var seconds=<%=waiting_time%>;
+function waiting()
+{
+	(seconds <= 0) ? seconds=0 : seconds-=1;
+	document.getElementById("wait_time").value = seconds;
+
+	if(seconds == 0){
+		location.href = url;
+		return true;
+	}
+	
+	setTimeout('waiting()',1000);
+} 
+
+function frmLoad() {
+	ruleDataChange();
+}
+
+</script>
+<div id="content">
+<form id="content_send" name="port_forwarding">
+<blockquote>
+<p class="title"><%:Port Forwarding.%></p>
+<table border="0" width="90%">
+	<tbody>
+		<tr>
+			<td width="30%" class="background" style="text-align:left"><%:Name Openport%>:</td>
+			<td width="50%" ><input type="text" name="rule_name" size="25" maxlength="16"/></td>
+		</tr>
+		<tr>
+			<td class="background" style="text-align:left"><%:IP address want to open%>:</td>
+			<td ><input type="text" name="rule_ip" size="25" maxlength="15"/></td>
+		</tr>
+		<tr>
+			<td class="background" style="text-align:left"><%:Protocol%>:</td>
+			<td >
+				<select name="rule_proto">
+					<option value="tcpudp"><%:TCP and UDP%></option>
+					<option value="tcp">TCP</option>
+					<option value="udp">UDP</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="background" style="text-align:left"><%:Port number in LAN side%>:</td>
+			<td ><input type="text" name="rule_lan_port" size="25" maxlength="5"/></td>
+		</tr>
+		<tr>
+			<td class="background" style="text-align:left"><%:Port number in WAN side%>:</td>
+			<td ><input type="text" name="rule_wan_port" size="25" maxlength="5"/></td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<p>
+					<input type="button" value="<%:Add%>" name="addPortFw" onClick="return addClick()"/>&nbsp;&nbsp;
+					<input type="button" value="<%:Reset%>" name="reset" onClick="return clearTextbox();"/>
+				</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<br>
+<table border="0" id="ruleTable">
+	<tbody>
+		<tr>
+			<td colspan="4"><b><%:Current Port Forwarding Rule Table%>:</b></td>
+		</tr>
+		<tr>
+			<td width="5%" class="background" style="text-align:center"><%:NO.%></td>
+			<td width="10%" class="background" style="text-align:center"><%:Name Openport%></td>
+			<td width="20%" class="background" style="text-align:center"><%:IP address want to open table%></td>
+			<td width="10%" class="background" style="text-align:center"><%:Protocol%></td>
+			<td width="25%" class="background" style="text-align:center"><%:Port number in LAN side table%></td>
+			<td width="25%" class="background" style="text-align:center"><%:Port number in WAN side table%></td>
+			<td width="5%" class="background" style="text-align:center"><%:Select%></td>
+		</tr>
+		<%	
+			local cnt = 0
+			uci.foreach("firewall", "redirect",
+			function(s)
+				if s.rule_type == "port_forwarding" then
+					cnt = cnt + 1
+					print("<tr name=\"ruleData\">")
+					print("<td class=\"table2\" align=\"center\"><font size=\"2\">" .. cnt .. "</td>")
+					print("<td class=\"table2\" align=\"center\"><font size=\"2\">" .. s.rule_name .. "</td>")
+					print("<td class=\"table2\" align=\"center\"><font size=\"2\">" .. s.dest_ip .. "</td>")
+					print("<td class=\"table2\" align=\"center\"><font size=\"2\">" .. s.proto .. "</td>")
+					print("<td class=\"table2\" align=\"center\"><font size=\"2\">" .. s.dest_port .. "</td>")
+					print("<td class=\"table2\" align=\"center\"><font size=\"2\">" .. s.src_dport .. "</td>")
+					print("<td align=\"center\" class=\"table2\"><input type=\"checkbox\" name=\"select\" value=\"" .. cnt .. "\"/></td>")
+					print("</tr>")
+				end
+			end)
+		%>
+	</tbody>
+</table>
+<br/>
+<input type="hidden" id="listDataNum" value="<%=cnt%>">
+<input type="button" value="<%:Delete selected%>" name="deleteSelRule" onClick="deleteSelClick()" />&nbsp;&nbsp;
+<input type="button" value="<%:Delete all%>" name="deleteAllRule" onClick="deleteAllClick()" />&nbsp;&nbsp;&nbsp;
+<input type="button" value="<%:Reset%>" name="reset" onclick="return clearSelect();" />
+<table width="300" border="0" cellspacing="0" cellpadding="0" align="right">
+	<tr>
+		<td align="right">
+			<input type="submit" value="<%:Apply%>" onClick="return btnApply()" width="105" height="30" border="0"/>
+			<input type="reset" value="<%:Cancel%>" onclick="window.location.reload()"/>
+			<input type="hidden" value="" id="pfRuleDataStr" name="pfRuleDataStr"/>
+<%
+local getDmzIp = ""
+uci.foreach("firewall", "redirect",
+function(s)
+	if s.rule_type == "dmz" then
+		getDmzIp = s.dest_ip
+	end
+end)
+%>
+			<input type="hidden" value="<%=getDmzIp%>" id="dmzRuleDataStr" name="dmzRuleDataStr"/>
+			<input type="hidden" value="1" name="isApply"/>
+		</td>
+	</tr>
+</table>
+</blockquote>
+</form> 
+</div>
+<%+footer%>

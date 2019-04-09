@@ -1,0 +1,107 @@
+#!/bin/sh
+
+MKDIR=`which mkdir`
+CP=`which cp`
+TAR=`which tar`
+SYNC=`which sync`
+REBOOT=`which reboot`
+RM=`which rm`
+MSTC_CFG_CHKSUM=`which mstc_cfg_chksum`
+MSTC_PERSIST=`which mstc_persist`
+UCI=`which uci`
+
+PARSE_ERROR="Parse error"
+
+CONFIG_1=1
+CFG_APPLY=cfgapply
+CFG_1_CHKSUM=cfg1Chksum
+CFG_1_SIZE=cfg1Size
+
+
+DIR_TMP_CONFIG=/tmp/configDirectory
+DIR_ETC_CONFIG=/etc/config
+
+CONFIG_FILE_WHITE_LIST=/etc/uciConfigList
+ROM_FILE=$1
+FILE_CONFIG_LOAD_ROAM=/tmp/ConfigLoadRom
+
+get_image() { # <source> [ <command> ]
+        local from="$1"
+        local conc="$2"
+        local cmd
+
+        case "$from" in
+                http://*|ftp://*) cmd="wget -O- -q";;
+                *) cmd="cat";;
+        esac
+        if [ -z "$conc" ]; then
+                local magic="$(eval $cmd $from 2>/dev/null | dd bs=2 count=1 2>/dev/null | hexdump -n 2 -e '1/1 "%02x"')"
+                case "$magic" in
+                        1f8b) conc="zcat";;
+                        425a) conc="bzcat";;
+                esac
+        fi
+
+        eval "$cmd $from 2>/dev/null ${conc:+| $conc}"
+}
+
+get_magic_word() {
+        (get_image "$@" | dd bs=2 count=1 | hexdump -v -n 2 -e '1/1 "%02x"') 2>/dev/null
+}
+
+#check if the uploaded config file is in tar.gz format
+if [ -n "$ROM_FILE" ]; then
+	case "$(get_magic_word $ROM_FILE cat)" in
+		# .gz files
+		1f8b) ;;
+		*)
+			echo "2"
+			exit
+		;;
+	esac
+fi
+
+
+$RM -rf $DIR_TMP_CONFIG
+$RM -f $FILE_CONFIG_LOAD_ROAM
+$MKDIR -p $DIR_TMP_CONFIG$DIR_ETC_CONFIG
+$CP -rf $DIR_ETC_CONFIG/* $DIR_TMP_CONFIG$DIR_ETC_CONFIG
+$TAR zxf $ROM_FILE -C $DIR_TMP_CONFIG
+
+#use uci show <configFile> command to check if it is a valid uci config file
+#if not, error message "uci: Parse error (invalid command) at line 1, byte 0" will show
+
+cd $DIR_TMP_CONFIG$DIR_ETC_CONFIG
+for entry in `tr "\n" " " < $CONFIG_FILE_WHITE_LIST`
+do
+        configContent=`$UCI -c $DIR_TMP_CONFIG$DIR_ETC_CONFIG show $entry 2>&1`
+
+        echo "$configContent" | grep -q "$PARSE_ERROR"
+        if [ $? -eq 0 ]; then
+                echo "3"
+				exit
+        fi
+done
+
+cd $DIR_TMP_CONFIG$DIR_ETC_CONFIG
+for entry in `tr "\n" " " < $CONFIG_FILE_WHITE_LIST`
+do
+	cat $entry >> $FILE_CONFIG_LOAD_ROAM
+done
+TMP_CHKSUM=`$MSTC_CFG_CHKSUM chksum $FILE_CONFIG_LOAD_ROAM`
+TMP_SIZE=`$MSTC_CFG_CHKSUM size $FILE_CONFIG_LOAD_ROAM`
+
+
+$MSTC_PERSIST write $CFG_APPLY 1
+$MSTC_PERSIST write $CFG_1_CHKSUM $TMP_CHKSUM
+$MSTC_PERSIST write $CFG_1_SIZE $TMP_SIZE
+
+$CP -rf $DIR_TMP_CONFIG$DIR_ETC_CONFIG/* $DIR_ETC_CONFIG
+sync
+ETC_CHKSUM=`$MSTC_CFG_CHKSUM chksum $CONFIG_1`
+
+if [ "$TMP_CHKSUM" == "$ETC_CHKSUM" ]; then
+	echo "0"
+else
+	echo "1"
+fi

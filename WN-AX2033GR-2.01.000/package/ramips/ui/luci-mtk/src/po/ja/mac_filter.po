@@ -1,0 +1,75 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Add"
+msgstr "追加"
+
+msgid "Apply"
+msgstr "設定"
+
+msgid "Are you sure you want to delete all of the items that you entered?"
+msgstr "入力した項目全てを削除しますか？"
+
+msgid "Are you sure you want to delete the selected item?"
+msgstr "選択した項目を削除しますか？"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "Delete all"
+msgstr "全て削除"
+
+msgid "Delete the selected items"
+msgstr "選択して削除"
+
+msgid "Description"
+msgstr "説明"
+
+msgid "Description can not be empty."
+msgstr "説明を空欄にすることはできません。"
+
+msgid "Description contains characters which cannot be input."
+msgstr "説明に使用できない文字が含まれています。"
+
+msgid "Enable MAC address filter"
+msgstr "MACアドレスフィルタリング有効"
+
+msgid ""
+"If enable MAC address filter, WPS will be disabled. Do you want to apply "
+"setting?"
+msgstr "MACアドレスフィルターを有効に設定するとWPSは無効になります。設定しますか。"
+
+msgid "It cant be registered any more."
+msgstr "これ以上登録ができません。"
+
+msgid "MAC Address"
+msgstr "MACアドレス"
+
+msgid "MAC Filter"
+msgstr "MACフィルター"
+
+msgid "MAC address filtering table:"
+msgstr "MACアドレスフィルタリングテーブル："
+
+msgid ""
+"Only clients with the MAC address in the MAC address filtering table can be "
+"connected to the access point."
+msgstr "MACアドレスフィルタリングテーブルに追加されたMACアドレスを持つクライアントのみがアクセスポイントに接続できます。"
+
+msgid "Please enter a 12-digit hexadecimal number as MAC address."
+msgstr "MACアドレスは12桁の16進数で入力してください。"
+
+msgid "Reset"
+msgstr "リセット"
+
+msgid "Select"
+msgstr "選択"
+
+msgid "The selection of PC"
+msgstr "パソコンの選択"
+
+msgid "This MAC address is a duplicate."
+msgstr "MACアドレスが重複しています。"
+
+msgid "To use the MAC address filter, you may need to disable the WPS."
+msgstr "MACアドレスフィルターを使用にするには、WPSを無効にする必要があります。"

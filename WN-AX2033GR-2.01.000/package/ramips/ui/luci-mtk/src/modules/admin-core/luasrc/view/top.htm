@@ -1,0 +1,89 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: header.htm 4891 2009-06-22 10:23:21Z jow $
+
+-%>
+<%
+
+require("luci.http").prepare_content("application/xhtml+xml")
+local uci = require("luci.model.uci").cursor()
+local i18n = require("luci.i18n")
+local lang = uci:get("luci","main","lang") 
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+-%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"  />
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script type="text/javascript">
+	function actionLogout()
+	{
+		var flag;
+		flag=confirm("<%:msg_confirm_1%>");
+		if (flag){
+			top.location.href="<%=controller%>/expert/logout";
+			}
+	}
+</script>
+<title>.::Welcome to the Web-Based Configurator::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+</head>
+<body class="topbg">
+<div id="wrapper">
+ <div id="top">
+	<% local logoshow_enable = uci:get("system","main","logoshow") %>
+	<% if logoshow_enable == "1" then %>
+		<div class="logo"><img src="<%=media%>/admin/images/advance_logo.jpg"/></div>
+	<% end %>
+	
+	<% local modelname_show = uci:get("mstc", "internal", "modelname")
+		local customer_enable = uci:get("mstc", "customer")
+		if customer_enable == "enable" then
+			modelname_show = uci:get("mstc", "customer", "modelname")
+		end
+		if modelname_show == nil then 
+			modelname_show = ""
+		end %>
+    <div class="modelname"><%=modelname_show%></div>
+    <div class="quick_link">
+      <ul>
+	  	<%	
+			local tokenArray = {}
+			local sessionpath = luci.config.sauth.sessionpath
+			local token=string.split(tostring(controller),"=")
+			for index,info in pairs(token) do
+				tokenArray[index]=info
+			end
+			local token=tokenArray[2]
+			luci.sys.exec("rm -f /tmp/loginuser")
+			luci.sys.exec("grep -Irn "..token.." "..sessionpath.." | grep token | cut -d '=' -f '4' | cut -d '\"' -f '2' > /tmp/loginuser")
+			local file = io.open("/tmp/loginuser", "r")	
+			if file == nil then
+				 login_user = ""
+			else
+				login_user = file:read("*line")
+				file:close()
+			end
+			luci.sys.exec("rm -f /tmp/loginuser")
+		%>
+        <li class="Logout" ><a href="javascript:actionLogout();" title="Logout">Logout</a></li>
+        <li class="admin"><%:welcome%>: <%=login_user%></li>
+      </ul>
+    </div>
+  </div>
+  <div id="blueline"></div>
+</div>
+</body>
+</html>

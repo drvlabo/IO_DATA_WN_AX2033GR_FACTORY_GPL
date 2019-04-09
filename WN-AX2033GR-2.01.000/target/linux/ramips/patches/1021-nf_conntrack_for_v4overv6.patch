@@ -1,0 +1,15 @@
+Index: linux-3.10.14/include/net/netfilter/nf_conntrack.h
+===================================================================
+--- linux-3.10.14.orig/include/net/netfilter/nf_conntrack.h	2016-01-08 14:06:57.000000000 +0800
++++ linux-3.10.14/include/net/netfilter/nf_conntrack.h	2017-07-25 16:43:08.749097700 +0800
+@@ -314,4 +314,10 @@
+ #define MODULE_ALIAS_NFCT_HELPER(helper) \
+         MODULE_ALIAS("nfct-helper-" helper)
+ 
++//Add for support IPv4 over IPv6
++typedef int nf_ct_destroy_handler_func_t(struct nf_conn *);
++extern int nf_ct_destroy_handler_register(nf_ct_destroy_handler_func_t *);
++extern int nf_ct_destroy_handler_unregister(nf_ct_destroy_handler_func_t *);
++//End add
++
+ #endif /* _NF_CONNTRACK_H */

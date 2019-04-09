@@ -1,0 +1,56 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "DHCP Client Table"
+msgstr "DHCPクライアントテーブル"
+
+msgid "DHCP Client Table will display the clients address that ip is assigned by server."
+msgstr "DHCPクライアントテーブルは、DHCPサーバーにより割り当てられたクライアントのIPアドレスを表示します。"
+
+msgid "MAC Address"
+msgstr "MACアドレス"
+
+msgid "Update"
+msgstr "更新"
+
+msgid "Assign particular MAC for particular IP Address."
+msgstr "特定のMACアドレスに対してIPアドレスを割り当てできます。"
+
+msgid "Computer Selection"
+msgstr "パソコンの選択"
+
+msgid "Reset dhcp"
+msgstr "リセット"
+
+msgid "Current Static DHCP Table"
+msgstr "現在の固定DHCPテーブル"
+
+msgid "Select"
+msgstr "選択"
+
+msgid "Delete selected"
+msgstr "選択して削除"
+
+msgid "Delete all"
+msgstr "全て削除"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "IP address is not correct."
+msgstr"正しいIPアドレスを入力してください。"
+
+msgid "IP address is already registered."
+msgstr "IPアドレスが重複しています。"
+
+msgid "MAC address is empty."
+msgstr "MACアドレスを入力してください。"
+
+msgid "MAC address is not correct."
+msgstr "MACアドレスは12桁の16進数で入力してください。"
+
+msgid "MAC address is already registered."
+msgstr "MACアドレスが重複しています。"
+
+msgid "The maximum number of static DHCP entries is limited to 10."
+msgstr "The maximum number of static DHCP entries is limited to 10."

@@ -1,0 +1,75 @@
+Index: linux-3.10.14/drivers/net/raeth/raether.c
+===================================================================
+--- linux-3.10.14.orig/drivers/net/raeth/raether.c	2016-03-08 11:51:48.206677068 +0800
++++ linux-3.10.14/drivers/net/raeth/raether.c	2016-03-08 11:40:57.912156000 +0800
+@@ -1240,11 +1240,19 @@
+ void kill_sig_workq(struct work_struct *work)
+ {
+ 	struct file *fp;
++	char pid_file_name[32] = {0};
+ 	char pid[8];
+ 	struct task_struct *p = NULL;
++	unsigned int reg_val;
++	int port_no;
+ 
++#ifdef CONFIG_PSEUDO_SUPPORT	// Terence, identify wan interface udhcpc
++	sprintf(pid_file_name, "/var/run/udhcpc-%s.pid", DEV2_NAME);
++#else
++	sprintf(pid_file_name, "/var/run/udhcpc.pid", );
++#endif
+ 	//read udhcpc pid from file, and send signal USR2,USR1 to get a new IP
+-	fp = filp_open("/var/run/udhcpc.pid", O_RDONLY, 0);
++	fp = filp_open(pid_file_name, O_RDONLY, 0);
+ 	if (IS_ERR(fp))
+ 	    return;
+ 
+@@ -1256,10 +1264,27 @@
+ 		p = find_task_by_pid(simple_strtoul(pid, NULL, 10));
+ #endif
+ 
++#if defined (CONFIG_WAN_AT_P0)
++			port_no=0;
++#elif defined (CONFIG_WAN_AT_P4)
++			port_no=4;
++#endif
++#if defined (CONFIG_RALINK_RT6855) || defined(CONFIG_RALINK_RT6855A) || \
++			defined (CONFIG_RALINK_MT7620)
++			reg_val = *((volatile u32 *)(RALINK_ETH_SW_BASE+ 0x3008 + (port_no*0x100)));
++#elif defined (CONFIG_RALINK_MT7621)
++			mii_mgr_read(31, (0x3008 + (port_no*0x100)), &reg_val);
++#endif    
++			if(reg_val & 0x1) {
+ 		if (NULL != p) {
+ 		    send_sig(SIGUSR2, p, 0);
+ 		    send_sig(SIGUSR1, p, 0);
+ 		}
++			} else {
++				if (NULL != p) {
++					send_sig(SIGUSR2, p, 0);
++				}
++			}
+ 	    }
+ 	}
+ 	filp_close(fp, NULL);
+@@ -1979,7 +2004,10 @@
+ #endif    
+     if(reg_val & 0x1) {
+ 	printk("ESW: Link Status Changed - Port%d Link UP\n", port_no);
++    } else {	    
++	printk("ESW: Link Status Changed - Port%d Link Down\n", port_no);
+ 
++    }
+ #if defined (CONFIG_WAN_AT_P0)
+ 	if(port_no==0) {
+ 	    schedule_work(&ei_local->kill_sig_wq);
+@@ -1989,10 +2017,6 @@
+ 	    schedule_work(&ei_local->kill_sig_wq);
+ 	}
+ #endif
+-    } else {	    
+-	printk("ESW: Link Status Changed - Port%d Link Down\n", port_no);
+-
+-    }
+ }
+ #endif
+ 

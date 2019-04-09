@@ -1,0 +1,56 @@
+#!/bin/sh /etc/rc.common
+
+START=18
+
+MAC=`fw_printenv | grep ethaddr | awk -F '=' '{print tolower($2)}' | tr -d :`
+
+start() {
+	a=${MAC:6:1}
+	b=${MAC:7:1}
+	c=${MAC:8:1}
+	d=${MAC:9:1}
+	e=${MAC:10:1}
+	f=${MAC:11:1}
+
+	[ -n "$MAC" ] && {	
+		msg=`fw_printenv | grep wifi1ssid1 | awk -F '=' '{print $2}'`
+		[ -z "$msg" ] && fw_setenv wifi1ssid1 IODATA-$a$b$c$d$e$f-2G
+		
+		msg=`fw_printenv | grep wifi1ssid2 | awk -F '=' '{print $2}'`
+		[ -z "$msg" ] && fw_setenv wifi1ssid2 IO-Guest-$a$b$c$d$e$f-2G
+		
+		msg=`fw_printenv | grep wifi2ssid1 | awk -F '=' '{print $2}'`
+		[ -z "$msg" ] && fw_setenv wifi2ssid1 IODATA-$a$b$c$d$e$f-5G
+# __MSTC__, WN-AX2033GR remove 5G 2nd SSID because WPS Copy SSID dones't need Guest SSID
+#		msg=`fw_printenv | grep wifi2ssid2 | awk -F '=' '{print $2}'`
+#		[ -z "$msg" ] && fw_setenv wifi2ssid2 IO-Guest-$a$b$c$d$e$f-5G
+
+		key=`fw_printenv | grep wifiwpapsk | awk -F '=' '{print $2}'`
+		pin=`fw_printenv | grep wifiwpspin | awk -F '=' '{print $2}'`
+		[ -z "$key" ] || [ -z "$pin" ] && {
+			A=$(($(($((0x$b + 0x$d)) % 9)) + 1));
+			B=$(($((0x$c + $((0x$f % 7)))) % 10));			
+			C=$(($((0x$a + $((0x$b % 7)))) % 10)); 
+			D=$(($((0x$c + $((0x$d % 7)))) % 10));
+			E=$(($((0x$e + $((0x$f % 9)))) % 10));
+	
+			F=$(($(($((0x$f + 0x$e)) % 9)) + 1)); 
+			G=$(($((0x$a + $((0x$c % 7)))) % 10));
+			H=$(($((0x$b + $((0x$d % 9)))) % 10));
+			I=$(($((0x$c + $((0x$e % 7)))) % 10));
+			J=$(($((0x$d + $((0x$f % 11)))) % 10));	
+			K=$(($((0x$e + $((0x$a % 7)))) % 10));
+			L=$(($((0x$f + $((0x$b % 9)))) % 10));
+	
+			i=$(($((3 * $F)) + $G + $((3 * $H)) + $I + $((3 * $J)) + $K + $((3 * $L))));
+			j=$(($i % 10));
+	
+			M=$(($((10 - $j)) % 10));
+
+			echo "Start auto generate default SSID and Encryption!!"
+			[ -z "$key" ] && fw_setenv wifiwpapsk $A$B$C$D$E$F$G$H$I$J$K$L$M	
+			[ -z "$pin" ] && fw_setenv wifiwpspin $F$G$H$I$J$K$L$M
+		}
+	}
+}
+

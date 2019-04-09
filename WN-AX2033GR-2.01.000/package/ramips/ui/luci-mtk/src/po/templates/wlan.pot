@@ -1,0 +1,164 @@
+msgid "128bits"
+msgstr ""
+
+msgid "64bits"
+msgstr ""
+
+msgid "Network"
+msgstr ""
+
+msgid "SSID_Select"
+msgstr ""
+
+msgid "_encryption"
+msgstr ""
+
+msgid "aes"
+msgstr ""
+
+msgid "aes_tkip"
+msgstr ""
+
+msgid "allow"
+msgstr ""
+
+msgid "auth_method"
+msgstr ""
+
+msgid "auto_channel_select"
+msgstr ""
+
+msgid "channel"
+msgstr ""
+
+msgid "channel_mode"
+msgstr ""
+
+msgid "channel_select"
+msgstr ""
+
+msgid "channel_width"
+msgstr ""
+
+msgid "deny"
+msgstr ""
+
+msgid "encryption_method"
+msgstr ""
+
+msgid "filter_action"
+msgstr ""
+
+msgid "hide_ssid"
+msgstr ""
+
+msgid "idle_mode"
+msgstr ""
+
+msgid "key"
+msgstr ""
+
+msgid "mac_addr"
+msgstr ""
+
+msgid "mac_addr_filter"
+msgstr ""
+
+msgid "mac_filter"
+msgstr ""
+
+msgid "mac_filter_summary"
+msgstr ""
+
+msgid "more_ap"
+msgstr ""
+
+msgid "msg_config"
+msgstr ""
+
+msgid "no_security"
+msgstr ""
+
+msgid "note"
+msgstr ""
+
+msgid "operate_channel"
+msgstr ""
+
+msgid "psk"
+msgstr ""
+
+msgid "scheduling"
+msgstr ""
+
+msgid "security"
+msgstr ""
+
+msgid "security_mode"
+msgstr ""
+
+msgid "set"
+msgstr ""
+
+msgid "shared_key"
+msgstr ""
+
+msgid "ssid_name"
+msgstr ""
+
+msgid "static_wep"
+msgstr ""
+
+msgid "tkip"
+msgstr ""
+
+msgid "tx_power"
+msgstr ""
+
+msgid "wep_open"
+msgstr ""
+
+msgid "wireless_advance"
+msgstr ""
+
+msgid "wireless_lan"
+msgstr ""
+
+msgid "wireless_qos"
+msgstr ""
+
+msgid "wireless_setup"
+msgstr ""
+
+msgid "wlan_invalid"
+msgstr ""
+
+msgid "wlan_mac"
+msgstr ""
+
+msgid "wlan_macfilter_alert_1"
+msgstr ""
+
+msgid "wlan_note1"
+msgstr ""
+
+msgid "wlan_note2"
+msgstr ""
+
+msgid "wlan_note3"
+msgstr ""
+
+msgid "wpa2_psk"
+msgstr ""
+
+msgid "wpa2_wpa_psk"
+msgstr ""
+
+msgid "wpa_psk"
+msgstr ""
+
+msgid "wps"
+msgstr ""
+
+msgid "wps_station"
+msgstr ""

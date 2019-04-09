@@ -1,0 +1,31 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Backup"
+msgstr "バックアップ"
+
+msgid "File is corrupt. Please check the file."
+msgstr "ファイルが壊れています。ファイルを確認してください。"
+
+msgid "It does not work with firmware file."
+msgstr "ファームウェアファイルでは動作しないこと。"
+
+msgid "Please select a file."
+msgstr "ファイルを選択してください。"
+
+msgid "Restore"
+msgstr "復元"
+
+msgid "Restore settings:"
+msgstr "設定の復元："
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Save settings:"
+msgstr "設定の保存："
+
+msgid ""
+"You can save the current settings with the Save button. Select the file to "
+"be restored, and restore."
+msgstr "保存ボタンで現在の設定を保存できます。復元するには、保存したファイルを選択し復元してください。"

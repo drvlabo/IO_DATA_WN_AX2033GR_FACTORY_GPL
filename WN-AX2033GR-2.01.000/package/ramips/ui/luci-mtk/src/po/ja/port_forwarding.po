@@ -1,0 +1,68 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Open Ports"
+msgstr "ポートの開放"
+
+msgid "Port Forwarding."
+msgstr "ネットワークゲーム、ネットワークカメラ、サーバー等を公開するときに設定します。"
+
+msgid "IP address want to open"
+msgstr "公開する機器のIPアドレス"
+
+msgid "IP address want to open table"
+msgstr "IPアドレス"
+
+msgid "Protocol"
+msgstr "プロトコル"
+
+msgid "TCP and UDP"
+msgstr "両方"
+
+msgid "Port number in LAN side"
+msgstr "LAN側ポート番号"
+
+msgid "Port number in LAN side table"
+msgstr "LAN側ポート"
+
+msgid "Port number in WAN side"
+msgstr "インターネット側ポート番号"
+
+msgid "Port number in WAN side table"
+msgstr "インターネット側ポート"
+
+msgid "Current Port Forwarding Rule Table"
+msgstr "ポートの開放一覧"
+
+msgid "Name Openport"
+msgstr "設定名"
+
+msgid "Name is empty."
+msgstr "設定名を入力してください。"
+
+msgid "IP address want to open is empty."
+msgstr "公開する機器のIPアドレスを入力してください。"
+
+msgid "LAN Port is empty."
+msgstr "LAN側ポート番号を入力してください。"
+
+msgid "WAN Port is empty."
+msgstr "インターネット側ポート番号を入力してください。"
+
+msgid "Name is not correct."
+msgstr "設定名に使用できない文字が含まれています。"
+
+msgid "IP address want to open is not correct."
+msgstr "正しいIPアドレスを入力してください。"
+
+msgid "LAN Port is not correct."
+msgstr "LAN側ポート番号は1～65535の範囲で入力してください。"
+
+msgid "WAN Port is not correct."
+msgstr "インターネット側ポート番号は1～65535の範囲で入力してください。"
+
+msgid "The maximum number of port forwarding entries is limited to 32."
+msgstr "The maximum number of port forwarding entries is limited to 32."
+
+msgid "The specified port is already in use"
+msgstr "指定したポートは既に使用されています。"

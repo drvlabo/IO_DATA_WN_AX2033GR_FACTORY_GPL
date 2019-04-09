@@ -1,0 +1,83 @@
+msgid "LTE"
+msgstr ""
+
+msgid "LengthErrMsgPIN"
+msgstr ""
+
+msgid "LengthErrMsgPUK"
+msgstr ""
+
+msgid "MLG_MLG_YouCanTryOnMoreTimeNewPINConfirmErrMsg_LTEWan"
+msgstr ""
+
+msgid "MLG_NOT_PRESENT"
+msgstr ""
+
+msgid "MLG_PINRemainAttempts_LTEWan"
+msgstr ""
+
+msgid "MLG_PIN_Confirm_New_PIN_LTEWan"
+msgstr ""
+
+msgid "MLG_PIN_DISABLE"
+msgstr ""
+
+msgid "MLG_PIN_InputPIN_LTEWan"
+msgstr ""
+
+msgid "MLG_PIN_LOCKED"
+msgstr ""
+
+msgid "MLG_PIN_Management_LTEWan"
+msgstr ""
+
+msgid "MLG_PIN_Modification_LTEWan"
+msgstr ""
+
+msgid "MLG_PIN_New_PIN_LTEWan"
+msgstr ""
+
+msgid "MLG_PIN_Old_PIN_LTEWan"
+msgstr ""
+
+msgid "MLG_PIN_REQUIRED"
+msgstr ""
+
+msgid "MLG_PIN_VERIFIED"
+msgstr ""
+
+msgid "MLG_PIN_Verification_LTEWan"
+msgstr ""
+
+msgid "MLG_PUKRemainAttempts_LTEWan"
+msgstr ""
+
+msgid "MLG_PUK_LTEWan"
+msgstr ""
+
+msgid "MLG_SIMCard_Status_LTEWan"
+msgstr ""
+
+msgid "MLG_ThePINIsEmptyErrMsg_LTEWan"
+msgstr ""
+
+msgid "MLG_ThePINIsInvalidErrMsg_LTEWan"
+msgstr ""
+
+msgid "MLG_YouCanTryOnMoreTimePINErrMsg_LTEWan"
+msgstr ""
+
+msgid "MLG_YouCanTryOnMoreTimePUKErrMsg_LTEWan"
+msgstr ""
+
+msgid "SIM"
+msgstr ""
+
+msgid "disable"
+msgstr ""
+
+msgid "enable"
+msgstr ""
+
+msgid "msg_config"
+msgstr ""

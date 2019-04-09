@@ -1,0 +1,547 @@
+#!/bin/sh 
+
+#CGI_LOG_FILE="/tmp/cgi_debug.log"
+WAN_CHANGE="/tmp/wan_proto_change"
+
+init_switch() {
+	setup_switch() { return 0; }
+
+	include /lib/network
+	setup_switch
+}
+
+start_service() {
+	init_switch
+
+	procd_open_instance
+	procd_set_param command /sbin/netifd
+	procd_set_param respawn
+	procd_set_param watch network.interface
+	[ -e /proc/sys/kernel/core_pattern ] && {
+		procd_set_param limits core="unlimited"
+		echo '/tmp/%e.%p.%s.%t.core' > /proc/sys/kernel/core_pattern
+	}
+	procd_close_instance
+}
+
+
+stop_service() {
+	/sbin/wifi down
+}
+
+service_running() {
+	rmmod hw_nat
+	rmmod nf_sc
+	ubus -t 30 wait_for network.interface
+	/sbin/wifi reload_legacy
+	sleep 3
+	init_switch
+	#MBA Terence insert module by config
+	[ "`uci get system.hwnat.enable`" == "1" ] && {
+	insmod /lib/modules/ralink/hw_nat.ko
+	}
+	insmod /lib/modules/ralink/nf_sc.ko
+	mii_mgr -s -p 0 -r 0 -v 3300
+	mii_mgr -s -p 1 -r 0 -v 3300
+	mii_mgr -s -p 2 -r 0 -v 3300
+	mii_mgr -s -p 3 -r 0 -v 3300
+}
+
+validate_atm_bridge_section()
+{
+	uci_validate_section network "atm-bridge" "${1}" \
+		'unit:uinteger:0' \
+		'vci:range(32, 65535):35' \
+		'vpi:range(0, 255):8' \
+		'atmdev:uinteger:0' \
+		'encaps:or("llc", "vc"):llc' \
+		'payload:or("bridged", "routed"):bridged'
+}
+
+validate_route_section()
+{
+	uci_validate_section network route "${1}" \
+		'interface:string' \
+		'target:cidr4' \
+		'netmask:netmask4' \
+		'gateway:ip4addr' \
+		'metric:uinteger' \
+		'mtu:uinteger' \
+		'table:or(range(0,65535),string)'
+}
+
+validate_route6_section()
+{
+	uci_validate_section network route6 "${1}" \
+		'interface:string' \
+		'target:cidr6' \
+		'gateway:ip6addr' \
+		'metric:uinteger' \
+		'mtu:uinteger' \
+		'table:or(range(0,65535),string)'
+}
+
+validate_rule_section()
+{
+	uci_validate_section network rule "${1}" \
+		'in:string' \
+		'out:string' \
+		'src:cidr4' \
+		'dest:cidr4' \
+		'tos:range(0,31)' \
+		'mark:string' \
+		'invert:bool' \
+		'lookup:or(range(0,65535),string)' \
+		'goto:range(0,65535)' \
+		'action:or("prohibit", "unreachable", "blackhole", "throw")'
+}
+
+validate_rule6_section()
+{
+	uci_validate_section network rule6 "${1}" \
+		'in:string' \
+		'out:string' \
+		'src:cidr6' \
+		'dest:cidr6' \
+		'tos:range(0,31)' \
+		'mark:string' \
+		'invert:bool' \
+		'lookup:or(range(0,65535),string)' \
+		'goto:range(0,65535)' \
+		'action:or("prohibit", "unreachable", "blackhole", "throw")'
+}
+
+validate_switch_section()
+{
+	uci_validate_section network switch "${1}" \
+		'name:string' \
+		'enable:bool' \
+		'enable_vlan:bool' \
+		'reset:bool'
+}
+
+validate_switch_vlan()
+{
+	uci_validate_section network switch_vlan "${1}" \
+		'device:string' \
+		'vlan:uinteger' \
+		'ports:list(ports)'
+}
+
+service_triggers()
+{
+	procd_add_reload_trigger network wireless
+
+	procd_open_validate
+	validate_atm_bridge_section
+	validate_route_section
+	validate_route6_section
+	validate_rule_section
+	validate_rule6_section
+	validate_switch_section
+	validate_switch_vlan
+	procd_close_validate
+}
+
+restart() {
+	rmmod hw_nat
+	rmmod nf_sc
+	ifdown -a
+	sleep 1
+	trap '' TERM
+	stop "$@"
+	start "$@"
+	#insmod /lib/modules/ralink/hw_nat.ko
+	insmod /lib/modules/ralink/nf_sc.ko
+}
+
+reload_service() {
+#	rmmod hw_nat
+#	init_switch
+	ubus call network reload
+#	/sbin/wifi reload_legacy
+#	insmod /lib/modules/ralink/hw_nat.ko
+#	mii_mgr -s -p 0 -r 0 -v 3300
+#	mii_mgr -s -p 1 -r 0 -v 3300
+#	mii_mgr -s -p 2 -r 0 -v 3300
+#	mii_mgr -s -p 3 -r 0 -v 3300
+#    restart
+}
+
+shutdown() {
+	rmmod hw_nat
+	rmmod nf_sc
+	ifdown -a
+	stop
+}
+
+clean_wan_config(){
+	echo clean_wan_config >> $CGI_LOG_FILE
+	uci set network.wan=
+}
+
+wan_config_A() {
+	echo wan_config_A >> $CGI_LOG_FILE
+	
+	rm -rf $WAN_CHANGE
+	
+	clean_wan_config
+	
+	HOSTNAME=`uci get system.@system[0].hostname 2>/dev/null`
+	
+	uci set network.wan=interface
+	uci set network.wan.mode=router
+	uci set network.wan.ifname=eth1
+	uci set network.wan.proto=dhcp
+	uci set network.wan.hostname=$HOSTNAME
+	uci set network.wan.ipv6=0
+	uci set network.wan.ipv6passthrough=0
+	
+	uci set network.dhcp.ipv6passthrough=0		
+	uci set network.static.ipv6passthrough=0		
+	
+	uci commit network
+	
+	/etc/init.d/network restart 
+	/etc/init.d/mstcIpv6Pass restart
+	
+	/usr/sbin/httpredirect.sh update
+	
+	echo 1 >> /dev/null
+}
+
+wan_config_B() {
+	echo wan_config_B >> $CGI_LOG_FILE
+	uci commit network
+	echo 2 >> /dev/null
+}
+
+
+wan_config_C() {
+	rm -rf $WAN_CHANGE
+	
+	echo wan_config_C >> $CGI_LOG_FILE
+	clean_wan_config
+	
+	PPPOE_ID_TYPE=`uci get network.pppoe.pppoe_id_type 2>/dev/null`
+	NAME=`uci get network.pppoe.username 2>/dev/null`
+	PASSWORD=`uci get network.pppoe.password 2>/dev/null`
+	MTU=`uci get network.pppoe.+mtu 2>/dev/null`
+
+	uci set network.wan=interface
+	uci set network.wan.mode=router
+	uci set network.wan.ifname=eth1
+	uci set network.wan.proto=pppoe
+	uci set network.wan.pppoe_id_type=$PPPOE_ID_TYPE
+	uci set network.wan.username=$NAME
+	uci set network.wan.password=$PASSWORD
+	uci set network.wan.mtu=$MTU
+	uci set network.wan.keepalive=5,60
+	uci set network.wan.ipv6=0
+	uci set network.wan.ipv6passthrough=1
+
+	uci set network.pppoe.ipv6passthrough=1		
+	
+	uci commit network
+	
+	/etc/init.d/network restart
+	/etc/init.d/mstcIpv6Pass restart
+	/usr/sbin/httpredirect.sh update
+	
+	echo 3 >> /dev/null
+}
+
+
+
+wan_mode_switch2bridge() {
+	
+#	echo "enter wan_mode_switch2bridge"
+	ether_lan=`uci get network.lan.ifname 2>/dev/null`
+	ether_wan=`uci get network.wan.ifname 2>/dev/null`
+	if [ ! -z $ether_lan ] && [ ! -z $ether_wan ] ; then
+#		echo $ether_lan $ether_wan
+		#clean wan config
+		clean_wan_config
+		uci set network.wan=interface
+		uci set network.wan.mode="ap"
+		uci set network.wan.ifname="$ether_wan"
+		uci set network.wan.ipv6passthrough=0
+
+		lan_ifname=`uci get network.lan_ap.ifname 2>/dev/null`
+		lan_force_link=`uci get network.lan_ap.force_link 2>/dev/null`
+		lan_type=`uci get network.lan_ap.type 2>/dev/null`
+		lan_proto=`uci get network.lan_ap.proto 2>/dev/null`
+		lan_ipaddr=`uci get network.lan_ap.ipaddr 2>/dev/null`
+		lan_netmask=`uci get network.lan_ap.netmask 2>/dev/null`
+		lan_autoip=`uci get network.lan_ap.autoip 2>/dev/null`
+
+		. /etc/openwrt_release
+
+		uci set network.lan.ifname="${lan_ifname}" 2>/dev/null
+		uci set network.lan.force_link="${lan_force_link}" 2>/dev/null
+		uci set network.lan.type="${lan_type}" 2>/dev/null
+		uci set network.lan.proto="${lan_proto}" 2>/dev/null
+		uci set network.lan.ipaddr="${lan_ipaddr}" 2>/dev/null
+		uci set network.lan.netmask="${lan_netmask}" 2>/dev/null
+		uci set network.lan.autoip="${lan_autoip}" 2>/dev/null
+		uci set network.lan.hostname="${DISTRIB_PRODUCT}" 2>/dev/null
+
+		uci commit network
+	fi
+}
+
+none_control() {
+	uci set network.wan.proto=none
+	reload_service
+}
+
+dhcp_control() {
+	uci set network.wan.proto=none
+	reload_service
+	sleep 1
+	
+	#clean wan config
+	clean_wan_config
+	#config wan config to dhcp
+	uci set network.wan=interface
+	uci set network.wan.mode=router
+	uci set network.wan.ifname=eth1
+	uci set network.wan.hostname=WN-AX2033GR
+	uci set network.wan.ipv6=0
+	uci set network.wan.ipv6passthrough=0
+	uci set network.wan.proto=dhcp
+	
+	reload_service
+	sleep 5
+	
+	logread -l 40  > /tmp/dhcp_log	
+	dhcp_check=`cat /tmp/dhcp_log | grep "Sending discover" | wc -l`
+	
+	if [ "$dhcp_check" == "0" ] ; then
+#	 echo "dhcp_check=0"
+	 sleep 2
+	 rm -rf  /tmp/dhcp_log
+	fi
+	
+#	echo dhcp_control
+}
+
+pppoe_test_control(){
+	
+	PPPPOE_TEST_FILE="/tmp/pppoe_log"
+	
+	
+	rm -rf $PPPPOE_TEST_FILE
+	pppd file /etc/options.pppoe &
+	sleep 12
+		
+	PPPOE_TEST_ID=`ps | grep /etc/options.pppoe | awk '{print $1}' | sed '$d' | sed -n '$p'`
+	
+#	echo $PPPOE_TEST_ID
+	
+	logread -l 40 | grep $PPPOE_TEST_ID > $PPPPOE_TEST_FILE	
+
+	ps | grep "/etc/options.pppoe" | awk '{print $1}' | xargs kill -9
+}
+
+pppoe_default_config(){
+	echo pppoe_default_config >> $CGI_LOG_FILE
+
+	clean_wan_config
+	
+	pppoe_ifname=`uci get network.pppoe.ifname 2>/dev/null`
+	pppoe_mtu=`uci get network.pppoe.mtu 2>/dev/null`
+	pppoe_id_type=`uci get network.pppoe.pppoe_id_type 2>/dev/null`
+	pppoe_ipv6passthrough=`uci get network.pppoe.ipv6passthrough 2>/dev/null`
+	pppoe_username=`uci get network.pppoe.username 2>/dev/null`
+	pppoe_password=`uci get network.pppoe.password 2>/dev/null`
+	pppoe_keepalive=`uci get network.pppoe.keepalive 2>/dev/null`
+
+	uci set network.wan=interface
+	uci set network.wan.mode=router
+	uci set network.wan.ifname=$pppoe_ifname
+	uci set network.wan.proto=pppoe
+	uci set network.wan.pppoe_id_type=$pppoe_id_type
+	uci set network.wan.username=$pppoe_username
+	uci set network.wan.password=$pppoe_password
+	uci set network.wan.mtu=$pppoe_mtu
+	uci set network.wan.ipv6=0
+	uci set network.wan.ipv6passthrough=$pppoe_ipv6passthrough
+	uci set network.wan.keepalive=$pppoe_keepalive
+}
+
+pppoe_control() {
+	PPPPOE_TEST_FILE="/tmp/pppoe_log"
+
+	pppoe_type=`uci get network.wan.pppoe_id_type 2>/dev/null`
+	
+	pppoe_mtu=`uci get network.pppoe.mtu 2>/dev/null`
+	wan_mtu=`uci get network.wan.mtu 2>/dev/null`
+	
+	if [ -z $pppoe_type ] ; then
+		uci set network.wan.pppoe_id_type=pppoe_others
+		uci set network.wan.username=pppoetest
+		uci set network.wan.password=pppoetest
+#		touch $WAN_PPPOE_TEST_FILE
+	fi	
+	
+	if [ ! -z $wan_mtu ] ; then
+		echo "no need to config wan mtu" > /dev/null
+	else
+		echo "config pppoe param from pppoe_mtu" > /dev/null
+		if [ ! -z $pppoe_mtu ] ; then
+			uci set network.wan.mtu=$pppoe_mtu
+		else
+			uci set network.wan.mtu=1454
+		fi
+	fi
+	
+	#config kepp alive time
+#	uci set network.wan.keepalive=5,60
+	
+	#config wan proto to none
+	uci set network.wan.proto=none
+	reload_service
+	sleep 1
+		
+	uci set network.wan.proto=pppoe
+	reload_service
+	sleep 7
+	
+	PPPOE_ID=`ps | grep nodetach | awk '{print $1}' | sed '$d' | sed -n '$p'`
+	
+	
+	#store pppoe log for check status
+	rm -rf  $PPPPOE_TEST_FILE
+	
+	logread -l 40 | grep $PPPOE_ID > $PPPPOE_TEST_FILE
+	
+#	echo pppoe_control
+
+}
+
+uci_store() {
+	WAN_CHANGE_FILE="/tmp/wan_proto_change"
+	uci show network.wan > /tmp/wan_uci_config
+	touch $WAN_CHANGE_FILE
+}
+
+uci_recovery() {
+	echo uci_recovery >> $CGI_LOG_FILE
+	
+	uci show network.wan > /tmp/wan_uci_config_current
+		
+	FILE_CURRENT="/tmp/wan_uci_config_current"
+	WAN_CHANGE_FILE="/tmp/wan_proto_change"
+	WAN_PPPOE_TEST_FILE="/tmp/wan_pppoetest"
+	FILE="/tmp/wan_uci_config"
+	
+	if [ -e $FILE ] ; then
+		
+		if [ -e $FILE_CURRENT ] ; then		
+			while read line; do
+#				echo "previous line : $line"
+				cmd=`echo $line | awk -F '=' '{print $1 "="}'`
+				uci set $cmd 2>/dev/null
+			done < $FILE_CURRENT		
+#			rm -rf $FILE_CURRENT
+		else
+			exit
+		fi
+
+		
+		
+		if [ -e $FILE ] ; then		
+			while read line; do
+#				echo "This is a line : $line"
+				uci set $line
+			done < $FILE
+#			rm -rf $FILE
+		else
+			exit
+		fi		
+		
+		#remove pppoe test file
+#		rm -rf $WAN_PPPOE_TEST_FILE
+		
+		uci commit network
+#		rm -rf $WAN_CHANGE_FILE
+		reload_service				
+	else
+		exit
+	fi
+}
+
+do_http_redirect_disable()
+{
+	ether_lan=`uci get network.lan.ifname 2>/dev/null`
+	
+	if [ ! -z $ether_lan ] ; then
+		lan_itf=br-lan
+	else
+		echo "check lan itf failed" > /dev/null
+	fi
+
+	rm -rf /tmp/do_http_redirect
+	mkdir -p /etc/httpredirect
+	echo "" > /etc/httpredirect/firewall.include
+	/etc/init.d/firewall restart
+	/etc/init.d/dnsmasq restart
+}
+
+#####################################################
+# @brief Main entry 
+#####################################################
+
+case "$1" in
+	store)
+		uci_store
+	;;
+	recovery)
+		uci_recovery
+	;;
+	dhcp)
+		dhcp_control
+	;;
+	pppoe)
+		pppoe_control
+	;;
+	pppoe_test)
+		pppoe_test_control
+	;;
+	pppoe_default)
+		pppoe_default_config
+	;;
+	none)
+		none_control
+	;;
+	reload)
+		reload_service
+	;;
+	config_A)
+		wan_config_A
+		;;	
+	config_B)
+		wan_config_B
+		;;		
+	config_C)
+		wan_config_C
+		;;	
+	mode_bridge)
+		wan_mode_switch2bridge
+		;;
+	http_redirect_disable)
+		do_http_redirect_disable
+		;;		
+	defset)
+		echo "do nothing"
+    		;;
+	*)
+		echo "[wan_config] Usage: $0 { store | recovery | dhcp | pppoe | pppoe_test | pppoe_default | none | reload | config_A | config_C | mode_bridge | http_redirect_disable}"
+		ret=1
+		;;
+esac
+
+exit
+
+

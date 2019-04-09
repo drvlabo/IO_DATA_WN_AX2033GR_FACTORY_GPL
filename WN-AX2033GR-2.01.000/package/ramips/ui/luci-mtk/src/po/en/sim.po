@@ -1,0 +1,77 @@
+msgid "LTE"
+msgstr "LTE"
+
+msgid "LengthErrMsgPIN"
+msgstr "The length of PIN should be 4-8."
+
+msgid "LengthErrMsgPUK"
+msgstr "The length of PUK should be 8."
+
+msgid "MLG_MLG_YouCanTryOnMoreTimeNewPINConfirmErrMsg_LTEWan"
+msgstr "Confirm New PIN ERROR!"
+
+msgid "MLG_NOT_PRESENT"
+msgstr "Not Present"
+
+msgid "MLG_PINRemainAttempts_LTEWan"
+msgstr "Remain attempts :"
+
+msgid "MLG_PIN_Confirm_New_PIN_LTEWan"
+msgstr "Confirm New PIN :"
+
+msgid "MLG_PIN_DISABLE"
+msgstr "PIN Disable"
+
+msgid "MLG_PIN_InputPIN_LTEWan"
+msgstr "Input PIN :"
+
+msgid "MLG_PIN_LOCKED"
+msgstr "PIN Locked"
+
+msgid "MLG_PIN_Management_LTEWan"
+msgstr "PIN Management"
+
+msgid "MLG_PIN_Modification_LTEWan"
+msgstr "Modification :"
+
+msgid "MLG_PIN_New_PIN_LTEWan"
+msgstr "New PIN :"
+
+msgid "MLG_PIN_Old_PIN_LTEWan"
+msgstr "Old PIN :"
+
+msgid "MLG_PIN_REQUIRED"
+msgstr "PIN Required"
+
+msgid "MLG_PIN_VERIFIED"
+msgstr "PIN Verified"
+
+msgid "MLG_PIN_Verification_LTEWan"
+msgstr "PIN Verification"
+
+msgid "MLG_PUKRemainAttempts_LTEWan"
+msgstr "Remain attempts :"
+
+msgid "MLG_PUK_LTEWan"
+msgstr "PUK :"
+
+msgid "MLG_SIMCard_Status_LTEWan"
+msgstr "SIM Card Status"
+
+msgid "MLG_ThePINIsEmptyErrMsg_LTEWan"
+msgstr "The PIN or PUK is empty. Please enter the number again."
+
+msgid "MLG_ThePINIsInvalidErrMsg_LTEWan"
+msgstr "The PIN is invalid. Please enter the number again."
+
+msgid "MLG_YouCanTryOnMoreTimePINErrMsg_LTEWan"
+msgstr "You can try one more time. If PIN verification fails one more time, PUK verification is required. Are you sure you want to continue?"
+
+msgid "MLG_YouCanTryOnMoreTimePUKErrMsg_LTEWan"
+msgstr "You can try one more time. If PUK verification fails one more time, your SIM card will be permanently locked. Are you sure you want to continue?"
+
+msgid "SIM"
+msgstr "SIM"
+
+msgid "msg_config"
+msgstr "Configuration Update is proceeding. Please Wait..."

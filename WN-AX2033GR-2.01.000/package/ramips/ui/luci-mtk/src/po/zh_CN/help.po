@@ -1,0 +1,240 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "HELP"
+msgstr ""
+
+msgid "apn_help"
+msgstr "显示APN的相关讯息，用户在此点击 "修改" 可设定APN名称以及IP地址的型态像是IPv4或是IPv6。"
+
+msgid "apn_table_apn_name"
+msgstr "APN 名称"
+
+msgid "apn_table_apn_name_help"
+msgstr "您可透过此接口设置APN名称。"
+
+msgid "apn_table_description"
+msgstr "描述"
+
+msgid "apn_table_ip_mode"
+msgstr "IP 类型"
+
+msgid "apn_table_ip_mode_help"
+msgstr "您可透过此接口选择APN的IP型态：IPv4、IPv6或是IPv4/IPv6。"
+
+msgid "apn_table_name"
+msgstr "名称"
+
+msgid "apn_title"
+msgstr "APN"
+
+msgid "backup_restore_help"
+msgstr "您可透过此接口备份/恢复軟件或是出厂设置。"
+
+msgid "backup_restore_title"
+msgstr "备份/恢复出厂设置"
+
+msgid "lte_status_help"
+msgstr "描述小区目前联机服务相关的信息以及情况，包含服务提供者、入网运行时间、漫游状态、信号强度RSRP、信号强度RSRQ、上行/下行的带宽以及频率、APN1、动态APN 1、小区 ID。"
+
+msgid "lte_status_title"
+msgstr "LTE 状态"
+
+msgid "configuration_title"
+msgstr "设置"
+
+msgid "dashboard_title"
+msgstr "总览"
+
+msgid "device_info"
+msgstr "设备信息"
+
+msgid "device_info_help"
+msgstr "此设备的基本信息包含型号、MAC 地址、软体版本、硬件版本、网络相关讯息包含链接、漫游、讯号、SIM、IP地址、IP子网掩码、默认网关等等，局域网络相关讯息包含局域网络IP地址以及IP子网掩码。"
+
+msgid "device_status_help"
+msgstr "系统目前的状态包含系统运行时间、电池、CPU，内存的使用情况。"
+
+msgid "device_status_title"
+msgstr "系统状态"
+
+msgid "dhcp_server_title"
+msgstr "DHCP 设定"
+
+msgid "dhcp_table_help"
+msgstr "纪录已配置的网络IP以及对应的主机信息包含主机名称以及MAC 地址。"
+
+msgid "dhcp_table_title"
+msgstr "DHCP 客户端列表"
+
+msgid "dmz_help"
+msgstr "您可以透过此接口在外部网络与内部网络间设置一台服务器"
+
+msgid "dmz_title"
+msgstr "DMZ"
+
+msgid "fw_upgrade_help"
+msgstr "使用者在此可以选择软件更新档案并更新设备软件。"
+
+msgid "fw_upgrade_title"
+msgstr "软件更新"
+
+msgid "general_help"
+msgstr "使用者可在此设定DHCP起始 IP 地址、 结束 IP 地址以及IP释放时间。"
+
+msgid "general_title"
+msgstr "基本设置"
+
+msgid "help_title"
+msgstr "帮助"
+
+msgid "interface_status"
+msgstr "网络介面狀態"
+
+msgid "interface_status_help"
+msgstr "顯示介面是否啟用"
+
+msgid "internet_status"
+msgstr "网络狀態"
+
+msgid "internet_status_help"
+msgstr "網絡當前的狀態,包含是否連上網絡,訊號強度,SIM卡狀態,LTE 軟件版本信息,IMEI 以及IMSI。"
+
+msgid "internet_status_title"
+msgstr "互联网状态"
+
+
+msgid "ipv6_help"
+msgstr "当3G/4G入网配置之IPv6设定有启用时，始可对此页进行设置。 可让使用者选择是静态指定或是动态由系統指定 IP地址。假设选择静态指定，使用者则可在此设定IPv6前缀。"
+
+msgid "ipv6_title"
+msgstr "IPv6"
+
+msgid "lan_help"
+msgstr "局域网络设置分为两个部份，局域网IP设定。其中局域网IP设定包含IP地址以及子网掩码设定。"
+
+msgid "lan_title"
+msgstr "局域网络"
+
+msgid "language_help"
+msgstr "您可以透过此接口设定语言"
+
+msgid "language_title"
+msgstr "语言"
+
+msgid "log_help"
+msgstr "主要提供系统相关的日志。"
+
+msgid "log_title"
+msgstr "系统日志"
+
+msgid "lte_title"
+msgstr "LTE"
+
+msgid "mac_filter_help"
+msgstr "使用者在此可透过MAC地址过滤来决定允许或是拒绝列表中的无线装置MAC地址连接到此装置，并且必须透过勾选激活以启用此设置。"
+
+msgid "mac_filter_title"
+msgstr "MAC过滤"
+
+msgid "maintenance_title"
+msgstr "维护"
+
+msgid "manual_connection_help"
+msgstr "使用者可在此选择要连接或是断开网络。"
+
+msgid "manual_connection_title"
+msgstr "手动入网"
+
+msgid "monitor_title"
+msgstr "监控"
+
+msgid "network_select_help"
+msgstr "使用者可在此选择是否要自动选择网络，如选择手动，则系统将会扫描目前可使用之网络供使用者选择。"
+
+msgid "network_select_title"
+msgstr "网络模式"
+
+msgid "network_setting_help"
+msgstr "使用者可在此设定适合的网络模式包含4G、4G/3G、3G及TD-SCDMA。"
+
+msgid "network_setting_title"
+msgstr "网络设定"
+
+msgid "network_title"
+msgstr "网络"
+
+msgid "oled_display_help"
+msgstr "您可透过此接口设定屏幕几秒后进入休眠。"
+
+msgid "oled_display_title"
+msgstr "屏幕休眠设定"
+
+msgid "password_help"
+msgstr "在此使用者可以更改管理员密码，先输入原先的密码再输入新的密码，最后为了确认密码无误必须再输入一次新的密码。"
+
+msgid "password_title"
+msgstr "密码"
+
+msgid "restart_help"
+msgstr "使用者点击重启会使设备重新启动，重启过程大约1分钟，完成后便可以重新登陆使用。"
+
+msgid "restart_title"
+msgstr "重启"
+
+msgid "sim_help"
+msgstr "您可透过此接口得知SIM卡的状态，使用者可以在此设置PIN保护启用/停用，假设启用PIN码保护，装置会要求用户输入PIN码(PIN REQUIRED状态)，认证通过进入PIN VERIFIED状态，错误三次以上则会进入 PIN LOCKED 状态将SIM卡锁住，其他还有当SIM卡没插入时会显示SIM NOT PRESENT 状态和其他错误 SIM ERROR状态。"
+
+msgid "sim_title"
+msgstr "SIM"
+
+msgid "sms_list"
+msgstr "列表"
+
+msgid "sms_list_help"
+msgstr "列出短信相关的内容包含寄件人、寄件日期以及短信内容，您也可以在此删除短信。"
+
+msgid "sms_send"
+msgstr "发送"
+
+msgid "sms_send_character_set"
+msgstr "字符集"
+
+msgid "sms_send_character_set_help"
+msgstr "您可在此选择短信的编码方式。"
+
+msgid "sms_send_content"
+msgstr "添加文本"
+
+msgid "sms_send_content_help"
+msgstr "您可以透过此接口输入短信内容。"
+
+msgid "sms_send_help_title"
+msgstr "您可以透过此接口发送短信："
+
+msgid "sms_send_recever"
+msgstr "收件人"
+
+msgid "sms_send_recever_help"
+msgstr "您可在此输入对方的号码。"
+
+msgid "sms_send_table_description"
+msgstr "描述"
+
+msgid "sms_send_table_name"
+msgstr "名称"
+
+msgid "sms_title"
+msgstr "SMS短信服务"
+
+msgid "system_status"
+msgstr "系统状态"
+
+msgid "system_status_help"
+msgstr "系统目前的状态包含系统运行时间、电池、CPU，内存的使用情况。"
+
+msgid "wlan_help"
+msgstr "包含无线网络设置以及安全设置两部份，无线网络设置中可以依用户意愿开启或关闭无线网络、设定网络名称(SSID)以及选择是否隐藏网络名称、选择频段 、频率（信道）、网络模式、设定安全加密模式以及密钥和密钥加密方法，最后可以设定预设的密钥以及密钥的编码方式。"
+
+msgid "wlan_title"
+msgstr "无线网络"

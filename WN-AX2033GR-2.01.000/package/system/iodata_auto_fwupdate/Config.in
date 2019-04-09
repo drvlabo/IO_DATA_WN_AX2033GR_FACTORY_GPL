@@ -1,0 +1,13 @@
+  config PACKAGE_iodata_auto_fwupdate_FW_XML_DIR_URL
+    string "Directory URL contains FW XML"
+    default "http://iosupdate.iodata.jp/lib/auto/wn/wn-ax2033gr/"
+    depends on PACKAGE_iodata_auto_fwupdate
+    help
+      Directory URL contains FW XML for checking new FW information
+
+  config PACKAGE_iodata_auto_fwupdate_FW_XML_FILE_NAME
+    string "FW XML file name"
+    default "wn-ax2033gr.xml"
+    depends on PACKAGE_iodata_auto_fwupdate
+    help
+      File name of xml containing new FW information

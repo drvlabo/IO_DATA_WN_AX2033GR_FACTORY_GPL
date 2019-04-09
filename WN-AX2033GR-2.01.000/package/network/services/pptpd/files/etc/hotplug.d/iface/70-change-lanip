@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if [ "$INTERFACE" = lan ] ; then
+	if [ "$ACTION" = ifup ]; then
+		enabled=$(uci get pptpd.pptpd.enabled)
+		[ -z "$enabled" -o "$enabled" = "0" ] && return 0
+		/etc/init.d/pptpd restart
+	fi
+fi

@@ -1,0 +1,16 @@
+Index: linux-3.10.14/net/netfilter/x_tables.c
+===================================================================
+--- linux-3.10.14.orig/net/netfilter/x_tables.c	2016-01-08 14:07:07.000000000 +0800
++++ linux-3.10.14/net/netfilter/x_tables.c	2017-07-25 17:08:18.704967400 +0800
+@@ -565,7 +565,10 @@
+ {
+ 	int ret;
+ 
+-	if (XT_ALIGN(par->target->targetsize) != size) {
++//Exchange for customized IPv4 over IPv6
++	/* XXX: for multiple range */
++	if (XT_ALIGN(par->target->targetsize) < size) {
++//End exchange
+ 		pr_err("%s_tables: %s.%u target: invalid size "
+ 		       "%u (kernel) != (user) %u\n",
+ 		       xt_prefix[par->family], par->target->name,

@@ -1,0 +1,44 @@
+Index: linux-3.10.14/drivers/mtd/Kconfig
+===================================================================
+--- linux-3.10.14.orig/drivers/mtd/Kconfig	2015-12-31 11:55:33.000000000 +0800
++++ linux-3.10.14/drivers/mtd/Kconfig	2016-02-16 13:24:01.947627373 +0800
+@@ -26,6 +26,7 @@
+ 
+ config MTD_SPLIT_FIRMWARE
+         bool "Automatically split firmware partition for kernel+rootfs"
++		select MTD_SPLIT
+         default y
+ 
+ config MTD_SPLIT_FIRMWARE_NAME
+Index: linux-3.10.14/drivers/mtd/mtdpart.c
+===================================================================
+--- linux-3.10.14.orig/drivers/mtd/mtdpart.c	2015-12-31 11:55:33.000000000 +0800
++++ linux-3.10.14/drivers/mtd/mtdpart.c	2016-02-16 13:36:39.148044813 +0800
+@@ -1025,6 +1025,11 @@
+ static void mtd_partition_split(struct mtd_info *master, struct mtd_part *part)
+ {
+ 	static int rootfs_found = 0;
++#if (defined(CONFIG_MTD_ANY_RALINK) || defined(CONFIG_MTK_MTD_NAND)) && defined(CONFIG_MTD_SPLIT)
++	unsigned int len = 0;
++	unsigned int split_offset = 0;
++	size_t squashfs_len = 0;
++#endif
+ 
+ 	if (rootfs_found)
+ 		return;
+@@ -1034,6 +1039,15 @@
+ 
+ 		if (config_enabled(CONFIG_MTD_ROOTFS_SPLIT))
+ 			split_rootfs_data(master, part);
++#if (defined(CONFIG_MTD_ANY_RALINK) || defined(CONFIG_MTK_MTD_NAND)) && defined(CONFIG_MTD_SPLIT)
++		else {
++			if (!mtd_get_squashfs_len(master, part->offset, &squashfs_len)) {
++				len = mtd_pad_erasesize(master, part->offset, squashfs_len);
++				split_offset = part->offset + len;
++				rootfs_data_offset = split_offset;
++			}
++		}
++#endif
+ 	}
+ 
+ 	if (!strcmp(part->mtd.name, SPLIT_FIRMWARE_NAME) &&

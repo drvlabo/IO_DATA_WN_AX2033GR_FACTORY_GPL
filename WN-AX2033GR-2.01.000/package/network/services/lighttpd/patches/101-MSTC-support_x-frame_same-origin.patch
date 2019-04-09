@@ -1,0 +1,9 @@
+#MSTC Sean, Support X-Frame-Options SAMEORIGIN
+--- a/doc/config/conf.d/setenv.conf	2016-04-26 19:02:55.839246184 +0800
++++ b/doc/config/conf.d/setenv.conf	1970-01-01 08:00:00.000000000 +0800
+@@ -0,0 +1,5 @@
++server.modules += ( "mod_setenv" )
++$HTTP["scheme"] == "http" {
++    setenv.add-response-header  = ( "X-Frame-Options" => "SAMEORIGIN")
++}
++

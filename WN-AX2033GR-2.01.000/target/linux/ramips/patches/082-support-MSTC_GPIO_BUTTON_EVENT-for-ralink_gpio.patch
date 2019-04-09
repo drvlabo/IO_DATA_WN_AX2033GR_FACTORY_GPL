@@ -1,0 +1,689 @@
+Index: linux-3.10.14/drivers/char/Kconfig
+===================================================================
+--- linux-3.10.14.orig/drivers/char/Kconfig	2016-06-08 16:28:27.538489301 +0800
++++ linux-3.10.14/drivers/char/Kconfig	2016-06-08 16:28:27.538489301 +0800
+@@ -12,6 +12,12 @@
+ 	bool "Ralink GPIO LED Support"
+ 	depends on RALINK_GPIO
+ 	default y
++
++# __MSTC__, Vincent: Support button event and pass value to user app(like button-hotplug app) 
++config MSTC_GPIO_BUTTON_EVENT
++	bool "MSTC GPIO BUTTON EVENT Support"
++	depends on RALINK_GPIO
++	default y
+ 	
+ config RALINK_HSDMA
+   tristate "Ralink HSDMA Support"
+Index: linux-3.10.14/drivers/char/ralink_gpio.c
+===================================================================
+--- linux-3.10.14.orig/drivers/char/ralink_gpio.c	2016-06-08 16:28:27.538489301 +0800
++++ linux-3.10.14/drivers/char/ralink_gpio.c	2016-06-08 16:37:08.868446794 +0800
+@@ -43,6 +43,9 @@
+ #include <linux/timer.h>
+ #endif
+ #include <asm/uaccess.h>
++#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT
++#include <linux/slab.h>
++#endif
+ #include "ralink_gpio.h"
+ 
+ #include <asm/rt2880/surfboardint.h>
+@@ -143,12 +146,105 @@
+ static struct work_struct gpio_event_hold;
+ static struct work_struct gpio_event_click;
+ 
++struct semaphore mstcRalinkGpioRegLock; /* __MSTC__, Vincent: Fix the race condition when multiple ioctl to gpio modules */
+ 
+ MODULE_DESCRIPTION("Ralink SoC GPIO Driver");
+ MODULE_AUTHOR("Winfred Lu <winfred_lu@ralinktech.com.tw>");
+ MODULE_LICENSE("GPL");
+ ralink_gpio_reg_info info;
+ 
++#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++#define MSTC_GPIO_ACTION_PRESSED	1
++#define MSTC_GPIO_ACTION_RELEASED	2
++
++struct mstcGpioEvent_t {
++	unsigned int	gpio_num;
++	unsigned int	action;  /*0: none 1: pressed, 2: released*/
++	unsigned long	duration; /* times in mseconds*/
++
++	struct work_struct	work;
++};
++
++static void mstcGpioNotifyUser(struct mstcGpioEvent_t *event)
++{
++	struct task_struct *p = NULL;
++	struct siginfo info;
++	int signal = 0;
++	int ret;
++
++	if (event->gpio_num < 0 || RALINK_GPIO_NUMBER <= event->gpio_num) {
++		printk(KERN_ERR NAME ": gpio irq number out of range\n");
++		goto out_free_event;
++	}
++
++	//don't send any signal if pid is 0 or 1
++	if ((int)ralink_gpio_info[event->gpio_num].pid < 2)
++		goto out_free_event;
++
++#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,35)
++	p = find_task_by_vpid(ralink_gpio_info[event->gpio_num].pid);
++#else
++	p = find_task_by_pid(ralink_gpio_info[event->gpio_num].pid);
++#endif
++
++	if (NULL == p) {
++		printk(KERN_ERR NAME ": no registered process to notify\n");
++		goto out_free_event;
++	}
++
++	if (MSTC_GPIO_ACTION_PRESSED == event->action)
++		signal = SIGUSR1;
++	else if (MSTC_GPIO_ACTION_RELEASED == event->action)
++		signal = SIGUSR2;
++
++        /* send the signal */
++        memset(&info, 0, sizeof(struct siginfo));
++        info.si_signo = signal;
++        info.si_code = SI_SIGIO; /* The SI_SIGIO flag is used to tell sigaction() in user space to use the sa_sigaction field, not sa_handler. */
++        info.si_errno = 0;
++        info.si_int = event->duration;
++
++        ret = send_sig_info(signal, &info, p);
++        if (ret < 0)
++        {
++		printk("error sending signal\n");
++		goto out_free_event;
++        }
++        else
++            printk(KERN_DEBUG "sent GPIO:%d event:%d t:%u msecs to pid:%d\n", event->gpio_num, event->action, info.si_int, ralink_gpio_info[event->gpio_num].pid);
++
++out_free_event:
++	kfree(event);
++
++}
++
++static void mstcGpioEventNotify(struct work_struct *work_p)
++{
++	struct mstcGpioEvent_t *event = container_of(work_p, struct mstcGpioEvent_t, work);
++
++	mstcGpioNotifyUser(event);
++}
++
++static int mstcGpioCreateEvent(int gpio_num, int action, unsigned long now, unsigned long falling, unsigned long rising)
++{
++	struct mstcGpioEvent_t *mstcGpioEvent;
++
++	mstcGpioEvent = kzalloc(sizeof(*mstcGpioEvent), GFP_KERNEL);
++	if (!mstcGpioEvent)
++		return -ENOMEM;
++
++	mstcGpioEvent->gpio_num = gpio_num;
++	mstcGpioEvent->duration = ((now - falling) * 1000 / HZ);
++	mstcGpioEvent->action = action;
++
++	INIT_WORK(&mstcGpioEvent->work, (void *)(void *)mstcGpioEventNotify);
++	schedule_work(&mstcGpioEvent->work);
++
++	//printk(KERN_DEBUG "create gpio:%d, act:%d, duration:%u, falling:%u, rising:%u\n", gpio_num, action , mstcGpioEvent->duration, falling, rising);
++	return 0;
++}
++
++#endif
+ void gpio_click_notify(struct work_struct *work)
+ {
+     //printk("<hua-dbg> %s, 1\n", __FUNCTION__);
+@@ -319,21 +415,29 @@
+ 
+ 	switch(req) {
+ 	case RALINK_GPIO_SET_DIR:
++		down(&mstcRalinkGpioRegLock);
+ 		*(volatile u32 *)(RALINK_REG_PIODIR) = cpu_to_le32(arg);
++		up(&mstcRalinkGpioRegLock);
+ 		break;
+ 	case RALINK_GPIO_SET_DIR_IN:
++		down(&mstcRalinkGpioRegLock);
+ 		tmp = le32_to_cpu(*(volatile u32 *)(RALINK_REG_PIODIR));
+ 		tmp &= ~cpu_to_le32(arg);
+ 		*(volatile u32 *)(RALINK_REG_PIODIR) = tmp;
++		up(&mstcRalinkGpioRegLock);
+ 		break;
+ 	case RALINK_GPIO_SET_DIR_OUT:
++		down(&mstcRalinkGpioRegLock);
+ 		tmp = le32_to_cpu(*(volatile u32 *)(RALINK_REG_PIODIR));
+ 		tmp |= cpu_to_le32(arg);
+ 		*(volatile u32 *)(RALINK_REG_PIODIR) = tmp;
++		up(&mstcRalinkGpioRegLock);
+ 		break;
+ 	case RALINK_GPIO_READ: //RALINK_GPIO_READ_INT
++		down(&mstcRalinkGpioRegLock);
+ 		tmp = le32_to_cpu(*(volatile u32 *)(RALINK_REG_PIODATA));
+ 		put_user(tmp, (int __user *)arg);
++		up(&mstcRalinkGpioRegLock);
+ 		break;
+ 	case RALINK_GPIO_WRITE: //RALINK_GPIO_WRITE_INT
+ 		*(volatile u32 *)(RALINK_REG_PIODATA) = cpu_to_le32(arg);
+@@ -361,6 +465,7 @@
+ 		break;
+ 	case RALINK_GPIO_REG_IRQ:
+ 		copy_from_user(&info, (ralink_gpio_reg_info *)arg, sizeof(info));
++		down(&mstcRalinkGpioRegLock);
+ 		if (0 <= info.irq && info.irq < RALINK_GPIO_NUMBER) {
+ 			ralink_gpio_info[info.irq].pid = info.pid;
+ #if defined (RALINK_GPIO_HAS_2722)
+@@ -501,6 +606,8 @@
+ 		else
+ 			printk(KERN_ERR NAME ": irq number(%d) out of range\n",
+ 					info.irq);
++
++		up(&mstcRalinkGpioRegLock);
+ 		break;
+ 
+ #if defined (RALINK_GPIO_HAS_2722)
+@@ -805,7 +912,9 @@
+ 	case RALINK_GPIO_LED_SET:
+ #ifdef CONFIG_RALINK_GPIO_LED
+ 		copy_from_user(&led, (ralink_gpio_led_info *)arg, sizeof(led));
++		down(&mstcRalinkGpioRegLock);
+ 		ralink_gpio_led_set(led);
++		up(&mstcRalinkGpioRegLock);
+ #else
+ 		printk(KERN_ERR NAME ": gpio led support not built\n");
+ #endif
+@@ -823,8 +932,11 @@
+ #else
+ 	try_module_get(THIS_MODULE);
+ #endif
++
++#if !defined( CONFIG_MSTC_GPIO_BUTTON_EVENT) /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
+     INIT_WORK(&gpio_event_hold, gpio_hold_notify);
+     INIT_WORK(&gpio_event_click, gpio_click_notify);
++#endif
+ 	return 0;
+ }
+ 
+@@ -2484,6 +2596,8 @@
+ 	unsigned int i;
+ 	u32 gpiomode;
+ 
++	sema_init(&mstcRalinkGpioRegLock, 1);  /* __MSTC__, Vincent: Fix the race condition when multiple ioctl to gpio modules */
++
+ #ifdef  CONFIG_DEVFS_FS
+ 	if (devfs_register_chrdev(ralink_gpio_major, RALINK_GPIO_DEVNAME,
+ 				&ralink_gpio_fops)) {
+@@ -2704,6 +2818,9 @@
+ 			}
+ 			else {
+ 				record[i].rising = now;
++			#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_RELEASED, now, record[i].falling, record[i].rising);
++			#else
+ 				if (time_before(now, record[i].falling + 200L)) {
+ 					//one click
+ 					schedule_work(&gpio_event_click);
+@@ -2712,10 +2829,23 @@
+ 					//press for several seconds
+ 					schedule_work(&gpio_event_hold);
+ 				}
++			#endif
+ 			}
+ 		}
+ 		else { //falling edge
+ 			record[i].falling = now;
++		#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++			if (record[i].rising != 0 && time_before_eq(now,
++						record[i].rising + 5L)) {
++				/*
++				 * If the interrupt comes in a short period,
++				 * it might be floating. We ignore it.
++				 */
++			}
++			else {
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_PRESSED, now, record[i].falling, record[i].rising);
++			}
++		#endif
+ 		}
+ 		break;
+ 	}
+@@ -2729,16 +2859,33 @@
+ 			}
+ 			else {
+ 				record[i].rising = now;
++			#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_RELEASED, now, record[i].falling, record[i].rising);
++			#else
+ 				if (time_before(now, record[i].falling + 200L)) {
+ 					schedule_work(&gpio_event_click);
+ 				}
+ 				else {
+ 					schedule_work(&gpio_event_hold);
+ 				}
++			#endif
+ 			}
+ 		}
+ 		else {
+ 			record[i].falling = now;
++		#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++			if (record[i].rising != 0 && time_before_eq(now,
++						record[i].rising + 5L)) {
++				/*
++				 * If the interrupt comes in a short period,
++				 * it might be floating. We ignore it.
++				 */
++			}
++			else {
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_PRESSED, now, record[i].falling, record[i].rising);
++			}
++		#endif
++
+ 		}
+ 		break;
+ 	}
+@@ -2757,6 +2904,9 @@
+ 			}
+ 			else {
+ 				record[i].rising = now;
++			#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_RELEASED, now, record[i].falling, record[i].rising);
++			#else
+ 				if (time_before(now, record[i].falling + 200L)) {
+ 					//one click
+ 					printk("one click\n");
+@@ -2767,6 +2917,7 @@
+ 					printk("press for several seconds\n");
+ 					schedule_work(&gpio_event_hold);
+ 				}
++			#endif
+ 			}
+ 		}
+ 		else { //falling edge
+@@ -2782,6 +2933,18 @@
+ 					lcdtimes=0;
+ 		  	}
+ 			#endif
++		#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++			if (record[i].rising != 0 && time_before_eq(now,
++						record[i].rising + 5L)) {
++				/*
++				 * If the interrupt comes in a short period,
++				 * it might be floating. We ignore it.
++				 */
++ 			}
++			else {
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_PRESSED, now, record[i].falling, record[i].rising);
++			}
++		#endif
+ 		}
+ 		break;
+ 	}
+@@ -2795,16 +2958,32 @@
+ 			}
+ 			else {
+ 				record[i].rising = now;
++			#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_RELEASED, now, record[i].falling, record[i].rising);
++			#else
+ 				if (time_before(now, record[i].falling + 200L)) {
+ 					schedule_work(&gpio_event_click);
+ 				}
+ 				else {
+ 					schedule_work(&gpio_event_hold);
+ 				}
++			#endif
+ 			}
+ 		}
+ 		else {
+ 			record[i].falling = now;
++		#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++			if (record[i].rising != 0 && time_before_eq(now,
++						record[i].rising + 5L)) {
++				/*
++				 * If the interrupt comes in a short period,
++				 * it might be floating. We ignore it.
++				 */
++ 			}
++			else {
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_PRESSED, now, record[i].falling, record[i].rising);
++			}
++		#endif
+ 		}
+ 		break;
+ 	}
+@@ -2818,16 +2997,32 @@
+ 			}
+ 			else {
+ 				record[i].rising = now;
++			#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_RELEASED, now, record[i].falling, record[i].rising);
++			#else
+ 				if (time_before(now, record[i].falling + 200L)) {
+ 					schedule_work(&gpio_event_click);
+ 				}
+ 				else {
+ 					schedule_work(&gpio_event_hold);
+ 				}
++			#endif
+ 			}
+ 		}
+ 		else {
+ 			record[i].falling = now;
++		#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++			if (record[i].rising != 0 && time_before_eq(now,
++						record[i].rising + 5L)) {
++				/*
++				 * If the interrupt comes in a short period,
++				 * it might be floating. We ignore it.
++				 */
++ 			}
++			else {
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_PRESSED, now, record[i].falling, record[i].rising);
++			}
++		#endif
+ 		}
+ 		break;
+ 	}
+@@ -2846,6 +3041,9 @@
+ 			}
+ 			else {
+ 				record[i].rising = now;
++			#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_RELEASED, now, record[i].falling, record[i].rising);
++			#else
+ 				if (time_before(now, record[i].falling + 200L)) {
+ 					//one click
+ 					printk("i=%d, one click\n", i);
+@@ -2856,10 +3054,23 @@
+ 					printk("i=%d, push several seconds\n", i);
+ 					schedule_work(&gpio_event_hold);
+ 				}
++			#endif
+ 			}
+ 		}
+ 		else { //falling edge
+ 			record[i].falling = now;
++		#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++			if (record[i].rising != 0 && time_before_eq(now,
++						record[i].rising + 5L)) {
++				/*
++				 * If the interrupt comes in a short period,
++				 * it might be floating. We ignore it.
++				 */
++ 			}
++			else {
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_PRESSED, now, record[i].falling, record[i].rising);
++			}
++		#endif
+ 		}
+ 		break;
+ 	}
+@@ -2874,16 +3085,32 @@
+ 			}
+ 			else {
+ 				record[i].rising = now;
++			#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_RELEASED, now, record[i].falling, record[i].rising);
++			#else
+ 				if (time_before(now, record[i].falling + 200L)) {
+ 					schedule_work(&gpio_event_click);
+ 				}
+ 				else {
+ 					schedule_work(&gpio_event_hold);
+ 				}
++			#endif
+ 			}
+ 		}
+ 		else {
+ 			record[i].falling = now;
++		#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++			if (record[i].rising != 0 && time_before_eq(now,
++						record[i].rising + 5L)) {
++				/*
++				 * If the interrupt comes in a short period,
++				 * it might be floating. We ignore it.
++				 */
++ 			}
++			else {
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_PRESSED, now, record[i].falling, record[i].rising);
++			}
++		#endif
+ 		}
+ 		break;
+ 	}
+@@ -2897,16 +3124,32 @@
+ 			}
+ 			else {
+ 				record[i].rising = now;
++			#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_RELEASED, now, record[i].falling, record[i].rising);
++			#else
+ 				if (time_before(now, record[i].falling + 200L)) {
+ 					schedule_work(&gpio_event_click);
+ 				}
+ 				else {
+ 					schedule_work(&gpio_event_hold);
+ 				}
++			#endif
+ 			}
+ 		}
+ 		else {
+ 			record[i].falling = now;
++		#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++			if (record[i].rising != 0 && time_before_eq(now,
++						record[i].rising + 5L)) {
++				/*
++				 * If the interrupt comes in a short period,
++				 * it might be floating. We ignore it.
++				 */
++ 			}
++			else {
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_PRESSED, now, record[i].falling, record[i].rising);
++			}
++		#endif
+ 		}
+ 		break;
+ 	}
+@@ -2921,16 +3164,32 @@
+ 			}
+ 			else {
+ 				record[i].rising = now;
++			#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_RELEASED, now, record[i].falling, record[i].rising);
++			#else
+ 				if (time_before(now, record[i].falling + 200L)) {
+ 					schedule_work(&gpio_event_click);
+ 				}
+ 				else {
+ 					schedule_work(&gpio_event_hold);
+ 				}
++			#endif
+ 			}
+ 		}
+ 		else {
+ 			record[i].falling = now;
++		#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++			if (record[i].rising != 0 && time_before_eq(now,
++						record[i].rising + 5L)) {
++				/*
++				 * If the interrupt comes in a short period,
++				 * it might be floating. We ignore it.
++				 */
++ 			}
++			else {
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_PRESSED, now, record[i].falling, record[i].rising);
++			}
++		#endif
+ 		}
+ 		break;
+ 	}
+@@ -2944,16 +3203,32 @@
+ 			}
+ 			else {
+ 				record[i].rising = now;
++			#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_RELEASED, now, record[i].falling, record[i].rising);
++			#else
+ 				if (time_before(now, record[i].falling + 200L)) {
+ 					schedule_work(&gpio_event_click);
+ 				}
+ 				else {
+ 					schedule_work(&gpio_event_hold);
+ 				}
++			#endif
+ 			}
+ 		}
+ 		else {
+ 			record[i].falling = now;
++		#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++			if (record[i].rising != 0 && time_before_eq(now,
++						record[i].rising + 5L)) {
++				/*
++				 * If the interrupt comes in a short period,
++				 * it might be floating. We ignore it.
++				 */
++ 			}
++			else {
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_PRESSED, now, record[i].falling, record[i].rising);
++			}
++		#endif
+ 		}
+ 		break;
+ 	}
+@@ -2968,6 +3243,9 @@
+ 			}
+ 			else {
+ 				record[i].rising = now;
++			#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_RELEASED, now, record[i].falling, record[i].rising);
++			#else
+ 				if (time_before(now, record[i].falling + 200L)) {
+ 					printk("i=%d, one click\n", i);
+ 					schedule_work(&gpio_event_click);
+@@ -2976,10 +3254,24 @@
+ 					printk("i=%d, push several seconds\n", i);
+ 					schedule_work(&gpio_event_hold);
+ 				}
++			#endif
+ 			}
+ 		}
+ 		else {
+ 			record[i].falling = now;
++		#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++			if (record[i].rising != 0 && time_before_eq(now,
++						record[i].rising + 5L)) {
++				/*
++				 * If the interrupt comes in a short period,
++				 * it might be floating. We ignore it.
++				 */
++ 			}
++			else {
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_PRESSED, now, record[i].falling, record[i].rising);
++			}
++		#endif
++
+ 		}
+ 		break;
+ 	}
+@@ -2993,6 +3285,9 @@
+ 			}
+ 			else {
+ 				record[i].rising = now;
++			#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_RELEASED, now, record[i].falling, record[i].rising);
++			#else
+ 				if (time_before(now, record[i].falling + 200L)) {
+ 					printk("i=%d, one click\n", i);
+ 					schedule_work(&gpio_event_click);
+@@ -3001,10 +3296,23 @@
+ 					printk("i=%d, push several seconds\n", i);
+ 					schedule_work(&gpio_event_hold);
+ 				}
++			#endif
+ 			}
+ 		}
+ 		else {
+ 			record[i].falling = now;
++		#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++			if (record[i].rising != 0 && time_before_eq(now,
++						record[i].rising + 5L)) {
++				/*
++				 * If the interrupt comes in a short period,
++				 * it might be floating. We ignore it.
++				 */
++ 			}
++			else {
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_PRESSED, now, record[i].falling, record[i].rising);
++			}
++		#endif
+ 		}
+ 		break;
+ 	}
+@@ -3019,6 +3327,9 @@
+ 			}
+ 			else {
+ 				record[i].rising = now;
++			#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_RELEASED, now, record[i].falling, record[i].rising);
++			#else
+ 				if (time_before(now, record[i].falling + 200L)) {
+ 					printk("i=%d, one click\n", i);
+ 					schedule_work(&gpio_event_click);
+@@ -3027,10 +3338,23 @@
+ 					printk("i=%d, push several seconds\n", i);
+ 					schedule_work(&gpio_event_hold);
+ 				}
++			#endif
+ 			}
+ 		}
+ 		else {
+ 			record[i].falling = now;
++		#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++			if (record[i].rising != 0 && time_before_eq(now,
++						record[i].rising + 5L)) {
++				/*
++				 * If the interrupt comes in a short period,
++				 * it might be floating. We ignore it.
++				 */
++ 			}
++			else {
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_PRESSED, now, record[i].falling, record[i].rising);
++			}
++		#endif
+ 		}
+ 		break;
+ 	}
+@@ -3045,6 +3369,9 @@
+ 			}
+ 			else {
+ 				record[i].rising = now;
++			#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_RELEASED, now, record[i].falling, record[i].rising);
++			#else
+ 				if (time_before(now, record[i].falling + 200L)) {
+ 					printk("i=%d, one click\n", i);
+ 					schedule_work(&gpio_event_click);
+@@ -3053,10 +3380,23 @@
+ 					printk("i=%d, push several seconds\n", i);
+ 					schedule_work(&gpio_event_hold);
+ 				}
++			#endif
+ 			}
+ 		}
+ 		else {
+ 			record[i].falling = now;
++		#ifdef CONFIG_MSTC_GPIO_BUTTON_EVENT /* __MSTC__, Vincent: Support button event and pass to user app(like button-hotplug app) */
++			if (record[i].rising != 0 && time_before_eq(now,
++						record[i].rising + 5L)) {
++				/*
++				 * If the interrupt comes in a short period,
++				 * it might be floating. We ignore it.
++				 */
++ 			}
++			else {
++				mstcGpioCreateEvent(i, MSTC_GPIO_ACTION_PRESSED, now, record[i].falling, record[i].rising);
++			}
++		#endif
+ 		}
+ 		break;
+ 	}

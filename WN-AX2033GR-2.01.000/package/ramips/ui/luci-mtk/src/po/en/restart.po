@@ -1,0 +1,20 @@
+msgid "Systemrebooting"
+msgstr "Restart"
+
+msgid "bak_remind1"
+msgstr "The system will restart in"
+
+msgid "restarting"
+msgstr "Restarting..."
+
+msgid "rst_err1"
+msgstr "Do you really want to restart the device ?"
+
+msgid "rst_info1"
+msgstr "Click Restart to have the device perform a software restart."
+
+msgid "seconds"
+msgstr "seconds"
+
+msgid "sys_rst"
+msgstr "System Restart"

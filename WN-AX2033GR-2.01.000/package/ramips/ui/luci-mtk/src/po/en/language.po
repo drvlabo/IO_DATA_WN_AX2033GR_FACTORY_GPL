@@ -1,0 +1,26 @@
+msgid "Chinese"
+msgstr "简体中文"
+
+msgid "Deutsch"
+msgstr "Deutsch"
+
+msgid "English"
+msgstr "English"
+
+msgid "Espanol"
+msgstr "Espanol"
+
+msgid "Francais"
+msgstr "Francais"
+
+msgid "Italiano"
+msgstr "Italiano"
+
+msgid "Language"
+msgstr "Language"
+
+msgid "language_selection"
+msgstr "Language selection"
+
+msgid "main_language"
+msgstr "Language"

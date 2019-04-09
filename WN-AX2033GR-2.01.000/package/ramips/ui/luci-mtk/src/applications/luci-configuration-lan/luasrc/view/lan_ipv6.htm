@@ -1,0 +1,348 @@
+<%
+--require("luci.i18n").loadc("default")
+local i18n = require("luci.i18n")
+require("luci.http").prepare_content("text/html")
+local uci = require("luci.model.uci").cursor()
+local lang = uci:get("luci","main","lang")
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+-%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"  />
+<title>.::<%:welcome_title_message%>::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="<%=media%>/js/jquery-1.3.1.min.js"></script>
+<script type="text/javascript" src="<%=media%>/js/jquery.blockUI.js" ></script>
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script>
+$(document).ready(function()
+{
+
+	RefreshIPv6LanSettings();
+	path_msg_init();
+});
+function path_msg_init(){
+	showFullPath(' <%:Network%> > <%:LAN%> > <%:lan_ipv6%>');
+	showWebMessage( 0, '<%:Message%>', '<%:Ready%>' );
+}
+// check whether every char of the str is a Hex char(0~9,a~f,A~F)
+function isHex(str) {
+	if(str.length == 0 || str.length > 4) {
+		return false;
+	}
+	str = str.toLowerCase();
+	var ch;
+	for(var i=0; i< str.length; i++) {
+		ch = str.charAt(i);
+		if(!(ch >= '0' && ch <= '9') && !(ch >= 'a' && ch <= 'f')) {
+			return false;
+		}
+	}
+	return true;
+}
+
+// check whether the str is a right IPv6 address
+function checkIPv6(str) {
+	var idx = str.indexOf("::");
+	// there is no "::" in the ip address
+	if (idx == -1) {
+		var items = str.split(":");
+		if (items.length != 8) {
+			return false;
+		} else {
+			for (i in items) {
+				if (!isHex(items[i])) {
+					return false;
+				}
+			}
+			return true;
+		}
+	} else {
+		// at least, there are two "::" in the ip address
+		if (idx != str.lastIndexOf("::")) {
+			return false;
+		} else {
+			var items = str.split("::");
+			var items0 = items[0].split(":");
+			var items1 = items[1].split(":");
+			if ((items0.length + items1.length) > 7) {
+				return false;
+			} else {
+				for (i in items0) {
+					if (!isHex(items0[i])) {
+						return false;
+					}
+				}
+				for (i in items1) {
+					if (!isHex(items1[i])) {
+						return false;
+					}
+				}
+				return true;
+			}
+		}
+	}
+}
+	
+function RefreshIPv6LanSettings()
+{
+	var assign_type = '<%=uci:get("lan_ipv6","general","assign_type")%>';
+	var dns_type_1 = '<%=uci:get("lan_ipv6","general","dns_type_1")%>';
+	var dns_type_2 = '<%=uci:get("lan_ipv6","general","dns_type_2")%>';
+	var dns_server_1 = '<%=uci:get("lan_ipv6","general","dns_server_1")%>';
+	var dns_server_2 = '<%=uci:get("lan_ipv6","general","dns_server_2")%>';
+	var ipv6_start_addr = '<%=uci:get("lan_ipv6","general","start_addr")%>';
+	var ipv6_end_addr = '<%=uci:get("lan_ipv6","general","end_addr")%>';
+	var ipv6_pool_size = parseInt(ipv6_end_addr, 16) - parseInt(ipv6_start_addr, 16) + 1;
+	
+	var lan_mode = document.getElementsByName("LAN_IPv6_Address_Assign");
+	
+	if (assign_type == 0) {
+		lan_mode[0].checked = 1;
+		disable_ip_address_range(0);
+	}	
+	else {
+		lan_mode[1].checked = 1;
+		disable_ip_address_range(1);
+	}
+	
+	document.getElementById("IPv6_DNS_Type_1").value = dns_type_1;
+	document.getElementById("IPv6_DNS_Type_2").value = dns_type_2;
+
+	if (document.getElementById("IPv6_DNS_Type_1").value == 0) //From ISP
+		document.getElementById("IPv6_DNS_1").disabled = true;
+
+	if (document.getElementById("IPv6_DNS_Type_2").value == 0) //From ISP
+		document.getElementById("IPv6_DNS_2").disabled = true;
+
+		
+	document.getElementById("IPv6_Start_Address").value = ipv6_start_addr;
+	document.getElementById("IPv6_Pool_Size").value = ipv6_pool_size;
+	
+	if (dns_server_1 != "")
+		document.getElementById("IPv6_DNS_1").value = dns_server_1;
+	else 
+		document.getElementById("IPv6_DNS_1").value = "";
+
+	if (dns_server_2 != "")	
+		document.getElementById("IPv6_DNS_2").value = dns_server_2;
+	else 
+		document.getElementById("IPv6_DNS_2").value = "";
+	
+	return;	
+}
+
+function get_select_mode(input)
+{	
+	var mode = document.getElementsByName(input);
+		
+	for (var i = 0; i < mode.length; i++) {
+		if (mode[i].checked) {
+			return mode[i].value;
+		}
+	}
+}
+
+function disable_ip_address_range(value)
+{
+	$("#IPv6_Addressing_Values").show();
+	
+	if (value != 1) {
+		$("#IPv6_Addressing_Values").hide();
+	}
+	
+}
+
+function validate_dns_type(index, value)
+{
+	if (index == 0) {
+		if (value == 0) //From ISP
+			document.getElementById("IPv6_DNS_1").disabled = true;
+		else
+			document.getElementById("IPv6_DNS_1").disabled = false;
+	}
+	else {
+		if (value == 0) //From ISP
+			document.getElementById("IPv6_DNS_2").disabled = true;
+		else
+			document.getElementById("IPv6_DNS_2").disabled = false;
+	}
+}
+
+function checkSubmit()
+{
+	var ipv6_lan_assign_mode = get_select_mode("LAN_IPv6_Address_Assign");
+	var dhcpv6_start_addr = document.getElementById("IPv6_Start_Address").value; //hex
+	var dhcpv6_pool_size = document.getElementById("IPv6_Pool_Size").value; //decimal
+	var tmp = parseInt(dhcpv6_start_addr, 16) + parseInt(dhcpv6_pool_size) - 1; //calculate the end address
+	var dhcpv6_end_addr = tmp.toString(16);
+	
+	// this form value will be transferred and be used by lua
+	document.getElementById("IPv6_End_Address").value = dhcpv6_end_addr;
+	
+	// Check DHCPv6 Pool Size
+	if (!(parseInt(dhcpv6_pool_size) >= 1 && parseInt(dhcpv6_pool_size) <= 100)) {
+		alert("Invalid DHCPv6 Pool Size, must be 1 ~ 100!");
+		RefreshIPv6LanSettings();
+		return false;
+	}
+
+	// Check IPv6 Address Format
+	if (checkIPv6(document.getElementById("IPv6_DNS_1").value) == false
+		&& document.getElementById("IPv6_DNS_Type_1").value == 1) {
+		alert("DNS Server 1: Invalid IPv6 Address Format");
+		RefreshIPv6LanSettings();
+		return false;
+	}	
+	if (checkIPv6(document.getElementById("IPv6_DNS_2").value) == false
+	   && document.getElementById("IPv6_DNS_Type_2").value == 1) {
+		alert("DNS Server 2: Invalid IPv6 Address Format");
+		RefreshIPv6LanSettings();
+		return false;
+	}
+
+	
+	// Check DHCPv6 Start and End Address format are correct
+	if (isHex(dhcpv6_start_addr) == false && ipv6_lan_assign_mode == 1) {
+		alert("Invalid DHCPv6 Start Address: Must be 1 ~ ffff!");
+		RefreshIPv6LanSettings();
+		return false;
+	}
+	if (isHex(dhcpv6_end_addr) == false && ipv6_lan_assign_mode == 1) {
+		alert("Invalid DHCPv6 End Address: Must be 1 ~ ffff!");
+		RefreshIPv6LanSettings();
+		return false;
+	}
+	
+	// Check DHCPv6 Range is correct
+	if (parseInt(parseInt(dhcpv6_start_addr, 16)) >= parseInt(parseInt(dhcpv6_end_addr, 16))) {
+		alert("Invalid DHCPv6 Range: Start Address must be smaller than End Address!");
+		RefreshIPv6LanSettings();
+		return false;
+	}
+	
+	openwaitblock(1);
+	
+	// Success! Send the form!
+	document.forms[0].submit();
+}
+
+</script>
+</head>
+<body onload="closewaitblock();">
+<div id="tabs">
+<ul>
+	<li><a href="<%=controller%>/expert/configuration/network/lan" title="<%:LAN%>"><span><%:LAN%></span></a></li>
+	<li class="hightline"><a title="<%:lan_ipv6%>"><span><%:lan_ipv6%></span></a></li>
+</ul>
+<br class="clearfloat" />
+</div>
+<form name="lan_ipv6">
+<div id="table">
+  <ul>
+    <li class="table_top"></li>     <li class="table_content">
+        <div class="data">
+        <ul>		
+		<div class="title"><%:lan_ipv6_setup%></div>
+            <div class="w_text">
+				<ul>
+					<li class="left_table"><input name="LAN_IPv6_Address_Assign" type="radio" value="0" 
+					onChange="disable_ip_address_range(value);"/><span><%:lan_ipv6_setup_stateless%></span></li>
+					<li class="right_table"></li>
+				</ul>
+            </div>
+            <div class="w_text">
+				<ul>
+					<li class="left_table"><input name="LAN_IPv6_Address_Assign" type="radio" value="1" 
+					onChange="disable_ip_address_range(value);"/><span><%:lan_ipv6_setup_stateful%></span></li>
+					<li class="right_table"></li>					
+				</ul>
+            </div>			
+		<div class="space"></div>
+		<div class="title"><%:lan_ipv6_dns%></div>
+			<div class="w_text">
+			  <ul>
+				<li class="left_table"><span><%:lan_ipv6_dns_server1%></span></li>
+				<li class="right_table">
+				  <select id="IPv6_DNS_Type_1" name="IPv6_DNS_Type_1" size="1" onchange="validate_dns_type(0, this.options[this.selectedIndex].value)" />
+				    <option value="0"><%:lan_ipv6_fromISP%></option>
+				    <option value="1"><%:lan_ipv6_user_defined%></option>
+				  </select>
+				  <input id="IPv6_DNS_1" name="IPv6_DNS_1" maxlength="64" size="64" />
+				</li>
+			  </ul>
+			</div>
+			<div class="w_text">
+			  <ul>
+				<li class="left_table"><span><%:lan_ipv6_dns_server2%></span></li>
+				<li class="right_table">
+				  <select id="IPv6_DNS_Type_2" name="IPv6_DNS_Type_2" size="1" onchange="validate_dns_type(1, this.options[this.selectedIndex].value)" />
+				    <option value="0"><%:lan_ipv6_fromISP%></option>
+				    <option value="1"><%:lan_ipv6_user_defined%></option>
+				  </select>
+				  <input id="IPv6_DNS_2" name="IPv6_DNS_2" maxlength="64" size="64" />
+				</li>
+			  </ul>
+			</div>
+		<div class="space"></div>
+		<div id="IPv6_Addressing_Values">
+			<div class="title"><%:lan_ipv6_dhcpv6%></div>
+			<div class="w_text">
+			<ul>
+				<li class="left_table"><span><%:lan_ipv6_dhcpv6_start_addr%></span></li>
+				<li class="right_table">
+<%ipv6_prefix = --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+                --uci.get_t("runtime", "ipv6", "runtime_ipv6_prefix")
+				%>				
+				<input id="IPv6_Start_Prefix" 
+				style="border: none" readonly>
+				<input id="IPv6_Start_Address" name="IPv6_Start_Address" maxlength="4" size="2"/>
+				<input id="IPv6_Prefix_Length" name="IPv6_Prefix_Length" maxlength="5" size="5"
+				style="border: none" readonly>
+<script>
+	var prefix = "<%=ipv6_prefix%>";
+	var prefix_split = new Array();
+	var prefix_split = prefix.split("/");
+		
+	<% if not (ipv6_prefix == "na") then %>
+		document.getElementById("IPv6_Start_Prefix").value = prefix_split[0];
+		document.getElementById("IPv6_Prefix_Length").value = "/" + prefix_split[1];
+		document.getElementById("IPv6_Start_Prefix").size = prefix_split[0].length - 5;
+	<% else %>
+		document.getElementById("IPv6_Start_Prefix").value = "    ::";
+		document.getElementById("IPv6_Prefix_Length").value = "";
+		document.getElementById("IPv6_Start_Prefix").size = 3;
+	<% end %>
+</script>				
+				</li>
+			</ul>
+			<ul>
+				<li class="left_table"><span><%:lan_ipv6_dhcpv6_pool_size%></span></li>
+				<li class="right_table">
+				<input id="IPv6_Pool_Size" name="IPv6_Pool_Size" maxlength="3" size="1"/>
+				<input id="IPv6_End_Address" name="IPv6_End_Address" type="hidden" maxlength="8" size="8"/>
+				</li>
+			</ul>
+			</div>
+		</div>
+		<div class="spaceair"></div>
+        </ul>
+      </div>
+    </li>
+    <li class="table_button">
+      <div class="button">
+        <center>
+		  <input id="IPv6Submit" name="IPv6Submit" type="hidden"/>
+          <input id="btnApply" name="apply" value="<%:Apply%>" type="button" onclick="return checkSubmit();"/>
+          &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+          <input id="btnReset" name="cancel" value="<%:Cancel%>" type="reset" onclick="RefreshIPv6LanSettings();"/>
+        </center>
+      </div>
+    </li>
+  </ul>
+</div>
+</form>
+</body>
+</html>

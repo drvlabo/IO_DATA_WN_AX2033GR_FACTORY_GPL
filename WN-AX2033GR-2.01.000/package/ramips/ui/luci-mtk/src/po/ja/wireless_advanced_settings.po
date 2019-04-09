@@ -1,0 +1,67 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "(40 - 10000ms)"
+msgstr ""
+
+msgid "20 MHz"
+msgstr ""
+
+msgid "20/40 MHz"
+msgstr ""
+
+msgid "20/40/80 MHz"
+msgstr ""
+
+msgid "5GHz set to 132ch or 136ch or 140ch set to 20/40/80Mhz"
+msgstr "ご使用中のチャンネルでは20/40/80MHzに設定することはできません。"
+
+msgid "5GHzis set to 140ch and set to 20/40Mhz"
+msgstr "ご使用中のチャンネルでは20/40MHzに設定することはできません。"
+
+msgid "Bandwidth (2.4G)"
+msgstr "使用する帯域(2.4G)"
+
+msgid "Bandwidth (5G)"
+msgstr "使用する帯域(5G)"
+
+msgid "Beacon Interval"
+msgstr "ビーコン間隔"
+
+msgid "Beacon interval is out of range or enter the character can’t be used."
+msgstr "ビーコン間隔は40～1000の範囲で入力してください。"
+
+msgid "DTIM period is out of range or enter the character can’t be used."
+msgstr "DTIM 周期は1～255の範囲で入力してください。"
+
+msgid "Beamforming"
+msgstr "ビームフォーミング(5G)"
+
+msgid "DTIM Period"
+msgstr "DTIM周期"
+
+msgid "Guest SSID Seperation"
+msgstr "Guest SSIDセパレート"
+
+msgid "IGMP Snooping"
+msgstr "マルチキャスト変換"
+
+msgid ""
+"These settings are for advanced users who have a sufficient knowledge about "
+"wireless LAN."
+msgstr "ここでの設定は、無線LANに関して十分な知識を持っている上級者向けです。"
+
+msgid "Txpower (2.4G)"
+msgstr "送信出力(2.4G)"
+
+msgid "Txpower (5G)"
+msgstr "送信出力(5G)"
+
+msgid "Weak signal client auto disassociation"
+msgstr "弱電波子機切断"
+
+msgid "the Beacon intervali is empty"
+msgstr "ビーコン間隔を入力してください。"
+
+msgid "the DTIM period is empty"
+msgstr "DTIM周期を入力してください。"

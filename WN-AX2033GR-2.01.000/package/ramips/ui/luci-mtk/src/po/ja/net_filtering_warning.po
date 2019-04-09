@@ -1,0 +1,559 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Information statement"
+msgstr "案内文"
+
+msgid "Close the screen"
+msgstr "画面を閉じる"
+
+msgid "Open the configuration screen"
+msgstr "設定画面を開く"
+
+msgid "Block display by category server1"
+msgstr "あなたのご家庭でのフィルタリングルールに基づき、このページの表示を制限しました。"
+
+msgid "Block display by category server2"
+msgstr "制限されたサイトまたはページに対する評価は"
+
+msgid "Block display by category server3"
+msgstr "です。"
+
+msgid "Block display by category server4"
+msgstr "この分野のサイトまたはページの利用には"
+
+msgid "Block display by category server5"
+msgstr "　という懸念があります。"
+
+msgid "Block display by category server6"
+msgstr "あなたにはこのサイトまたはページの制限が必要ないと考えられる場合、このサイト・ページまたは分野全体を制限対象外にすることもできます。"
+
+msgid "Block display by category server7"
+msgstr "ルータおよびネットフィルタリングの管理者に、フィルタリングルールの変更を依頼してください。"
+
+msgid "Block display by category server8"
+msgstr "サイトまたはページに対する評価に疑問がある場合には、アルプス システム インテグレーション株式会社に連絡してください。"
+
+msgid "Block display by URL filter registration1"
+msgstr "あなたのご家庭でのフィルタリングルールに基づき、このページの表示を制限しました。"
+
+msgid "Block display by URL filter registration2"
+msgstr "ルータおよびネットフィルタリングの管理者に、"
+
+
+msgid "Block display by URL filter registration3"
+msgstr "フィルタリングルールの確認をして下さい。"
+
+msgid "Display at the time of expiration of the license number1"
+msgstr "ライセンスの有効期限が過ぎています。"
+
+msgid "Display at the time of expiration of the license number2"
+msgstr "安全のためインターネットへのアクセスをブロックしています。"
+
+msgid "Display at the time of expiration of the license number3"
+msgstr "ルータおよびネットフィルタリングの管理者の方へ"
+
+msgid "Display at the time of expiration of the license number4"
+msgstr "お手数をおかけいたしますが、インターネットへのアクセス再開には以下の設定をお願いします。"
+
+msgid "Display at the time of expiration of the license number5"
+msgstr "１．ネットフィルタリングの設定を無効にする"
+
+msgid "Display at the time of expiration of the license number6"
+msgstr "２．更新ライセンスを購入、新ライセンス設定"
+
+msgid "Display at the time of expiration of the license number7"
+msgstr "※サービスを更新なさらない場合は、１．の設定でインターネットアクセスをご利用になれます。"
+
+msgid "Display when an invalid license number has been registered1"
+msgstr "無効なライセンスが登録されています。"
+
+msgid "Display when an invalid license number has been registered2"
+msgstr "安全のためインターネットへのアクセスをブロックしています。"
+
+msgid "Display when an invalid license number has been registered3"
+msgstr "ルータおよびネットフィルタリングの管理者へ"
+
+msgid "Display when an invalid license number has been registered4"
+msgstr "お手数をおかけしますが、インターネットへのアクセス再開には以下の設定をお願いします。"
+
+msgid "Display when an invalid license number has been registered5"
+msgstr "１．ネットフィルタリングの設定を無効にする。"
+
+msgid "Display when an invalid license number has been registered6"
+msgstr "２．正しいライセンスを登録する。"
+
+msgid "Display of time, which can not be access to each server1"
+msgstr "ネットフィルタリングに異常を検出しました。"
+
+msgid "Display of time, which can not be access to each server2"
+msgstr "安全のためインターネットへのアクセスをブロックしています。"
+
+msgid "Display of time, which can not be access to each server3"
+msgstr "ルータおよびネットフィルタリングの管理者へ"
+
+msgid "Display of time, which can not be access to each server4"
+msgstr "お手数をおかけしますが、インターネットへのアクセス再開には以下の設定をお願いします。"
+
+msgid "Display of time, which can not be access to each server5"
+msgstr "１．ネットフィルタリングの設定を無効にする。"
+
+msgid "Display of time, which can not be access to each server6"
+msgstr "２．インターネット接続を確認する"
+
+msgid "category_101"
+msgstr "不法"
+
+msgid "category_101 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_102"
+msgstr "不法"
+
+msgid "category_102 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_201"
+msgstr "薬物"
+
+msgid "category_201 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_202"
+msgstr "薬物"
+
+msgid "category_202 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_313"
+msgstr "自殺"
+
+msgid "category_313 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_601"
+msgstr "出会い"
+
+msgid "category_601 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_602"
+msgstr "出会い"
+
+msgid "category_602 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_301"
+msgstr "暴力・恐怖"
+
+msgid "category_301 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_302"
+msgstr "暴力・恐怖"
+
+msgid "category_302 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_314"
+msgstr "暴力・恐怖"
+
+msgid "category_314 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_1801"
+msgstr "暴力・恐怖"
+
+msgid "category_1801 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_401"
+msgstr "ポルノ"
+
+msgid "category_401 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_402"
+msgstr "ポルノ"
+
+msgid "category_402 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_403"
+msgstr "ポルノ"
+
+msgid "category_403 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_404"
+msgstr "ポルノ"
+
+msgid "category_404 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_405"
+msgstr "ポルノ"
+
+msgid "category_405 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_406"
+msgstr "ポルノ"
+
+msgid "category_406 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_315"
+msgstr "裏情報"
+
+msgid "category_315 content"
+msgstr "子どもにとって不適切なもの"
+
+msgid "category_501"
+msgstr "セキュリティ"
+
+msgid "category_501 content"
+msgstr "コンピュータセキュリティ"
+
+msgid "category_502"
+msgstr "セキュリティ"
+
+msgid "category_502 content"
+msgstr "コンピュータセキュリティ"
+
+msgid "category_503"
+msgstr "セキュリティ"
+
+msgid "category_503 content"
+msgstr "コンピュータセキュリティ"
+
+msgid "category_1103"
+msgstr "翻訳・キャッシュ"
+
+msgid "category_1103 content"
+msgstr "サイトのキャッシュデータへ の対応"
+
+msgid "category_1102"
+msgstr "翻訳・キャッシュ"
+
+msgid "category_1102 content"
+msgstr "サイトのキャッシュデータへ の対応"
+
+msgid "category_1101"
+msgstr "翻訳・キャッシュ"
+
+msgid "category_1101 content"
+msgstr "サイトのキャッシュデータへ の対応"
+
+msgid "category_1201"
+msgstr "コミュニケーション"
+
+msgid "category_1201 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+
+msgid "category_1202"
+msgstr "コミュニケーション"
+
+msgid "category_1202 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+
+msgid "category_1301"
+msgstr "コミュニケーション"
+
+msgid "category_1301 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+
+msgid "category_1302"
+msgstr "コミュニケーション"
+
+msgid "category_1302 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+
+msgid "category_1303"
+msgstr "コミュニケーション"
+
+msgid "category_1303 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+
+msgid "category_1501"
+msgstr "コミュニケーション"
+
+msgid "category_1501 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+
+msgid "category_1601"
+msgstr "コミュニケーション"
+
+msgid "category_1601 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+
+msgid "category_1211"
+msgstr "コミュニケーション"
+
+msgid "category_1211 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1212"
+msgstr "コミュニケーション"
+
+msgid "category_1212 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1311"
+msgstr "コミュニケーション"
+
+msgid "category_1311 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1312"
+msgstr "コミュニケーション"
+
+msgid "category_1312 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1313"
+msgstr "コミュニケーション"
+
+msgid "category_1313 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1511"
+msgstr "コミュニケーション"
+
+msgid "category_1511 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1611"
+msgstr "コミュニケーション"
+
+msgid "category_1611 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1221"
+msgstr "コミュニケーション"
+
+msgid "category_1221 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1222"
+msgstr "コミュニケーション"
+
+msgid "category_1222 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1321"
+msgstr "コミュニケーション"
+
+msgid "category_1321 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1322"
+msgstr "コミュニケーション"
+
+msgid "category_1322 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1323"
+msgstr "コミュニケーション"
+
+msgid "category_1323 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1521"
+msgstr "コミュニケーション"
+
+msgid "category_1521 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1621"
+msgstr "コミュニケーション"
+
+msgid "category_1621 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1231"
+msgstr "コミュニケーション"
+
+msgid "category_1231 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1232"
+msgstr "コミュニケーション"
+
+msgid "category_1232 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1331"
+msgstr "コミュニケーション"
+
+msgid "category_1331 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1332"
+msgstr "コミュニケーション"
+
+msgid "category_1332 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1333"
+msgstr "コミュニケーション"
+
+msgid "category_1333 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1531"
+msgstr "コミュニケーション"
+
+msgid "category_1531 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_1631"
+msgstr "コミュニケーション"
+
+msgid "category_1631 content"
+msgstr "コミュニケーションに伴うトラブルの可能性があるもの"
+
+msgid "category_801"
+msgstr "ギャンブル・ 宝くじ"
+
+msgid "category_801 content"
+msgstr "子どもには認められていない、または利用に際して知識・経験や判断力を必要とするもの"
+
+msgid "category_802"
+msgstr "ギャンブル・ 宝くじ"
+
+msgid "category_802 content"
+msgstr "子どもには認められていない、または利用に際して知識・経験や判断力を必要とするもの"
+
+msgid "category_2003"
+msgstr "飲酒・喫煙"
+
+msgid "category_2003 content"
+msgstr "子どもには認められていない、または利用に際して知識・経験や判断力を必要とするもの"
+
+msgid "category_2002"
+msgstr "飲酒・喫煙"
+
+msgid "category_2002 content"
+msgstr "子どもには認められていない、または利用に際して知識・経験や判断力を必要とするもの"
+
+msgid "category_2004"
+msgstr "飲酒・喫煙"
+
+msgid "category_2004 content"
+msgstr "子どもには認められていない、または利用に際して知識・経験や判断力を必要とするもの"
+
+msgid "category_2001"
+msgstr "成人娯楽"
+
+msgid "category_2001 content"
+msgstr "子どもには認められていない、または利用に際して知識・経験や判断力を必要とするもの"
+
+msgid "category_2005"
+msgstr "成人娯楽"
+
+msgid "category_2005 content"
+msgstr "子どもには認められていない、または利用に際して知識・経験や判断力を必要とするもの"
+
+msgid "category_2101"
+msgstr "成人娯楽"
+
+msgid "category_2101 content"
+msgstr "子どもには認められていない、または利用に際して知識・経験や判断力を必要とするもの"
+
+msgid "category_303"
+msgstr "主張"
+
+msgid "category_303 content"
+msgstr "子どもには認められていない、または利用に際して知識・経験や判断力を必要とするもの"
+
+msgid "category_305"
+msgstr "主張"
+
+msgid "category_305 content"
+msgstr "子どもには認められていない、または利用に際して知識・経験や判断力を必要とするもの"
+
+msgid "category_1001"
+msgstr "ショッピング"
+
+msgid "category_1001 content"
+msgstr "子どもには認められていない、または利用に際して知識・経験や判断力を必要とするもの"
+
+msgid "category_1002"
+msgstr "ショッピング"
+
+msgid "category_1002 content"
+msgstr "子どもには認められていない、または利用に際して知識・経験や判断力を必要とするもの"
+
+msgid "category_1005"
+msgstr "ショッピング"
+
+msgid "category_1005 content"
+msgstr "子どもには認められていない、または利用に際して知識・経験や判断力を必要とするもの"
+
+msgid "category_1703"
+msgstr "懸賞・副収入"
+
+msgid "category_1703 content"
+msgstr "子どもには認められていない、または利用に際して知識・経験や判断力を必要とするもの"
+
+msgid "category_1901"
+msgstr "懸賞・副収入"
+
+msgid "category_1901 content"
+msgstr "子どもには認められていない、または利用に際して知識・経験や判断力を必要とするもの"
+
+msgid "category_901"
+msgstr "趣味・娯楽"
+
+msgid "category_901 content"
+msgstr "熱中または時間浪費の可能 性があるもの"
+
+msgid "category_902"
+msgstr "趣味・娯楽"
+
+msgid "category_902 content"
+msgstr "熱中または時間浪費の可能 性があるもの"
+
+msgid "category_1404"
+msgstr "趣味・娯楽"
+
+msgid "category_1404 content"
+msgstr "熱中または時間浪費の可能 性があるもの"
+
+msgid "category_2501"
+msgstr "趣味・娯楽"
+
+msgid "category_2501 content"
+msgstr "熱中または時間浪費の可能 性があるもの"
+
+msgid "category_2502"
+msgstr "趣味・娯楽"
+
+msgid "category_2502 content"
+msgstr "熱中または時間浪費の可能 性があるもの"
+
+msgid "category_2503"
+msgstr "趣味・娯楽"
+
+msgid "category_2503 content"
+msgstr "熱中または時間浪費の可能 性があるもの"
+
+msgid "category_2505"
+msgstr "趣味・娯楽"
+
+msgid "category_2505 content"
+msgstr "熱中または時間浪費の可能 性があるもの"
+
+msgid "category_2301"
+msgstr "趣味・娯楽"
+
+msgid "category_2301 content"
+msgstr "熱中または時間浪費の可能 性があるもの"

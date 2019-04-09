@@ -1,0 +1,455 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+Copyright 2012 David Menting <david@nut-bolt.nl>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+-%>
+<%
+	math.randomseed(os.time())
+	local sys  = require "luci.sys"
+	local http = require "luci.http"
+	local disp = require "luci.dispatcher"
+	local uci = require("luci.model.uci").cursor()
+
+	local hostname = sys.hostname()
+%>
+
+
+<!DOCTYPE html>
+<html lang="<%=luci.i18n.context.lang%>">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Expires" content="0">
+  <title><%=striptags( hostname ) %></title>
+  <!--[if lt IE 9]><script src="<%=media%>/html5.js"></script><![endif]-->
+  <meta name="viewport" content="initial-scale=1.0">
+  <link rel="stylesheet" href="<%=media%>/setcss.css">
+  <link rel="stylesheet" media="only screen and (max-device-width: 854px)" href="<%=media%>/mobile.css" type="text/css" />
+  <link rel="shortcut icon" href="<%=media%>/favicon.ico">
+  <% if node and node.css then %><link rel="stylesheet" href="<%=resource%>/<%=node.css%>">
+  <% end -%>
+  <% if css then %><style title="text/css">
+  <%-= css %>
+  </style>
+  <% end -%>
+  <script src="<%=resource%>/xhr.js"></script>
+  <script type="text/javascript" src="<%=media%>/js/jquery-1.12.1.min.js"></script>
+  <script type="text/javascript" src="<%=media%>/js/baseJS.js?rndstr=<%=math.random(10000,99999)%>" ></script>
+</head>
+<body onLoad="frmLoad()" bgcolor=white LINK=#ffffff VLINK=#ffffff ALINK=#FFfffff leftmargin=0 topmargin=5 class="lang_<%=luci.i18n.context.lang%> <%- if node then %><%= striptags( node.title ) %><%- end %>">
+
+<!-- MSTC MBA SW2 Sean, add csrf token in the page, each page will generate csrf token when loaded -->
+<script type="text/javascript">
+<%local csrf = require("luci.csrf")%>
+var csrf_token = "<%=csrf.get_token()%>";
+$.ajaxPrefilter(function(options, originalOptions, jqXHR){
+    if (options.type.toLowerCase() === "post") {
+		
+		// initialize `data` to empty string if it does not exist
+        options.data = options.data || "";
+
+        // add leading ampersand if `data` is non-empty
+        options.data += options.data?"&":"";
+
+        // add _token entry
+        options.data += "csrf_token=" + csrf_token;
+    }
+});
+
+</script>
+<!-- MSTC Sean, waiting page -->
+<div id="waiting" style="display:none">
+<a><%:Applying the settings. Please wait a moment%>     <input type="text" id="wait_time" size="3" maxlength="3" readonly> </input><%:Seconds%></a>
+</div>
+<div id="dfs_msg" style="display:none">
+<%:DFS is working. Please wait a moment%>
+</div>
+<br/>
+<br/>
+
+
+<!---->
+
+<script type="text/javascript">
+<%
+
+-- remove trailing whitespace
+function TrimStrTrailSpace(s)
+  local n = #s
+  while n > 0 and s:find("^%s", n) do n = n - 1 end
+  return s:sub(1, n)
+end
+
+local client_ifce_2g={}
+local client_ifce_5g={}
+function scanWifiDev()
+	--MSTC MVA Sean, get all 2.4G chip device name
+	uci.foreach("wireless", "wifi-iface",
+	function(s)
+		if (s.device == "mt7620" or s.device == "mt7602e" or s.device == "mt7603e" or s.device == "mt7628" or s.device == "mt7688" or s.device == "mt7615e2") then
+			if s.mode == "client" then
+				client_ifce_2g[#client_ifce_2g+1] = s[".name"]
+			end
+		end
+		if ( s.device == "mt7615e5" or s.device == "mt7610e" or s.device == "mt7612e" ) then
+			if s.mode == "client" then
+				client_ifce_5g[#client_ifce_5g+1] = s[".name"]
+			end
+		end
+	end)
+end
+
+function dump_js_ap_list(band)
+	local ifce_name;
+	local cmd;
+	local file;
+	local count = 0;
+	-- output of get_site_survey cmd: 
+	-- Ch  Len SSID                             BSSID              Security               Siganl(%)W-Mode   ExtCH  NT WPS DPID
+	-- 1   11  Unizyx_WLAN                      50:67:f0:37:a0:25  WPA1WPA2/TKIPAES       81       11b/g/n  NONE   In  NO
+	if band == "2g" then
+		ifce_name = uci.get("wireless", client_ifce_2g[1], "ifname");
+		cmd = "/usr/sbin/iwpriv " .. ifce_name .. " get_site_survey";
+	elseif band == "5g" then
+		ifce_name = uci.get("wireless", client_ifce_5g[1], "ifname");
+		cmd = "/usr/sbin/iwpriv " .. ifce_name .. " get_site_survey";
+	end
+	file = io.popen(cmd, 'r');
+	if file then
+		while true do
+			line = file:read()
+			if line == nil then break end
+			
+			local ch = TrimStrTrailSpace(string.sub(line, 1, 4));
+			local ssid_len = TrimStrTrailSpace(string.sub(line, 5, 8));
+			if tonumber(ch) and tonumber(ssid_len) then
+				--if (tonumber(ssid_len) > 0) then
+					local ssid = luci.http.htmlencode(string.sub(line, 9, 9+ssid_len-1));
+					local bssid = TrimStrTrailSpace(string.sub(line, 42, 58));
+					local security = TrimStrTrailSpace(string.sub(line, 61, 83));
+					local securities = luci.util.split(security, "/", 1, false);
+					local auth;
+					local enc;
+					if table.getn(securities) == 2 then
+						auth = securities[1];
+						enc = securities[2];
+					else
+						enc = securities[1];
+						if enc == "NONE" then
+							auth = "OPEN";
+						end
+					end
+					if enc == "WEP" then
+						auth = "WEP"
+					end
+					local signal = TrimStrTrailSpace(string.sub(line, 84, 92));
+					if (count == 0) then
+						print("{channel: " .. ch .. ", SSID: \"" .. ssid .. "\", BSSID: \"" .. string.upper(bssid) .. "\", enc: \"" .. enc .. "\", auth: \"" .. auth .. "\", signal: " .. signal .. "}");
+					else
+						print(",{channel: " .. ch .. ", SSID: \"" .. ssid .. "\", BSSID: \"" .. string.upper(bssid) .. "\", enc: \"" .. enc .. "\", auth: \"" .. auth .. "\", signal: " .. signal .. "}");
+					end
+					count = count + 1;
+				--end
+			end
+		end
+		io.close(file)
+	end
+	return count;
+end
+
+function generate_js_ap_list_array(band)
+	ap_count = 0;
+	if band == "2g" then
+		print("var ap_list_2g = [ ");
+	elseif band == "5g" then
+		print("var ap_list_5g = [ ");
+	end
+	
+	ap_count = dump_js_ap_list(band);
+	if ap_count == 0 then
+		os.execute("sleep 1");
+		ap_count = dump_js_ap_list(band);
+	end
+	
+	print("];");
+end
+
+local band_select = uci.get("wireless","repeater","band")
+if not band_select then
+	band_select = "0";
+end
+
+scanWifiDev();
+if band_select == "1" then
+	generate_js_ap_list_array("2g");
+	print("var ap_list_5g = [ ];");
+elseif band_select == "2" then
+	generate_js_ap_list_array("5g");
+	print("var ap_list_2g = [ ];");
+else
+	generate_js_ap_list_array("2g");
+	generate_js_ap_list_array("5g");
+end
+%>
+
+
+// FIXME
+var sitesurveyList = ap_list_2g.concat(ap_list_5g);
+
+function checkIfSecuritySupport(f)
+{
+	if(f.TargetEnc.value == "WEP" ||  f.TargetEnc.value == "NONE") {
+		return true;
+	}
+	else if (f.TargetAuth.value == "WPAPSK" || f.TargetAuth.value == "WPA2PSK") {
+		return true;
+	}
+	else if (f.TargetAuth.value == "WPA1PSKWPA2PSK" || f.TargetAuth.value== "WPAPSKWPA2PSK") {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+function goToApply() {
+	var f=document.wlsitesurvey2;
+	var selcheck=false;
+	var obj=document.getElementsByName('select');
+
+	for (var i=0; i<obj.length;++i) {
+		if(obj[i].checked==true) {
+			selcheck = true;
+			f.selectnum.value = i+1;
+			f.TargetSSID.value = sitesurveyList[i].SSID;
+			f.TargetBSSID.value = sitesurveyList[i].BSSID;
+			f.TargetEnc.value = sitesurveyList[i].enc;
+			f.TargetAuth.value = sitesurveyList[i].auth;
+			f.TargetChannel.value = sitesurveyList[i].channel;
+		}
+	}
+	if(selcheck==false) {
+		alert("<%:Please select a SSID.%>");
+		return false;
+	}
+
+	if (checkIfSecuritySupport(f) == false) {
+		alert("<%:The AP with not supported security is selected. Please choose the other root AP.%>");
+		return false;
+	}
+	if(f.TargetEnc.value=="NONE" || f.TargetEnc.value=="WEP") {
+		if(!confirm("<%:The security of the wireless LAN is NONE or WEP.%>\n" + "<%:WPA-PSK is strongly recommended.%>"))
+			return false;
+	}
+	
+	f.submitFormNum.value=1;
+
+	f.submit();
+	return true;
+}
+
+function refreshList() {
+	document.location.replace("<%=controller%>/content/wireless_settings/repeater_connection_settings/repeater_sitesurvey");
+}
+
+function frmLoad()
+{
+	document.getElementById("content").style.display = 'block';
+	document.getElementById("waiting").style.display = 'none';
+	// sort list by signal strength
+	writecolumns("signal");
+}
+
+
+function ssidcmp(a, b)
+{
+	ret = b.SSID.localeCompare(a.SSID);
+	if (ret == 0)
+		return a.BSSID.localeCompare(b.BSSID);
+	else
+		return ret;
+}
+
+
+function sitesurveysort(type, reverse)
+{
+	$(".sorttable_sortrevind").remove();
+	switch(type)
+	{
+	case "SSID":
+		sitesurveyList.sort(ssidcmp);
+		if(reverse)
+			$(".sorttable_ssid").append('<span class="sorttable_sortrevind">&nbsp;▾</span>');
+		else
+			$(".sorttable_ssid").append('<span class="sorttable_sortrevind">&nbsp;▴</span>');
+		break;
+	case "BSSID":
+		sitesurveyList.sort(function(a, b){ret = a.BSSID.localeCompare(b.BSSID); return (ret == 0) ? ssidcmp(a,b) : ret;});
+		if(reverse)
+			$(".sorttable_bssid").append('<span class="sorttable_sortrevind">&nbsp;▾</span>');
+		else
+			$(".sorttable_bssid").append('<span class="sorttable_sortrevind">&nbsp;▴</span>');
+		break;
+	case "enc":
+		sitesurveyList.sort(function(a, b){ret = a.enc.localeCompare(b.enc); return (ret == 0) ? ssidcmp(a,b) : ret;});
+		if(reverse)
+			$(".sorttable_enc").append('<span class="sorttable_sortrevind">&nbsp;▾</span>');
+		else
+			$(".sorttable_enc").append('<span class="sorttable_sortrevind">&nbsp;▴</span>');
+		break;
+	case "channel":
+		sitesurveyList.sort(function(a, b){ret = a.channel-b.channel; return (ret == 0) ? ssidcmp(a,b) : ret;});
+		if(reverse)
+			$(".sorttable_channel").append('<span class="sorttable_sortrevind">&nbsp;▾</span>');
+		else
+			$(".sorttable_channel").append('<span class="sorttable_sortrevind">&nbsp;▴</span>');
+		break;
+	case "signal":
+	default:
+		sitesurveyList.sort(function(a, b){ret = a.signal-b.signal; return (ret == 0) ? ssidcmp(a,b) : ret;});
+		if(reverse)
+			$(".sorttable_signal").append('<span class="sorttable_sortrevind">&nbsp;▾</span>');
+		else
+			$(".sorttable_signal").append('<span class="sorttable_sortrevind">&nbsp;▴</span>');
+		break;
+	}
+	
+	if(reverse)
+		sitesurveyList.reverse();
+}
+
+var sortTaggle = 0;
+var lastSorted;
+
+function writecolumns(type)
+{
+	if (lastSorted == type) {
+		if (sortTaggle == 0) {
+			sitesurveysort(type, 1);
+			sortTaggle = 1;
+		}
+		else {
+			sitesurveysort(type, 0);
+			sortTaggle = 0;
+		}
+	}
+	else {
+		lastSorted = type;
+		sortTaggle = 1;
+		sitesurveysort(type, 1);
+	}
+
+	// only keep top 100 AP
+	if (sitesurveyList.length > 100) {
+		sitesurveyList = sitesurveyList.slice(0, 100);
+	}
+
+	var sitesurveyhtml = "";
+	for (var i=0,j=1; i<Math.min(sitesurveyList.length, 100);++i) {
+		sitesurveyhtml+='<tr>';
+		sitesurveyhtml+='<td style="display:none" class="table2" align="center"><font size=2>';
+		sitesurveyhtml+=(i+1).toString();
+		sitesurveyhtml+='</font></td>';
+		sitesurveyhtml+='<td align=center class="table2"><input type="radio" name="select"></td>';
+		sitesurveyhtml+='<td class="table2" align="center"><font size=2>';
+		sitesurveyhtml+=sitesurveyList[i].channel.toString();
+		sitesurveyhtml+='</font></td>';
+		sitesurveyhtml+='<td class="table2" align="center"><font size=2>';
+		sitesurveyhtml+=sitesurveyList[i].SSID;
+		sitesurveyhtml+='</font></td>';
+		sitesurveyhtml+='<td class="table2" align="center"><font size=2>';
+		sitesurveyhtml+=sitesurveyList[i].BSSID;
+		sitesurveyhtml+='</font></td>';
+
+		if(sitesurveyList[i].enc=="WEP") {
+			var coauthenc=sitesurveyList[i].enc;
+		}
+		else if(sitesurveyList[i].enc=="NONE") {
+			var coauthenc="<%:Repeater_list_none%>";
+		}
+		else {
+			var newenc=sitesurveyList[i].enc.replace("TKIPAES", "TKIP/AES");
+			if(sitesurveyList[i].auth== "WPAPSK") {
+				var coauthenc= "WPA-PSK" + '('+newenc+')';
+			}
+			else if (sitesurveyList[i].auth== "WPA2PSK" && (newenc == "AES" || newenc == "TKIP/AES")) {
+				var coauthenc= "WPA2-PSK" + '('+newenc+')';
+			}
+			else if (sitesurveyList[i].auth== "WPA1PSKWPA2PSK" || sitesurveyList[i].auth== "WPAPSKWPA2PSK") {
+				var coauthenc= "WPA-PSK/WPA2-PSK" + '('+newenc+')';
+			}
+			else {
+				var coauthenc="<%:Not support%>";
+			}
+		}
+
+		sitesurveyhtml+='<td class="table2" align="center"><font size=2>';
+		sitesurveyhtml+=coauthenc;
+		sitesurveyhtml+='</font></td>';
+		
+		var str="";
+		if(sitesurveyList[i].signal==0) {
+			str="1";
+		}
+		else {
+			str=sitesurveyList[i].signal;
+		}
+		sitesurveyhtml+='<td class="table2" align="center"><font size=2>';
+		sitesurveyhtml+=str;
+		sitesurveyhtml+='</font></td>';
+		sitesurveyhtml+="</tr>";
+	}
+	document.getElementById("sitesurveytable").innerHTML = sitesurveyhtml;
+}
+</script>
+
+<div id="content">
+<blockquote>
+<form name="wlsitesurvey2" method="post" action="<%=controller%>/content/wireless_settings/repeater_connection_settings/repeater_connection_setup">
+	<input name="submitFormNum" type="hidden">
+	<input name="selectnum" type="hidden">
+	<input name="TargetSSID" type="hidden">
+	<input name="TargetBSSID" type="hidden">
+	<input name="TargetEnc" type="hidden">
+	<input name="TargetAuth" type="hidden">
+	<input name="TargetChannel" type="hidden">
+
+	<table width="500" border="0"><tbody>
+	<tr>
+		<td colspan="4" style="font-weight:bold;"><font size="4"><%:Site Survey%></font></td>
+	</tr>
+	</tbody></table>
+	<br>
+	<input value="<%:Refresh%>" name="Refresh" onclick="refreshList();" type="button">
+	<input value="<%:Connect%>" onclick=" return goToApply();" type="button">
+	<br><br>
+	<table class="sortable" id="sorTable" width="500" border="0">
+	<thead><tr class="background" align="center"> 
+		<th style="display:none" class="background" width="10%"><font size="2"><b>NO.</b></font></th>
+		<th class="sorttable_nosort background" width="12%"><font size="2"><b><%:Select%></b></font></th>
+		<th class="sorttable_channel background" width="13%" onclick='writecolumns("channel")'><font size="2"><b><%:Channel%></b></font></th>
+		<th class="sorttable_ssid background" width="20%" onclick='writecolumns("SSID")'><font size="2"><b>SSID</b></font></th>
+		<th class="sorttable_bssid background" width="20%" onclick='writecolumns("BSSID")'><font size="2"><b>BSSID</b></font></th>
+		<th class="sorttable_enc background" width="10%" onclick='writecolumns("enc")'><font size="2"><b><%:Security_repeater%></b></font></th>
+		<th class="sorttable_signal background" width="15%" onclick='writecolumns("signal")'><font size="2"><b><%:Signal Strength(%)%></b></font></th>
+	</tr></thead>
+	<tbody id=sitesurveytable></tbody>
+	</table>
+<br>  
+
+
+<br>
+<p>
+
+</p></form></blockquote>
+</div>
+<%+footer%>

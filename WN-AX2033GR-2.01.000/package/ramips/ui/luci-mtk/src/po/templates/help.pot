@@ -1,0 +1,239 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "HELP"
+msgstr ""
+
+msgid "apn_help"
+msgstr ""
+
+msgid "apn_table_apn_name"
+msgstr ""
+
+msgid "apn_table_apn_name_help"
+msgstr ""
+
+msgid "apn_table_description"
+msgstr ""
+
+msgid "apn_table_ip_mode"
+msgstr ""
+
+msgid "apn_table_ip_mode_help"
+msgstr ""
+
+msgid "apn_table_name"
+msgstr ""
+
+msgid "apn_title"
+msgstr ""
+
+msgid "backup_restore_help"
+msgstr ""
+
+msgid "backup_restore_title"
+msgstr ""
+
+msgid "configuration_title"
+msgstr ""
+
+msgid "dashboard_title"
+msgstr ""
+
+msgid "device_info"
+msgstr ""
+
+msgid "device_info_help"
+msgstr ""
+
+msgid "device_status_help"
+msgstr ""
+
+msgid "device_status_title"
+msgstr ""
+
+msgid "dhcp_server_title"
+msgstr ""
+
+msgid "dhcp_table_help"
+msgstr ""
+
+msgid "dhcp_table_title"
+msgstr ""
+
+msgid "dmz_help"
+msgstr ""
+
+msgid "dmz_title"
+msgstr ""
+
+msgid "fw_upgrade_help"
+msgstr ""
+
+msgid "fw_upgrade_title"
+msgstr ""
+
+msgid "general_help"
+msgstr ""
+
+msgid "general_title"
+msgstr ""
+
+msgid "help_title"
+msgstr ""
+
+msgid "interface_status"
+msgstr ""
+
+msgid "interface_status_help"
+msgstr ""
+
+msgid "internet_status"
+msgstr ""
+
+msgid "internet_status_help"
+msgstr ""
+
+msgid "internet_status_title"
+msgstr ""
+
+msgid "ipv6_help"
+msgstr ""
+
+msgid "ipv6_title"
+msgstr ""
+
+msgid "lan_help"
+msgstr ""
+
+msgid "lan_title"
+msgstr ""
+
+msgid "language_help"
+msgstr ""
+
+msgid "language_title"
+msgstr ""
+
+msgid "log_help"
+msgstr ""
+
+msgid "log_title"
+msgstr ""
+
+msgid "lte_status_help"
+msgstr ""
+
+msgid "lte_status_title"
+msgstr ""
+
+msgid "lte_title"
+msgstr ""
+
+msgid "mac_filter_help"
+msgstr ""
+
+msgid "mac_filter_title"
+msgstr ""
+
+msgid "maintenance_title"
+msgstr ""
+
+msgid "manual_connection_help"
+msgstr ""
+
+msgid "manual_connection_title"
+msgstr ""
+
+msgid "monitor_title"
+msgstr ""
+
+msgid "network_select_help"
+msgstr ""
+
+msgid "network_select_title"
+msgstr ""
+
+msgid "network_setting_help"
+msgstr ""
+
+msgid "network_setting_title"
+msgstr ""
+
+msgid "network_title"
+msgstr ""
+
+msgid "oled_display_help"
+msgstr ""
+
+msgid "oled_display_title"
+msgstr ""
+
+msgid "password_help"
+msgstr ""
+
+msgid "password_title"
+msgstr ""
+
+msgid "restart_help"
+msgstr ""
+
+msgid "restart_title"
+msgstr ""
+
+msgid "sim_help"
+msgstr ""
+
+msgid "sim_title"
+msgstr ""
+
+msgid "sms_list"
+msgstr ""
+
+msgid "sms_list_help"
+msgstr ""
+
+msgid "sms_send"
+msgstr ""
+
+msgid "sms_send_character_set"
+msgstr ""
+
+msgid "sms_send_character_set_help"
+msgstr ""
+
+msgid "sms_send_content"
+msgstr ""
+
+msgid "sms_send_content_help"
+msgstr ""
+
+msgid "sms_send_help_title"
+msgstr ""
+
+msgid "sms_send_recever"
+msgstr ""
+
+msgid "sms_send_recever_help"
+msgstr ""
+
+msgid "sms_send_table_description"
+msgstr ""
+
+msgid "sms_send_table_name"
+msgstr ""
+
+msgid "sms_title"
+msgstr ""
+
+msgid "system_status"
+msgstr ""
+
+msgid "system_status_help"
+msgstr ""
+
+msgid "wlan_help"
+msgstr ""
+
+msgid "wlan_title"
+msgstr ""

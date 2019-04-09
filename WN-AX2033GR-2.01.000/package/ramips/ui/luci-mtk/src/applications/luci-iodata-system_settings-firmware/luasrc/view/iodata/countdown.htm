@@ -1,0 +1,34 @@
+<%+header%>
+
+<script type="text/javascript">
+
+var url ="<%=controller%>"; // url of home page
+<%
+	local lua_countdowntime = uci.get("system", "firmware", "countdowntime");
+	if not lua_countdowntime then
+		lua_countdowntime = 70;
+	end
+%>
+var seconds = <%=lua_countdowntime%>;
+
+function waiting()
+{
+        (seconds<=0) ? seconds=0 : seconds-=1;
+        document.getElementById("wait_time").value = seconds;
+        if(seconds==0)
+        {
+                window.parent.location.href = url;
+                return true;
+        };
+        setTimeout('waiting()', 1000);
+}
+
+function frmLoad()
+{
+	document.getElementById("top_menu").style.display = 'none';
+	document.getElementById("waiting").style.display = 'block';
+	waiting();
+}
+</script>
+
+<%+footer%>

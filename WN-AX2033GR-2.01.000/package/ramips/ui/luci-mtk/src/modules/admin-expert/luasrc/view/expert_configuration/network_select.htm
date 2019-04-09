@@ -1,0 +1,207 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: header.htm 4891 2009-06-22 10:23:21Z jow $
+
+-%>
+<%
+require "luci.sys"
+require("luci.i18n").loadc("default")
+local i18n = require("luci.i18n")
+require("luci.http").prepare_content("text/html")
+local uci = require("luci.model.uci").cursor()
+local sys = require("luci.sys")
+local lang = uci:get("luci","main","lang")
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+-%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"  />
+<title>.::Welcome to the Web-Based Configurator::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<style>
+.on {display:on}
+.off {display:none}
+</style>
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script type="text/javascript" src="<%=media%>/js/jquery-1.6.2.min.js" ></script>
+<script language="javascript">
+$(function(){
+<% if ScanDone == 1 then %>
+	document.getElementById("NW_SEL_0").checked = true;
+	document.getElementById("ConfirmDisableAutoSelection").value = 1;
+	$('#NE_SCAN_RESULTS').show();
+	ParseScanResult('<%=uci:get("wanstatus","network_preference","scan_results")%>');
+<% else %>
+	RefreshManualSelection();
+<% end %>	
+});
+
+
+function ParseScanResult(msgs) {
+	var hostArray = msgs.split(';');
+	
+	for(var i=0;i<(hostArray.length-1);i++)
+	{
+		if ( i == 0){
+			if (hostArray[0] == '0'){
+				$("#select_net_scan").html('<option value="99">' + '<%:L_CIMResult_info1%>' + '</option>');
+				$('#table_button').show();
+			}else{
+				$("#select_net_scan").html('<option value="99">' + '<%:L_CIMResult_info2%>' + '</option>');
+				$('#table_button').show();
+			}
+		}
+		if ( i > 0){
+			var splitHostArray = hostArray[i].split(',');
+			if ("4" == splitHostArray[4]){
+				var RAT = "GSM"; 
+			}else if ("5" ==  splitHostArray[4]){
+				var RAT = "WCDMA"; 
+			}else if ("8" ==  splitHostArray[4]){
+				var RAT = "LTE"; 
+			}else if ("9" ==  splitHostArray[4]){
+				var RAT = "TD-SCDMA"; 
+			}
+			var td = "<option value="+splitHostArray[0]+">"+splitHostArray[1]+"-"+RAT+"</option>";
+		//	alert(td);
+			$("#select_net_scan").append(td);
+		}
+	}
+
+}
+
+function RefreshManualSelection() {
+	var ManualSelection = '<%=uci:get("wanstatus","network_preference","manual_selection")%>';
+	
+	if (ManualSelection == "1"){
+		document.getElementById("NW_SEL_0").checked = true;
+		$('#man_net_sel').show();
+		$('#table_button').show();
+		document.getElementById("nw_net").innerHTML = '<%=uci:get("wanstatus","status","service_provider")%>';
+		document.getElementById("nw_net_mode").innerHTML = '<%=uci:get("wanstatus","internet_info","service_mode")%>';
+	}else{
+		document.getElementById("NW_SEL_1").checked = true;
+	}
+}
+
+function ValidateNW_SEL(value)
+{
+	if (value == 1){
+		document.getElementById("ConfirmDisableAutoSelection").value = 0;
+		$('#NE_SCAN_RESULTS').hide();
+	}else{
+		if (confirm('<%:L_CIMValidateNW_SELWarn%>')){
+			document.getElementById("ConfirmDisableAutoSelection").value = 1;
+			$('#NE_SCAN_RESULTS').show();
+			document.getElementById("lteNWSelectForm").submit();
+		}else{
+			window.location.href=window.location.href;
+		}
+	}
+}
+
+function network_select(value)
+{
+	document.getElementById("_select_net_scan_index").value = value;
+}
+
+function submit_apply() {
+	document.getElementById("SelectSubmit").value = "1";
+	showWebMessage( 1 , "<%:Message%>" , "<%:msg_config%>" );
+	document.getElementById("lteNWSelectForm").submit();
+}
+
+function path_msg_init(){
+	showFullPath(' <%:LTE%> > <%:NETWORK_SETTINGS%> > <%:NETWORK_SELECT%>');
+	showWebMessage( 0, "<%:Message%>", "<%:Ready%>");
+}
+</script>
+</head>
+<body onload="path_msg_init();">
+<form onSubmit="return submit_apply()" method="post" name="lteNWSelectForm" id="lteNWSelectForm" action="<%=controller%>/expert/configuration/lte/network_settings/network_select">
+<div id="tabs" style="word-break:break-all;(">
+  <ul>
+	<li><a href="<%=controller%>/expert/configuration/lte/network_settings" title="<%:NETWORK_SETTINGS%>"><span><%:NETWORK_SETTINGS%></span></a></li>
+	<li class="hightline"><a title="<%:NETWORK_SELECT%>"><span><%:NETWORK_SELECT%></span></a></li>
+  </ul>
+  <br class="clearfloat" />
+</div>
+
+<div id="table">
+  <ul>
+    <li class="table_top"></li>
+    <li class="table_content">
+      <div class="data">
+        <ul>
+          <div class="w_text">
+            <ul>
+			  <li class="title">
+				<%:NETWORK_SELECT%>
+			  </li>
+			</ul>
+		</div>
+
+		<div>
+			<div class="w_text">
+			  <ul>
+				<input name="ConfirmDisableAutoSelection" id="ConfirmDisableAutoSelection" type="hidden" value="0"/> 
+				<li class="left_table"><%:AUTO_NETWORK_SELECTION%></li>
+				<li class="right_table">
+				  <input name="NW_SEL" id="NW_SEL_1" type="radio" value="1" onclick="ValidateNW_SEL(1)"/><span><%:enable%></span>
+				  <input name="NW_SEL" id="NW_SEL_0" type="radio" value="0" onclick="ValidateNW_SEL(0)"/><span><%:disable%></span>
+				</li>
+			  </ul>
+			</div>
+			<div class="w_text" style="display:none;" id="man_net_sel">
+			  <ul>
+				<li class="left_table"><%:MANUAL_SELECTION%></li>
+				<li class="right_table">
+				  <span name="nw_net" id="nw_net" maxlength="32" size="32"> </span> - <span name="nw_net_mode" id="nw_net_mode" maxlength="32" size="32"> </span>
+				</li>
+			  </ul>
+			</div>
+			<div class="w_text" style="display:none;" id="NE_SCAN_RESULTS">		
+				<ul>
+					<input name="_select_net_scan_index" id="_select_net_scan_index" type="hidden" value="4"/>
+					<li class="left_table"><%:NETWORK_SELECT%></li>
+					<li class="right_table">
+						<select id="select_net_scan" size="1" onChange="network_select(this.options[this.selectedIndex].value);">
+								<option id="select_net_scan_result" value="99"><%:MLG_PleaseWait%></option>
+						</select>
+					</li>
+				</ul>
+			</div>
+		</div>	
+  
+      <div class="spaceair"></div>    
+	  </ul>				
+     </div>
+    </li>
+    <li style="display:none;" id="table_button" class="table_button">
+      <div class="button">
+        <center>  
+		<input id="SelectSubmit" name="SelectSubmit" type="hidden" value="0"/>
+		<input id="btnApply" name="sysSubmit" value="<%:apply%>" type="button" onclick="submit_apply()"/>    
+		&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+		<input id="btnReset" name="Cancel" value="<%:cancel%>" type="reset" onclick="window.location.href=window.location.href;" />
+        </center>
+      </div>
+	</li>
+  </ul>
+</div>	
+
+</form>
+</body>
+</html>

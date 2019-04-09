@@ -1,0 +1,283 @@
+<%+header%>
+
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+<%
+	local client_list_2g
+	local client_list_5g
+	
+	local file = io.popen("luci-stainfo ra0", 'r')
+	if file then
+		client_list_2g = file:read('*all')
+	end
+	
+	local file = io.popen("luci-stainfo rai0", 'r')
+	if file then
+		client_list_5g = file:read('*all')
+	end
+	
+	io.close(file)
+	
+	--=============MSTC MBA Sean, get all 2.4g ssid here ===========================
+	
+	local ifce_2g={}
+	--MBA Sean Get all SSID 
+    uci.foreach("wireless", "wifi-iface", 
+	function(s)
+		if s.mode == "ap" then
+			if (s.device == "mt7620" or s.device == "mt7602e" or s.device == "mt7603e" or s.device == "mt7628" or s.device == "mt7688" or s.device == "mt7615e2") then 
+				ifce_2g[#ifce_2g+1] = s[".name"]
+			end
+		end
+    end)
+	
+	local ssid1_device = uci.get("wireless", ifce_2g[1], "device")
+	local ssid3_device = ssid1_device
+	
+	local ssid1_ssid = uci.get("wireless", ifce_2g[1], "ssid")
+	--MBA Sean only get ssid from dat if dat exist and value exist
+	local file = io.popen("cat /etc/wireless/" .. ssid1_device .. "/" .. ssid1_device .. ".dat | grep SSID1", 'r')
+	if file then
+        local data_raw = file:read()
+        if data_raw then
+                local ssid_tmp = data_raw:match("SSID1=(.+)")
+				-- if value is exist, get the value
+				if ssid_tmp then
+					ssid1_ssid = ssid_tmp
+				end
+        end
+	end
+	io.close(file)
+	
+	--MBA Sean only get ssid from dat if dat exist and value exist
+	local ssid3_ssid = uci.get("wireless", ifce_2g[2], "ssid")
+	local file = io.popen("cat /etc/wireless/" .. ssid3_device .. "/" .. ssid3_device .. ".dat | grep SSID2", 'r')
+	if file then
+        local data_raw = file:read()
+        if data_raw then
+                local ssid_tmp = data_raw:match("SSID2=(.+)")
+				-- if value is exist, get the value
+				if ssid_tmp then
+					ssid3_ssid = ssid_tmp
+				end
+        end
+	end
+	io.close(file)
+	
+	local ssid4_ssid = ""
+	if ifce_2g[3] then
+		ssid4_ssid = uci.get("wireless", ifce_2g[3], "ssid")
+	end
+	
+	--=============MSTC MBA Sean, get all 5g ssid here ===========================
+	local ifce_5g={}
+	--MSTC MBA Sean, get all 5G chip device name
+    uci.foreach("wireless", "wifi-iface", 
+	function(s)
+		if s.mode == "ap" then
+			if ( s.device == "mt7615e5" or s.device == "mt7610e" or s.device == "mt7612e" ) then 
+				ifce_5g[#ifce_5g+1] = s[".name"]
+			end
+		end
+    end)
+	
+	local ssid2_device = uci.get("wireless", ifce_5g[1], "device")
+	
+	local ssid2_ssid = uci.get("wireless", ifce_5g[1], "ssid")
+	--MBA Sean only get ssid from dat if dat exist and value exist
+	local file = io.popen("cat /etc/wireless/" .. ssid2_device .. "/" .. ssid2_device .. ".dat | grep SSID1", 'r')
+	if file then
+        local data_raw = file:read()
+        if data_raw then
+                local ssid_tmp = data_raw:match("SSID1=(.+)")
+				-- if value is exist, get the value
+				if ssid_tmp then
+					ssid2_ssid = ssid_tmp
+				end
+        end
+	end
+	io.close(file)
+	
+	local ssid5_ssid =""
+	if ifce_5g[2] then
+		ssid5_ssid = uci.get("wireless", ifce_5g[2], "ssid")
+	end
+	
+	if ssid1_ssid then
+		htmlcode = luci.http.htmlencode(ssid1_ssid);
+		ssid1_ssid = htmlcode;
+	end
+	if ssid2_ssid then
+		htmlcode = luci.http.htmlencode(ssid2_ssid);
+		ssid2_ssid = htmlcode;
+	end
+	if ssid3_ssid then
+		htmlcode = luci.http.htmlencode(ssid3_ssid);
+		ssid3_ssid = htmlcode;
+	end
+	if ssid4_ssid then
+		htmlcode = luci.http.htmlencode(ssid4_ssid);
+		ssid4_ssid = htmlcode;
+	end
+	if ssid5_ssid then
+		htmlcode = luci.http.htmlencode(ssid5_ssid);
+		ssid5_ssid = htmlcode;
+	end
+	
+%>
+
+<script type="text/javascript">
+
+var url ="<%=controller%>/content/wireless_settings/client_list"; //current page url
+
+function btnCancel()
+{
+	location.href=url;
+	return true;
+}
+
+<%=client_list_2g%>
+
+<%=client_list_5g%>
+
+var client_2g_null = false;
+var client_5g_null = false;
+if (typeof client_list_2g == "undefined" || client_list_2g == null) {
+	client_2g_null = true;
+}
+if (typeof client_list_5g == "undefined" || client_list_5g == null) {
+	client_5g_null = true;
+}
+
+// check if there is any duplicated client
+if( !client_2g_null ) {
+	for(var i = 0; i < client_list_2g.length; ) {
+		var client_i_changed = false;
+		// compare with other 2g clients
+		for(var j = i+1; j < client_list_2g.length; ) {
+			if ( client_list_2g[i].mac == client_list_2g[j].mac ) {
+				// remove the client with long idle time
+				if ( client_list_2g[i].idle <= client_list_2g[j].idle ) {
+					client_list_2g.splice(j, 1);
+					// client j+1 become client j, so check client j again
+					continue;
+				}
+				else {
+					client_list_2g.splice(i, 1);
+					client_i_changed = true;
+					// client i+1 become client i, so check new client i again
+					break;
+				}
+			}
+			j++;
+		}
+		if (client_i_changed) { continue;}
+		
+		// compare with 5g clients
+		if( !client_5g_null ) {
+			for(var j = 0; j < client_list_5g.length; ) {
+				if ( client_list_2g[i].mac == client_list_5g[j].mac ) {
+					// remove the client with long idle time
+					if ( client_list_2g[i].idle <= client_list_5g[j].idle ) {
+						//alert("delete 5g client: " + client_list_5g[j].mac);
+						client_list_5g.splice(j, 1);
+						// client j+1 become client j, so check client j again
+						continue;
+					}
+					else {
+						//alert("delete 2g client: " + client_list_2g[i].mac);
+						client_list_2g.splice(i, 1);
+						// client i+1 become client i, so check new client i again
+						break;
+					}
+				}
+				j++;
+			}
+			if (client_i_changed) { continue;}
+		}
+
+		i++;
+	}
+}
+
+if( !client_5g_null ) {
+	for(var i = 0; i < client_list_5g.length; ) {
+		var client_i_changed = false;
+		
+		// compare with other 5g client
+		for(var j = i+1; j < client_list_5g.length; ) {
+			if ( client_list_5g[i].mac == client_list_5g[j].mac ) {
+				// remove the client with long idle time
+				if ( client_list_5g[i].idle <= client_list_5g[j].idle ) {
+					client_list_5g.splice(j, 1);
+					// client j+1 become client j, so check client j again
+					continue;
+				}
+				else {
+					client_list_5g.splice(i, 1);
+					// client i+1 become client i, so check new client i again
+					client_i_changed = true;
+					break;
+				}
+			}
+			j++;
+		}
+		if (client_i_changed) { continue;}
+		i++;
+	}
+}
+
+var ssid_2g_list = [];
+ssid_2g_list[0] = "<%=ssid1_ssid%>";
+ssid_2g_list[1] = "<%=ssid3_ssid%>";
+ssid_2g_list[2] = "<%=ssid4_ssid%>";
+
+var ssid_5g_list = [];
+ssid_5g_list[0] = "<%=ssid2_ssid%>";
+ssid_5g_list[1] = "<%=ssid5_ssid%>";
+
+function frmLoad(){
+	var test = "123";
+}
+</script>
+<blockquote>
+<form name="" method="" action="" > 	 
+
+<p class="background">&nbsp;<%:Wireless Lan Client Table%>&nbsp;:</script></p>
+<p><%:Wireless LAN client table displays the MAC address of the client that is connected to this product .%></p>
+<table border='0' width="80%">
+
+<tr><td width="20%" class="background" style="text-align:center"><%:Interface%></td>
+<td width="40%" class="background" style="text-align:center"><%:MAC Address%></td>
+</tr>
+
+<!--MSTC MBA Sean show the client list if there is any client-->
+<script type="text/javascript">
+
+
+
+if ( !client_2g_null ) {
+	for(var i = 0; i < client_list_2g.length; i++) {
+		document.write("<tr><td class=\"table2\" width=\"20%\"  style=\"text-align:center\">" + ssid_2g_list[parseInt(client_list_2g[i].apIdx)] + "</td>");
+		document.write("<td class=\"table2\" width=\"40%\"  style=\"text-align:center\">" + client_list_2g[i].mac + "</td></tr>");
+	}
+}
+
+if ( !client_5g_null ) {
+	for(var i = 0; i < client_list_5g.length; i++) {
+		document.write("<tr><td class=\"table2\" width=\"20%\"  style=\"text-align:center\">" + ssid_5g_list[parseInt(client_list_5g[i].apIdx)] + "</td>");
+		document.write("<td class=\"table2\" width=\"40%\"  style=\"text-align:center\">" + client_list_5g[i].mac + "</td></tr>");
+	}
+}
+
+if( (client_2g_null || client_list_2g.length == 0) && (client_5g_null || client_list_5g.length == 0) ) {
+	document.write("<tr> <td class=\"table2\" colspan=\"10\"><div align=\"center\"><font size=2><%:There are no client connected to the router%></font></div></td></tr>");
+}
+
+</script>
+
+</table>
+<p><input class="input" type="button" value="<%:Update%>" name="refresh" id="refresh" onclick="btnCancel()" >&nbsp;&nbsp;</p>
+</form>
+</blockquote>
+
+<%+footer%>

@@ -1,0 +1,46 @@
+#!/bin/sh
+
+usage() {
+	echo "$0 [-n|V6PREFIX] [-c]"
+	exit 1
+}
+
+if [ $# -lt 1 -o 2 -lt $# ]; then
+	usage
+fi
+
+if [ $# == 2 ]; then
+	if [ $2 != "-c" ]; then
+		usage
+	fi
+fi
+
+if [ $1 = "-n" ]; then
+	v6pass_ctl -i eth1 br-lan
+	v6pass_ctl -s
+	if [ $# == 1 ]; then
+		v6pass_ctl -m
+	fi
+	exit 0
+fi
+
+v6pass_ctl -i eth1 br-lan
+v6pass_ctl -s
+if [ $# == 1 ]; then
+	v6pass_ctl -m
+fi
+v6pass_ctl -f 1 fec0::/10 ::/0 any out deny
+v6pass_ctl -f 2 fc00::/7 ::/0 any out deny
+#v6pass_ctl -f 3 fe80::/10 ::/0 any out deny
+v6pass_ctl -f 3 ::/0 fe80::/10 any out deny
+v6pass_ctl -f 4 ff00::/8 ::/0 any out deny
+v6pass_ctl -f 5 ::1/128 ::/0 any out deny
+v6pass_ctl -f 6 ::ffff:0:0/96 ::/0 any out deny
+v6pass_ctl -f 7 2001:db8::/32 ::/0 any out deny
+v6pass_ctl -f 8 ::/0 ff02::1:2/128 udp out allow
+v6pass_ctl -f 9 fe80::/10 fe80::/10 udp in allow
+v6pass_ctl -f 10 $1 ::/0 tcp out established
+v6pass_ctl -f 11 $1 ::/0 udp out established
+v6pass_ctl -f 12 $1 ::/0 icmpv6 out established
+v6pass_ctl -f 13 $1 ::/0 any out allow
+

@@ -1,0 +1,170 @@
+Index: linux-3.10.14/include/linux/ip4ov6jp_param.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-3.10.14/include/linux/ip4ov6jp_param.h	2017-07-25 16:42:17.223840389 +0800
+@@ -0,0 +1,165 @@
++/*
++ *
++ *
++ */
++
++#ifndef _IP4OV6JP_PARAM_H_
++#define _IP4OV6JP_PARAM_H_
++
++#ifndef __KERNEL__
++#include <sys/types.h>
++#include <sys/socket.h>
++#include <netinet/in.h>
++#endif
++
++#include <linux/if.h>
++#include <linux/ip6_tunnel.h>
++
++/* commands */
++
++#define SIOCIP4OV6JPCMD	(SIOCDEVPRIVATE + 0)
++#define SIOCGETBMR	(SIOCDEVPRIVATE + 0)
++#define SIOCSETBMR	(SIOCDEVPRIVATE + 1)
++#define SIOCDELBMR	(SIOCDEVPRIVATE + 2)
++
++#define SIOCGETBR       (SIOCDEVPRIVATE + 3)
++#define SIOCSETBR       (SIOCDEVPRIVATE + 4)
++#define SIOCDELBR       (SIOCDEVPRIVATE + 5)
++
++#define SIOCGETFMR	(SIOCDEVPRIVATE + 6)
++#define SIOCGETFMRCNT	(SIOCDEVPRIVATE + 7)
++#define SIOCADDFMR	(SIOCDEVPRIVATE + 8)
++#define SIOCDELFMR	(SIOCDEVPRIVATE + 9)
++
++#define SIOCGETAFTR     (SIOCDEVPRIVATE + 10)
++#define SIOCSETAFTR     (SIOCDEVPRIVATE + 11)
++#define SIOCDELAFTR     (SIOCDEVPRIVATE + 12)
++
++#define SIOCGETB4       (SIOCDEVPRIVATE + 13)
++#define SIOCSETB4       (SIOCDEVPRIVATE + 14)
++#define SIOCDELB4       (SIOCDEVPRIVATE + 15)
++
++#define SIOCGETMAPADDR	(SIOCDEVPRIVATE + 16)
++#define SIOCSETMAPADDR	(SIOCDEVPRIVATE + 17)
++#define SIOCDELMAPADDR	(SIOCDEVPRIVATE + 18)
++
++#define SIOCGETSTATUS	(SIOCDEVPRIVATE + 19)
++#define SIOCSETSTATUS	(SIOCDEVPRIVATE + 20)
++
++#define SIOCGETMODE     (SIOCDEVPRIVATE + 21)
++#define SIOCSETMODE     (SIOCDEVPRIVATE + 22)
++
++#define SIOCCREATEMAP	(SIOCDEVPRIVATE + 23)
++#define SIOCDELETEMAP	(SIOCDEVPRIVATE + 24)
++
++#define SIOCSETDEBUGLV	(SIOCDEVPRIVATE + 25)
++
++/* flags */
++#define IP4OV6JP_DEFAULT_TNL_HLIM    (64)
++
++#define IP4OV6JP_STATUS_OFF          (0)
++#define IP4OV6JP_STATUS_ON           (1)
++
++#define IP4OV6JP_MAP_BMR_SET         (1)
++#define IP4OV6JP_MAP_BMR_UNSET       (0)
++
++#define IP4OV6JP_MAP_TUNSRC_SET      (1)
++#define IP4OV6JP_MAP_TUNSRC_UNSET    (0)
++
++#define IP4OV6JP_MODE_NONE           (0)
++#define IP4OV6JP_MODE_MAP_E          (1)
++#define IP4OV6JP_MODE_DS_LITE        (2)
++
++/* configuration parameters */
++
++struct map_rule {
++	struct in6_addr rule_ipv6_prefix;
++	__be32 rule_ipv4_prefix;
++	__be32 rule_ipv4_prefix_masked;
++	__u8 rule_ipv6_prefix_len;
++	__u8 rule_ipv4_prefix_len;
++	__u8 ea_bit_length;
++	__u8 psid_offset;
++	__u16 psid;
++	__u16 psid_length;
++};
++
++struct map_bmr {
++	struct map_rule rule;
++	int flags;
++};
++
++struct map_fmr {
++	struct map_rule rule;
++	int flags;
++	struct map_fmr *next;
++};
++
++struct ip4ov6jp_tunnel_src {
++	char ifname[IFNAMSIZ];
++	int flags;
++	struct in6_addr laddr;
++	int prefixlen;
++	struct ip4ov6jp_tunnel_src *next;
++};
++
++struct ip4ov6jp_status {
++	int status;
++	unsigned long long tx_packets;
++	unsigned long long tx_bytes;
++	unsigned long long tx_dropped;
++	unsigned long long rx_packets;
++	unsigned long long rx_bytes;
++	unsigned long long rx_dropped;
++	unsigned long long drop_by_illegal_range;
++	unsigned long long drop_by_invalid_src;
++};
++
++struct ip4ov6jp_config {
++	char ifname[IFNAMSIZ];
++	struct map_bmr bmr;
++	struct map_fmr *fmr;
++	struct in6_addr braddress;
++	struct in6_addr tunnel_src;
++	int flags;
++	int is_br_set;
++	int is_src_set;
++	int is_aftr_set;
++	int is_b4_set;
++	int fmr_count;
++};
++
++
++struct ip4ov6jp_ifreq {
++	char	ifname[IFNAMSIZ];
++	int	subcmd;
++	int	size;
++#ifdef __KERNEL__
++	void __user * data;
++#else
++	void *data;
++#endif
++};
++
++/* param */
++
++struct ip4ov6jp_param {
++	char name[IFNAMSIZ];
++
++	__u8 debug;
++	__u16 mtu;
++
++	/* stats */
++	unsigned long long drop_by_illegal_range;
++	unsigned long long drop_by_invalid_src;
++
++	/* config */
++	int status;
++	int mode;
++	struct ip4ov6jp_config config;
++};
++
++
++#endif
++
++

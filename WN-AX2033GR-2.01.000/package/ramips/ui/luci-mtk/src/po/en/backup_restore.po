@@ -1,0 +1,56 @@
+msgid "Backup_Restore"
+msgstr "Backup/Restore"
+
+msgid "backup"
+msgstr "Backup"
+
+msgid "bak_configure"
+msgstr "Backup Configuration"
+
+msgid "bak_remind1"
+msgstr "The system will restart in"
+
+msgid "bak_remind2"
+msgstr "Click Backup to save the current configuration of your system to your computer."
+
+msgid "bak_rst"
+msgstr "Backup/Restore"
+
+msgid "factory_default"
+msgstr "Back to Factory Defaults"
+
+msgid "factory_remind1"
+msgstr "Click Reset to clear all user-entered   configuration information and return to factory defaults."
+
+msgid "factory_reset"
+msgstr "Reset"
+
+msgid "file_path"
+msgstr "File Path"
+
+msgid "file_upload"
+msgstr "Upload"
+
+msgid "msg_config"
+msgstr "Configuration Update is proceeding. Please Wait..."
+
+msgid "msg_confirm_1"
+msgstr "Are you sure you want to do that?"
+
+msgid "restarting"
+msgstr "Restarting..."
+
+msgid "rst_configure"
+msgstr "Restore Configuration"
+
+msgid "rst_remind1"
+msgstr "To restore a previously saved configuration file to your system, browse to the location of the configuration file and click Upload."
+
+msgid "rst_remind2"
+msgstr "File not found."
+
+msgid "rst_remind3"
+msgstr "Restore was not sucess , please check rom file was correct."
+
+msgid "seconds"
+msgstr "seconds"

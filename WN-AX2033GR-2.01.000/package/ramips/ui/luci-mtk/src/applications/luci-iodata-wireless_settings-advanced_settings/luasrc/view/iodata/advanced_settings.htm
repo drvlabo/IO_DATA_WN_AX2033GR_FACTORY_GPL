@@ -1,0 +1,343 @@
+<%+header%>
+
+<%
+
+	--get all wireless parameter here
+	
+	--MSTC MBA Sean, need to get all wifi-device
+	local device_2g;
+	local device_5g;
+
+	--MSTC MBA Sean, get all chip device, each grequence should be only one chip. 
+    uci.foreach("wireless", "wifi-iface", function(s)
+        if s.device == "mt7620" or s.device == "mt7602e" or s.device == "mt7603e" or s.device == "mt7628" or s.device == "mt7688" or s.device == "mt7615e2" then 
+            device_2g = s.device
+        end
+		if s.device == "mt7610e"  or s.device == "mt7612e" or s.device == "mt7615e5" then 
+            device_5g = s.device
+        end
+    end)
+	
+	local chanel_5g = uci.get("wireless", device_5g, "channel")
+	
+	local bandwidth_2g = uci.get("wireless", device_2g, "bw")
+	local bandwidth_5g = uci.get("wireless", device_5g, "bw")
+	
+	local txpower_2g = uci.get("wireless", device_2g, "txpower")
+	local txpower_5g = uci.get("wireless", device_5g, "txpower")
+	
+	local guest_ssid_seperation = uci.get("wireless", device_2g, "guest_ssid_seperation")
+	local igmpsnoop = uci.get("wireless", device_2g, "igmpsnoop")
+	local auto_disassociation = uci.get("wireless", device_2g, "auto_disassociation")
+	local beamforming = uci.get("wireless", device_2g, "txbf")
+%>
+
+<script type="text/javascript">
+var url ="<%=controller%>/content/wireless_settings/advanced_settings"; //current page url
+
+var bandwidth_2g = "<%=bandwidth_2g%>";
+var bandwidth_5g = "<%=bandwidth_5g%>";
+var txpower_2g = "<%=txpower_2g%>";
+var txpower_5g = "<%=txpower_5g%>";
+var guest_ssid_seperation = "<%=guest_ssid_seperation%>";
+var igmpsnoop = "<%=igmpsnoop%>";
+var auto_disassociation = "<%=auto_disassociation%>";
+var beamforming = "<%=beamforming%>";
+var chanel_5g = "<%=chanel_5g%>";
+
+function verifySubmitData()
+{
+	var dtim_period = document.getElementById("dtim_period").value;	
+	var beacon_interval = document.getElementById("beacon_interval").value;	
+
+	if ( beacon_interval == "") {
+		alert("<%:the Beacon intervali is empty%>");
+		return false;
+	}
+	
+	if ( dtim_period == "") {
+		alert("<%:the DTIM period is empty%>");
+		return false;
+	}
+	
+	if ( isNaN(beacon_interval) || beacon_interval > 1000 || beacon_interval < 40) {
+		alert("<%:Beacon interval is out of range or enter the character can’t be used.%>");
+		return false;
+	}
+	
+	if ( isNaN(dtim_period) || dtim_period > 255 || dtim_period < 1) {
+		alert("<%:DTIM period is out of range or enter the character can’t be used.%>");
+		return false;
+	}
+	if ( chanel_5g == 140 &&  document.querySelector('input[name="5g_bandwidth"]:checked').value == 1 ) {
+		alert("<%:5GHzis set to 140ch and set to 20/40Mhz%>");
+		return false;		
+	}
+	if ( ( chanel_5g == 132 || chanel_5g ==136 || chanel_5g == 140 )  &&  document.querySelector('input[name="5g_bandwidth"]:checked').value == 2 ) {
+		alert("<%:5GHz set to 132ch or 136ch or 140ch set to 20/40/80Mhz%>");
+		return false;		
+	}
+	
+	return true;
+// put your check input value code here
+}
+//MBA Sean, Cancel Button script
+function btnCancel()
+{
+	location.href=url;
+	return true;
+}
+
+//MBA Sean, Apply Button script
+function btnApply()
+{
+	var verifyFlag = verifySubmitData();
+	
+	if(verifyFlag){
+		//MBA Sean, show the waiting page & hide the original content
+		document.getElementById("top_menu").style.display = 'none';
+		document.getElementById("content").style.display = 'none';
+		document.getElementById("waiting").style.display = 'block';
+		//MBA Sean, start to countdown.
+		waiting();
+
+		//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+        $.ajax({
+        type:"POST",
+        url: url,
+        data: $("#content_send").serialize(),// serializes the form's elements.
+        });
+		return false;
+	}
+	else {
+		return false;
+	}
+}
+<%
+	--MBA Sean, get the waiting time, default is 30 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+	local waiting_time_uci = uci_t.get("web", "gui_config", "network_apply_waiting_time")
+	local waiting_time = 30;
+	
+	if waiting_time_uci then
+		waiting_time = waiting_time_uci
+	end
+	
+	uci_t.set_confdir(original_confdir)
+%>
+
+var seconds=<%=waiting_time%>;
+function waiting()
+{
+	(seconds<=0)?seconds=0:seconds-=1;
+	document.getElementById("wait_time").value=seconds;
+	if(seconds==0)
+	{
+		location.href=url;
+		return true;
+	};
+	setTimeout('waiting()',1000);
+} 
+
+
+function frmLoad()
+{
+//MBA, Sean put your init java script here
+
+	//MBA Sean , set the bandwth
+	if ( bandwidth_2g == "1")
+		document.getElementById("2g_bandwidth_40").checked = true;
+	else
+		document.getElementById("2g_bandwidth_20").checked = true;
+		
+	if ( bandwidth_5g == "2")
+		document.getElementById("5g_bandwidth_80").checked = true;
+	else if ( bandwidth_5g == "1")
+		document.getElementById("5g_bandwidth_40").checked = true;
+	else
+		document.getElementById("5g_bandwidth_20").checked = true;
+	
+	//MBA Sean , set the txpower
+	if ( txpower_2g == "100" )
+		document.getElementById("2g_txpower").selectedIndex = 0;
+	else if ( txpower_2g == "90" )
+		document.getElementById("2g_txpower").selectedIndex = 1;
+	else if ( txpower_2g == "75" )
+		document.getElementById("2g_txpower").selectedIndex = 2;
+	else if ( txpower_2g == "50" )
+		document.getElementById("2g_txpower").selectedIndex = 3;
+	else if ( txpower_2g == "25" )
+		document.getElementById("2g_txpower").selectedIndex = 4;
+	else
+		document.getElementById("2g_txpower").selectedIndex = 5;
+
+	if ( txpower_5g == "100" )
+		document.getElementById("5g_txpower").selectedIndex = 0;
+	else if ( txpower_5g == "90" )
+		document.getElementById("5g_txpower").selectedIndex = 1;
+	else if ( txpower_5g == "75" )
+		document.getElementById("5g_txpower").selectedIndex = 2;
+	else if ( txpower_5g == "50" )
+		document.getElementById("5g_txpower").selectedIndex = 3;
+	else if ( txpower_5g == "25" )
+		document.getElementById("5g_txpower").selectedIndex = 4;
+	else
+		document.getElementById("5g_txpower").selectedIndex = 5;		
+
+	//MBA Sean , set the guest_ssid_seperation
+	if ( guest_ssid_seperation == "1")
+		document.getElementById("guest_ssid_seperation_enable").checked = true;
+	else
+		document.getElementById("guest_ssid_seperation_disable").checked = true;
+		
+	//MBA Sean , set the igmpsnoop
+	if ( igmpsnoop == "1")
+		document.getElementById("igmpsnoop_enable").checked = true;
+	else
+		document.getElementById("igmpsnoop_disable").checked = true;
+		
+	//MBA Sean , set the auto_disassociation
+	if ( auto_disassociation == "1")
+		document.getElementById("auto_disassociation_enable").checked = true;
+	else
+		document.getElementById("auto_disassociation_disable").checked = true;
+		
+	//MBA Sean , set the beamforming
+	if ( beamforming == "3")
+		document.getElementById("beamforming_enable").checked = true;
+	else
+		document.getElementById("beamforming_disable").checked = true;
+		
+}
+</script>
+
+<div id="content">
+<form id="content_send" name="advanced_settings">
+<blockquote>
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+
+<p><%:These settings are for advanced users who have a sufficient knowledge about wireless LAN.%>.</p>
+
+<table border=0 width="500" cellspacing=3>
+<tr><td width="35%" class="background"><%:Beacon Interval%> :</td>
+<td width="65%">&nbsp;<input type="text" name="beacon_interval" id="beacon_interval" size="10" maxlength="4" value="<%=uci.get("wireless", device_2g, "beacon")%>">&nbsp;<%:(40 - 1000ms)%></td></tr>
+</table>
+
+<table border=0 width="500" cellspacing=3>
+<tr><td width="35%" class="background"><%:DTIM Period%> :</td>
+<td width="65%">&nbsp;<input type="text" name="dtim_period" id="dtim_period" size="10" maxlength="3" value="<%=uci.get("wireless", device_2g, "dtim")%>" >&nbsp;(1 - 255)</td></tr>
+</table>
+
+<table border=0 width="500" cellspacing=3>
+<tr>
+<td width="35%" class="background"><%:Bandwidth (2.4G)%> :&nbsp;</td>
+<td width="65%">&nbsp;
+<input type="radio" value="1" name="2g_bandwidth" id="2g_bandwidth_40"><%:20/40 MHz%>&nbsp;&nbsp;
+<input type="radio" value="0" name="2g_bandwidth" id="2g_bandwidth_20"><%:20 MHz%></font>
+</td>
+</tr>
+</table>
+
+
+<table border=0 width="500" cellspacing=3>
+<tr>
+<td width="35%" class="background"><%:Bandwidth (5G)%> :&nbsp;</td>
+<td width="65%">&nbsp;
+<input type="radio" value="2" name="5g_bandwidth" id="5g_bandwidth_80"><%:20/40/80 MHz%>&nbsp;&nbsp; 
+<input type="radio" value="1" name="5g_bandwidth" id="5g_bandwidth_40"><%:20/40 MHz%>&nbsp;&nbsp;
+<input type="radio" value="0" name="5g_bandwidth" id="5g_bandwidth_20"><%:20 MHz%></font>&nbsp;&nbsp;
+</td>
+</tr>
+</table>
+
+<table border=0 width="500" cellspacing=3>
+<tr><td width="35%" class="background"><%:Txpower (2.4G)%> :&nbsp;</td>
+<td width="65%">&nbsp;<select size="1" name="2g_txpower" id="2g_txpower">
+<option value=100>100%</option>
+<option value=90>90%</option>
+<option value=75>75%</option>
+<option value=50>50%</option>
+<option value=25>25%</option>
+<option value=10>10%</option>
+</select></td></tr>
+</table>
+
+<table border=0 width="500" cellspacing=3>
+<tr><td width="35%" class="background"><%:Txpower (5G)%> :&nbsp;</td>
+<td width="65%">&nbsp;<select size="1" name="5g_txpower" id="5g_txpower">
+<option value=100>100%</option>
+<option value=90>90%</option>
+<option value=75>75%</option>
+<option value=50>50%</option>
+<option value=25>25%</option>
+<option value=10>10%</option>
+</select></td></tr>
+</table>
+
+<table border=0 width="500" cellspacing=3>
+<tr>
+<td width="35%" class="background"><%:IGMP Snooping%> :&nbsp;</td>
+<td width="65%">&nbsp;
+<input type="radio" name="igmpsnoop" id="igmpsnoop_enable" value="1"><%:Enable%>&nbsp;&nbsp;
+<input type="radio" name="igmpsnoop" id="igmpsnoop_disable" value="0"><%:Disable%>&nbsp;&nbsp;
+</td>
+</tr>
+</table>
+
+<table border=0 width="500" cellspacing=3>
+<tr>
+<td width="35%" class="background">
+<%:Guest SSID Seperation%> :&nbsp;
+</td>
+<td width="65%">&nbsp;
+<input type="radio" name="guest_ssid_seperation" id="guest_ssid_seperation_enable" value="1"><%:Enable%>&nbsp;&nbsp;
+<input type="radio" name="guest_ssid_seperation" id="guest_ssid_seperation_disable" value="0"><%:Disable%>&nbsp;&nbsp;
+</td>
+</tr>
+</table>
+
+<table border=0 width="500" cellspacing=3>
+<tr>
+<td width="35%" class="background">
+<%:Weak signal client auto disassociation%> :&nbsp;
+</td>
+<td width="65%">&nbsp;
+<input type="radio" name="auto_disassociation" id="auto_disassociation_enable" value="1"><%:Enable%>&nbsp;&nbsp;
+<input type="radio" name="auto_disassociation" id="auto_disassociation_disable" value="0"><%:Disable%>&nbsp;&nbsp;
+</td>
+</tr>
+</table>
+
+<table border=0 width="500" cellspacing=3>
+<tr>
+<td width="35%" class="background">
+<%:Beamforming%> :&nbsp;
+</td>
+<td width="65%">&nbsp;
+<input type="radio" name="beamforming" id="beamforming_enable" value="3"><%:Enable%>&nbsp;&nbsp;
+<input type="radio" name="beamforming" id="beamforming_disable" value="0"><%:Disable%>&nbsp;&nbsp;
+</td>
+</tr>
+</table>
+
+<!-- MBA SW Sean, Buton template -->
+<br>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" align="right">
+	<tbody>
+		<tr><td align="right">
+		<input type="button" value="<%:Apply%>" onclick="btnApply()" width="105">
+		<input type="hidden" name="apply" value="apply">
+		<input type="button" value="<%:Cancel%>" onclick="btnCancel()" width="105">
+
+		</td>
+		</tr>
+	</tbody>
+</table>
+</blockquote>
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+</form> 
+</div>
+
+<%+footer%>

@@ -1,0 +1,2999 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "128bits"
+msgstr ""
+
+msgid "16_digit_Hex"
+msgstr ""
+
+msgid "32_digit_Hex"
+msgstr ""
+
+msgid "40_digit_Hex"
+msgstr ""
+
+msgid "48_digit_Hex"
+msgstr ""
+
+msgid "64bits"
+msgstr ""
+
+msgid "APN"
+msgstr ""
+
+msgid "APN_1"
+msgstr ""
+
+msgid "APN_2"
+msgstr ""
+
+msgid "APN_Error_1"
+msgstr ""
+
+msgid "APN_Error_2"
+msgstr ""
+
+msgid "APN_Name"
+msgstr ""
+
+msgid "APN_Setup"
+msgstr ""
+
+msgid "Abu_Dhabi"
+msgstr ""
+
+msgid "Access_Status"
+msgstr ""
+
+msgid "Action"
+msgstr ""
+
+msgid "ActiveX"
+msgstr ""
+
+msgid "Add"
+msgstr ""
+
+msgid "Add_Firewall_Rule"
+msgstr ""
+
+msgid "Add_Rule"
+msgstr ""
+
+msgid "Add_Static_Route"
+msgstr ""
+
+msgid "Address_Type"
+msgstr ""
+
+msgid "Adelaide"
+msgstr ""
+
+msgid "Advanced"
+msgstr ""
+
+msgid "Aggressive"
+msgstr ""
+
+msgid "Alaska"
+msgstr ""
+
+msgid "Algorithm"
+msgstr ""
+
+msgid "All"
+msgstr ""
+
+msgid "Allow_Through_IPSec_Tunnel"
+msgstr ""
+
+msgid "Almaty"
+msgstr ""
+
+msgid "Altlantic_Time"
+msgstr ""
+
+msgid "Amsterdam"
+msgstr ""
+
+msgid "Application_List"
+msgstr ""
+
+msgid "Application_Rules_Summary"
+msgstr ""
+
+msgid "Apply"
+msgstr ""
+
+msgid "April"
+msgstr ""
+
+msgid "Arizona"
+msgstr ""
+
+msgid "Astana"
+msgstr ""
+
+msgid "Athens"
+msgstr ""
+
+msgid "Auckland"
+msgstr ""
+
+msgid "August"
+msgstr ""
+
+msgid "Authentication_Algorithm"
+msgstr ""
+
+msgid "Authentication_Key"
+msgstr ""
+
+msgid "Authentication_Method"
+msgstr ""
+
+msgid "Auto_APN"
+msgstr ""
+
+msgid "Auto_Subnet_Configuration"
+msgstr ""
+
+msgid "Azores"
+msgstr ""
+
+msgid "Back"
+msgstr ""
+
+msgid "Backup_Restore"
+msgstr ""
+
+msgid "Baghdad"
+msgstr ""
+
+msgid "Baku"
+msgstr ""
+
+msgid "Bandwidth_MGMT"
+msgstr ""
+
+msgid "Bandwidth_MGMT_Error_1"
+msgstr ""
+
+msgid "Bandwidth_MGMT_Error_2"
+msgstr ""
+
+msgid "Bandwidth_MGMT_Note"
+msgstr ""
+
+msgid "Bangkok"
+msgstr ""
+
+msgid "Battlenet"
+msgstr ""
+
+msgid "Beijing"
+msgstr ""
+
+msgid "Belgrade"
+msgstr ""
+
+msgid "Bogota"
+msgstr ""
+
+msgid "Brasilia"
+msgstr ""
+
+msgid "Brisbane"
+msgstr ""
+
+msgid "Broadband"
+msgstr ""
+
+msgid "Brussels"
+msgstr ""
+
+msgid "Bucharest"
+msgstr ""
+
+msgid "Buenos_Aires"
+msgstr ""
+
+msgid "CF_Error_1"
+msgstr ""
+
+msgid "CF_Error_2"
+msgstr ""
+
+msgid "CF_Error_3"
+msgstr ""
+
+msgid "CF_Error_4"
+msgstr ""
+
+msgid "CFmsg"
+msgstr ""
+
+msgid "Canberra"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Cannot_get_the_WAN_MAC_Address"
+msgstr ""
+
+msgid "Caracas"
+msgstr ""
+
+msgid "Casablanca"
+msgstr ""
+
+msgid "Category"
+msgstr ""
+
+msgid "Central_America"
+msgstr ""
+
+msgid "Central_Time"
+msgstr ""
+
+msgid "Change_To_Server"
+msgstr ""
+
+msgid "Chennai"
+msgstr ""
+
+msgid "Chihuahua"
+msgstr ""
+
+msgid "Chinese"
+msgstr ""
+
+msgid "Clear_All"
+msgstr ""
+
+msgid "Client_List"
+msgstr ""
+
+msgid "Clone_the_computer_MAC_address"
+msgstr ""
+
+msgid "Configuration"
+msgstr ""
+
+msgid "Connection_Name"
+msgstr ""
+
+msgid "Connection_Type"
+msgstr ""
+
+msgid "Content_filter"
+msgstr ""
+
+msgid "Cookies"
+msgstr ""
+
+msgid "Current_IPSec_Security_Association"
+msgstr ""
+
+msgid "DHCP_Client_Table"
+msgstr ""
+
+msgid "DHCP_Error_1"
+msgstr ""
+
+msgid "DHCP_Error_2"
+msgstr ""
+
+msgid "DHCP_Error_3"
+msgstr ""
+
+msgid "DHCP_Error_4"
+msgstr ""
+
+msgid "DHCP_Error_5"
+msgstr ""
+
+msgid "DHCP_Error_6"
+msgstr ""
+
+msgid "DHCP_PoolSizes_Error_1"
+msgstr ""
+
+msgid "DHCP_PoolSizes_Error_2"
+msgstr ""
+
+msgid "DHCP_PoolSizes_Error_3"
+msgstr ""
+
+msgid "DHCP_PoolSizes_Error_4"
+msgstr ""
+
+msgid "DHCP_Server"
+msgstr ""
+
+msgid "DHCP_Table"
+msgstr ""
+
+msgid "DNS_Relay"
+msgstr ""
+
+msgid "DNS_Server"
+msgstr ""
+
+msgid "DNS_Servers_Assigned_by_DHCP_Server"
+msgstr ""
+
+msgid "Dashboard"
+msgstr ""
+
+msgid "December"
+msgstr ""
+
+msgid "Default_Server"
+msgstr ""
+
+msgid "Default_Server_Setup"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "DestIP"
+msgstr ""
+
+msgid "DestPortRange"
+msgstr ""
+
+msgid "Dest_IP_Address"
+msgstr ""
+
+msgid "Destination"
+msgstr ""
+
+msgid "Destination_Address"
+msgstr ""
+
+msgid "Destination_IP_Address"
+msgstr ""
+
+msgid "Destination_Port"
+msgstr ""
+
+msgid "Destination_Subnet_Netmask"
+msgstr ""
+
+msgid "Deutsch"
+msgstr ""
+
+msgid "Direction"
+msgstr ""
+
+msgid "Disable"
+msgstr ""
+
+msgid "Domain_Name"
+msgstr ""
+
+msgid "Domain_Name_or_IP_Address"
+msgstr ""
+
+msgid "Downstream_Bandwidth"
+msgstr ""
+
+msgid "Dynamic_DNS"
+msgstr ""
+
+msgid "Dynamic_DNS_Internet_IP"
+msgstr ""
+
+msgid "Dynamic_DNS_Msg_1"
+msgstr ""
+
+msgid "Dynamic_DNS_Real_WAN_IP"
+msgstr ""
+
+msgid "Dynamic_DNS_Setup"
+msgstr ""
+
+msgid "Dynamic_DNS_WAN_IP"
+msgstr ""
+
+msgid "E_Mail"
+msgstr ""
+
+msgid "E_mail_POP3"
+msgstr ""
+
+msgid "E_mail_SMTP"
+msgstr ""
+
+msgid "Eastern_Time"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "Ekaterinburg"
+msgstr ""
+
+msgid "Enable"
+msgstr ""
+
+msgid "Enable_Auto_IP_Change_Mode"
+msgstr ""
+
+msgid "Enable_Bandwidth_Management"
+msgstr ""
+
+msgid "Enable_Firewall"
+msgstr ""
+
+msgid "Enable_Firewall_Rule"
+msgstr ""
+
+msgid "Enable_URL_Keyword_Blocking"
+msgstr ""
+
+msgid "Enable_WOL_over_WAN"
+msgstr ""
+
+msgid "Encap_dot"
+msgstr ""
+
+msgid "Encapsulation"
+msgstr ""
+
+msgid "Encapsulation_Mode"
+msgstr ""
+
+msgid "Encryption_Algorithm"
+msgstr ""
+
+msgid "Encryption_Key"
+msgstr ""
+
+msgid "End_Port"
+msgstr ""
+
+msgid "English"
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "Espanol"
+msgstr ""
+
+msgid "FTP"
+msgstr ""
+
+msgid "Factory_default"
+msgstr ""
+
+msgid "February"
+msgstr ""
+
+msgid "Fiji"
+msgstr ""
+
+msgid "Firewall"
+msgstr ""
+
+msgid "Firewall_Error_1"
+msgstr ""
+
+msgid "Firewall_Error_2"
+msgstr ""
+
+msgid "Firewall_Error_3"
+msgstr ""
+
+msgid "Firewall_Error_4"
+msgstr ""
+
+msgid "Firewall_Error_5"
+msgstr ""
+
+msgid "Firewall_Rule"
+msgstr ""
+
+msgid "Firewall_Setup"
+msgstr ""
+
+msgid "Firmware_Upgrade"
+msgstr ""
+
+msgid "First_DNS_Server"
+msgstr ""
+
+msgid "Francais"
+msgstr ""
+
+msgid "From_LAN_WLAN"
+msgstr ""
+
+msgid "From_WAN"
+msgstr ""
+
+msgid "Game_Console"
+msgstr ""
+
+msgid "Gateway"
+msgstr ""
+
+msgid "Gateway_IP_Address"
+msgstr ""
+
+msgid "Gateway_IP_address"
+msgstr ""
+
+msgid "General"
+msgstr ""
+
+msgid "Get_automatically_from_ISP"
+msgstr ""
+
+msgid "Greenwich"
+msgstr ""
+
+msgid "Guadalajara"
+msgstr ""
+
+msgid "Guam"
+msgstr ""
+
+msgid "HTTPS"
+msgstr ""
+
+msgid "Hawaii"
+msgstr ""
+
+msgid "Helsinki"
+msgstr ""
+
+msgid "Hex"
+msgstr ""
+
+msgid "Host_Name"
+msgstr ""
+
+msgid "ICMP"
+msgstr ""
+
+msgid "IDLE_Timeout_second"
+msgstr ""
+
+msgid "IGMP_v1_v2"
+msgstr ""
+
+msgid "IP"
+msgstr ""
+
+msgid "IPSec"
+msgstr ""
+
+msgid "IPSec_Algorithm"
+msgstr ""
+
+msgid "IPSec_Keying_Mode"
+msgstr ""
+
+msgid "IPSec_Protocol"
+msgstr ""
+
+msgid "IPSec_VPN"
+msgstr ""
+
+msgid "IP_Address"
+msgstr ""
+
+msgid "IP_Alias"
+msgstr ""
+
+msgid "IP_Error_1"
+msgstr ""
+
+msgid "IP_Error_2"
+msgstr ""
+
+msgid "IP_Error_3"
+msgstr ""
+
+msgid "IP_Error_4"
+msgstr ""
+
+msgid "IP_Pool_Starting_Address"
+msgstr ""
+
+msgid "IP_Subnet_Mask"
+msgstr ""
+
+msgid "IPoE"
+msgstr ""
+
+msgid "IPv6"
+msgstr ""
+
+msgid "IPv6_IPv4_Mode"
+msgstr ""
+
+msgid "ISP_Parameters_for_Internet_Access"
+msgstr ""
+
+msgid "Incoming"
+msgstr ""
+
+msgid "Indiana"
+msgstr ""
+
+msgid "Instant_Messenger"
+msgstr ""
+
+msgid "International"
+msgstr ""
+
+msgid "Irkutsk"
+msgstr ""
+
+msgid "Islamabad"
+msgstr ""
+
+msgid "Italiano"
+msgstr ""
+
+msgid "January"
+msgstr ""
+
+msgid "Java"
+msgstr ""
+
+msgid "Jerusalem"
+msgstr ""
+
+msgid "July"
+msgstr ""
+
+msgid "June"
+msgstr ""
+
+msgid "Kabul"
+msgstr ""
+
+msgid "Katmandu"
+msgstr ""
+
+msgid "Keep_Alive"
+msgstr ""
+
+msgid "Key_Group"
+msgstr ""
+
+msgid "Keyword"
+msgstr ""
+
+msgid "Keyword_Blocking"
+msgstr ""
+
+msgid "Keyword_List"
+msgstr ""
+
+msgid "Krasnoyarsk"
+msgstr ""
+
+msgid "LAN"
+msgstr ""
+
+msgid "LAN_Error_1"
+msgstr ""
+
+msgid "LAN_Error_2"
+msgstr ""
+
+msgid "LAN_WAN"
+msgstr ""
+
+msgid "LTE"
+msgstr ""
+
+msgid "LTE_BandWidth"
+msgstr ""
+
+msgid "LTE_CellID"
+msgstr ""
+
+msgid "LTE_ConnectionUpTime"
+msgstr ""
+
+msgid "LTE_Connection_Status"
+msgstr ""
+
+msgid "LTE_DeviceFWVersion"
+msgstr ""
+
+msgid "LTE_DeviceIMEI"
+msgstr ""
+
+msgid "LTE_Device_Status"
+msgstr ""
+
+msgid "LTE_DownThroughput"
+msgstr ""
+
+msgid "LTE_DuplexingMode"
+msgstr ""
+
+msgid "LTE_DynamicAPN_1"
+msgstr ""
+
+msgid "LTE_DynamicAPN_2"
+msgstr ""
+
+msgid "LTE_EARFCN"
+msgstr ""
+
+msgid "LTE_FWVersion"
+msgstr ""
+
+msgid "LTE_FrequencyBand"
+msgstr ""
+
+msgid "LTE_GlobalCellID"
+msgstr ""
+
+msgid "LTE_IMEI"
+msgstr ""
+
+msgid "LTE_IMSI"
+msgstr ""
+
+msgid "LTE_ModuleFWVersion"
+msgstr ""
+
+msgid "LTE_PhysicalCellID"
+msgstr ""
+
+msgid "LTE_RSRP"
+msgstr ""
+
+msgid "LTE_RSRQ"
+msgstr ""
+
+msgid "LTE_ReceivePDU"
+msgstr ""
+
+msgid "LTE_SIMCardIMSI"
+msgstr ""
+
+msgid "LTE_SINR"
+msgstr ""
+
+msgid "LTE_ServiceProvider"
+msgstr ""
+
+msgid "LTE_SignalStrength"
+msgstr ""
+
+msgid "LTE_Status"
+msgstr ""
+
+msgid "LTE_TranmissionMode"
+msgstr ""
+
+msgid "LTE_TransmitPDU"
+msgstr ""
+
+msgid "LTE_UPThroughput"
+msgstr ""
+
+msgid "Language"
+msgstr ""
+
+msgid "LengthErrMsgPIN"
+msgstr ""
+
+msgid "LengthErrMsgPUK"
+msgstr ""
+
+msgid "Local_Addr_dot"
+msgstr ""
+
+msgid "Local_Address"
+msgstr ""
+
+msgid "Local_Address_End_Mask"
+msgstr ""
+
+msgid "Local_Content"
+msgstr ""
+
+msgid "Local_ID_Type"
+msgstr ""
+
+msgid "Local_Policy"
+msgstr ""
+
+msgid "Log"
+msgstr ""
+
+msgid "MAC_Address"
+msgstr ""
+
+msgid "MACaddresse"
+msgstr ""
+
+msgid "MLG_MLG_YouCanTryOnMoreTimeNewPINConfirmErrMsg_LTEWan"
+msgstr ""
+
+msgid "MLG_PINRemainAttempts_LTEWan"
+msgstr ""
+
+msgid "MLG_PIN_Confirm_New_PIN_LTEWan"
+msgstr ""
+
+msgid "MLG_PIN_InputPIN_LTEWan"
+msgstr ""
+
+msgid "MLG_PIN_Management_LTEWan"
+msgstr ""
+
+msgid "MLG_PIN_Modification_LTEWan"
+msgstr ""
+
+msgid "MLG_PIN_New_PIN_LTEWan"
+msgstr ""
+
+msgid "MLG_PIN_Old_PIN_LTEWan"
+msgstr ""
+
+msgid "MLG_PIN_Verification_LTEWan"
+msgstr ""
+
+msgid "MLG_PUKRemainAttempts_LTEWan"
+msgstr ""
+
+msgid "MLG_PUK_LTEWan"
+msgstr ""
+
+msgid "MLG_SIMCard_Status_LTEWan"
+msgstr ""
+
+msgid "MLG_Save_my_PIN_LTEWan"
+msgstr ""
+
+msgid "MLG_ThePINIsEmptyErrMsg_LTEWan"
+msgstr ""
+
+msgid "MLG_ThePINIsInvalidErrMsg_LTEWan"
+msgstr ""
+
+msgid "MLG_YouCanTryOnMoreTimePINErrMsg_LTEWan"
+msgstr ""
+
+msgid "MLG_YouCanTryOnMoreTimePUKErrMsg_LTEWan"
+msgstr ""
+
+msgid "MSN_Game_Zone"
+msgstr ""
+
+msgid "MTU"
+msgstr ""
+
+msgid "Magadan"
+msgstr ""
+
+msgid "Main"
+msgstr ""
+
+msgid "Maintenance"
+msgstr ""
+
+msgid "Management"
+msgstr ""
+
+msgid "Manual"
+msgstr ""
+
+msgid "March"
+msgstr ""
+
+msgid "Max_NAT_Firewall_Session_Per_User"
+msgstr ""
+
+msgid "May"
+msgstr ""
+
+msgid "Message"
+msgstr ""
+
+msgid "Mid_Atlantic"
+msgstr ""
+
+msgid "Midway_Island"
+msgstr ""
+
+msgid "Mode"
+msgstr ""
+
+msgid "Modify"
+msgstr ""
+
+msgid "Monitor"
+msgstr ""
+
+msgid "Moscow"
+msgstr ""
+
+msgid "Mountain_Time"
+msgstr ""
+
+msgid "Multicast_Setup"
+msgstr ""
+
+msgid "My_IP_Address"
+msgstr ""
+
+msgid "My_WAN_IP_Address"
+msgstr ""
+
+msgid "NAT"
+msgstr ""
+
+msgid "NAT_Error_1"
+msgstr ""
+
+msgid "NAT_Error_10"
+msgstr ""
+
+msgid "NAT_Error_11"
+msgstr ""
+
+msgid "NAT_Error_12"
+msgstr ""
+
+msgid "NAT_Error_13"
+msgstr ""
+
+msgid "NAT_Error_14"
+msgstr ""
+
+msgid "NAT_Error_2"
+msgstr ""
+
+msgid "NAT_Error_3"
+msgstr ""
+
+msgid "NAT_Error_5"
+msgstr ""
+
+msgid "NAT_Error_6"
+msgstr ""
+
+msgid "NAT_Error_7"
+msgstr ""
+
+msgid "NAT_Error_8"
+msgstr ""
+
+msgid "NAT_Error_9"
+msgstr ""
+
+msgid "NAT_Msg_1"
+msgstr ""
+
+msgid "NAT_Msg_2"
+msgstr ""
+
+msgid "NAT_Msg_3"
+msgstr ""
+
+msgid "NAT_Msg_4"
+msgstr ""
+
+msgid "NAT_Traversal"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "NetMeeting"
+msgstr ""
+
+msgid "Network"
+msgstr ""
+
+msgid "Network_Address_Translation"
+msgstr ""
+
+msgid "Newfoundland"
+msgstr ""
+
+msgid "None"
+msgstr ""
+
+msgid "Note"
+msgstr ""
+
+msgid "November"
+msgstr ""
+
+msgid "Nuku_alofa"
+msgstr ""
+
+msgid "Obtain_an_IP_Address_Automatically"
+msgstr ""
+
+msgid "Obtained_From_ISP"
+msgstr ""
+
+msgid "October"
+msgstr ""
+
+msgid "Off"
+msgstr ""
+
+msgid "On"
+msgstr ""
+
+msgid "Others"
+msgstr ""
+
+msgid "PPP_Auto_Connect"
+msgstr ""
+
+msgid "PPP_Information"
+msgstr ""
+
+msgid "PPP_Password"
+msgstr ""
+
+msgid "PPP_Username"
+msgstr ""
+
+msgid "PPPoE"
+msgstr ""
+
+msgid "PPPoE_Service_Name"
+msgstr ""
+
+msgid "PPTP"
+msgstr ""
+
+msgid "PPTP_Auto_Connect"
+msgstr ""
+
+msgid "PPTP_Configuration"
+msgstr ""
+
+msgid "PPTP_Information"
+msgstr ""
+
+msgid "PPTP_Password"
+msgstr ""
+
+msgid "PPTP_SER_IP"
+msgstr ""
+
+msgid "PPTP_Username"
+msgstr ""
+
+msgid "Pacific_Time"
+msgstr ""
+
+msgid "Packet_Statistics"
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Peer_Content"
+msgstr ""
+
+msgid "Peer_ID_Type"
+msgstr ""
+
+msgid "Phase_1"
+msgstr ""
+
+msgid "Phase_2"
+msgstr ""
+
+msgid "PlayStation"
+msgstr ""
+
+msgid "Pool_Size"
+msgstr ""
+
+msgid "Port"
+msgstr ""
+
+msgid "Port_Error_1"
+msgstr ""
+
+msgid "Port_Error_2"
+msgstr ""
+
+msgid "Port_Error_3"
+msgstr ""
+
+msgid "Port_Error_4"
+msgstr ""
+
+msgid "Port_Forwarding"
+msgstr ""
+
+msgid "Port_Forwarding_Summary"
+msgstr ""
+
+msgid "Port_Porwarding"
+msgstr ""
+
+msgid "Port_Trigger"
+msgstr ""
+
+msgid "Port_Trigger_Rules"
+msgstr ""
+
+msgid "Pre_Shared_Key"
+msgstr ""
+
+msgid "Priority"
+msgstr ""
+
+msgid "Property"
+msgstr ""
+
+msgid "Protocol"
+msgstr ""
+
+msgid "Rangoon"
+msgstr ""
+
+msgid "Ready"
+msgstr ""
+
+msgid "Real_Audio"
+msgstr ""
+
+msgid "Refresh"
+msgstr ""
+
+msgid "Remote_Addr_dot"
+msgstr ""
+
+msgid "Remote_Address"
+msgstr ""
+
+msgid "Remote_Address_End_Mask"
+msgstr ""
+
+msgid "Remote_Gateway"
+msgstr ""
+
+msgid "Remote_MGMT"
+msgstr ""
+
+msgid "Remote_MGMT_Note_3"
+msgstr ""
+
+msgid "Remote_Policy"
+msgstr ""
+
+msgid "Reserve"
+msgstr ""
+
+msgid "Reset"
+msgstr ""
+
+msgid "Respond_to_Ping_on"
+msgstr ""
+
+msgid "Restrict_Web_Features"
+msgstr ""
+
+msgid "Route_Error_1"
+msgstr ""
+
+msgid "Route_Error_2"
+msgstr ""
+
+msgid "Route_Error_3"
+msgstr ""
+
+msgid "Route_Name"
+msgstr ""
+
+msgid "Rule_Configuration"
+msgstr ""
+
+msgid "SA_Life_Time"
+msgstr ""
+
+msgid "SA_Monitor"
+msgstr ""
+
+msgid "SIM"
+msgstr ""
+
+msgid "SPI"
+msgstr ""
+
+msgid "SSID_Select"
+msgstr ""
+
+msgid "Sarajevo"
+msgstr ""
+
+msgid "Saskatchewan"
+msgstr ""
+
+msgid "Second_DNS_Server"
+msgstr ""
+
+msgid "Seconds"
+msgstr ""
+
+msgid "Secure_Gateway_Address"
+msgstr ""
+
+msgid "Secured_Client_IP_Address"
+msgstr ""
+
+msgid "Security"
+msgstr ""
+
+msgid "Selected"
+msgstr ""
+
+msgid "Seoul"
+msgstr ""
+
+msgid "September"
+msgstr ""
+
+msgid "Server_IP_Address"
+msgstr ""
+
+msgid "Service"
+msgstr ""
+
+msgid "ServiceName"
+msgstr ""
+
+msgid "Service_Management"
+msgstr ""
+
+msgid "Service_Name"
+msgstr ""
+
+msgid "Service_Protocol"
+msgstr ""
+
+msgid "Service_Provider"
+msgstr ""
+
+msgid "Services"
+msgstr ""
+
+msgid "Set_WAN_MAC_Address"
+msgstr ""
+
+msgid "Singapore"
+msgstr ""
+
+msgid "Single_Address"
+msgstr ""
+
+msgid "SourceIP"
+msgstr ""
+
+msgid "SourcePortRange"
+msgstr ""
+
+msgid "Source_Address"
+msgstr ""
+
+msgid "Source_IP_Address"
+msgstr ""
+
+msgid "Source_Port"
+msgstr ""
+
+msgid "Source_Subnet_Netmask"
+msgstr ""
+
+msgid "Sri_Jayawardenepura"
+msgstr ""
+
+msgid "Start"
+msgstr ""
+
+msgid "Static_DHCP_Table"
+msgstr ""
+
+msgid "Static_IP_Address"
+msgstr ""
+
+msgid "Static_Route"
+msgstr ""
+
+msgid "Static_Route_Rules"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "Subnet_Address"
+msgstr ""
+
+msgid "Subnet_Mask"
+msgstr ""
+
+msgid "Systemrebooting"
+msgstr ""
+
+msgid "TCP"
+msgstr ""
+
+msgid "TCP_UDP"
+msgstr ""
+
+msgid "TFTP"
+msgstr ""
+
+msgid "Taipei"
+msgstr ""
+
+msgid "Tehran"
+msgstr ""
+
+msgid "Telnet"
+msgstr ""
+
+msgid "Third_DNS_Server"
+msgstr ""
+
+msgid "Time"
+msgstr ""
+
+msgid "Time_Msg_1"
+msgstr ""
+
+msgid "Time_Msg_10"
+msgstr ""
+
+msgid "Time_Msg_13"
+msgstr ""
+
+msgid "Time_Msg_15"
+msgstr ""
+
+msgid "Time_Msg_16"
+msgstr ""
+
+msgid "Time_Msg_17"
+msgstr ""
+
+msgid "Time_Msg_18"
+msgstr ""
+
+msgid "Time_Msg_19"
+msgstr ""
+
+msgid "Time_Msg_2"
+msgstr ""
+
+msgid "Time_Msg_3"
+msgstr ""
+
+msgid "Time_Msg_4"
+msgstr ""
+
+msgid "Time_Msg_5"
+msgstr ""
+
+msgid "Time_Msg_6"
+msgstr ""
+
+msgid "Time_Msg_7"
+msgstr ""
+
+msgid "Time_Msg_8"
+msgstr ""
+
+msgid "Time_Msg_9"
+msgstr ""
+
+msgid "Tokyo"
+msgstr ""
+
+msgid "Transport"
+msgstr ""
+
+msgid "Trigger"
+msgstr ""
+
+msgid "Trusted_Computer_IP_Address"
+msgstr ""
+
+msgid "Trusted_IP_Setup"
+msgstr ""
+
+msgid "Tunnel"
+msgstr ""
+
+msgid "UDP"
+msgstr ""
+
+msgid "UPnP"
+msgstr ""
+
+msgid "Upstream_Bandwidth"
+msgstr ""
+
+msgid "Use_Fixed_IP_Address"
+msgstr ""
+
+msgid "User_Defined"
+msgstr ""
+
+msgid "User_define"
+msgstr ""
+
+msgid "User_defined_Service"
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "VPN"
+msgstr ""
+
+msgid "VPN_Monitor"
+msgstr ""
+
+msgid "VPN_Passthrough"
+msgstr ""
+
+msgid "VPN_Summary"
+msgstr ""
+
+msgid "VoIP"
+msgstr ""
+
+msgid "VoIP_SIP"
+msgstr ""
+
+msgid "WAN"
+msgstr ""
+
+msgid "WAN_Error_11"
+msgstr ""
+
+msgid "WAN_Error_12"
+msgstr ""
+
+msgid "WAN_Error_13"
+msgstr ""
+
+msgid "WAN_Error_14"
+msgstr ""
+
+msgid "WAN_Error_15"
+msgstr ""
+
+msgid "WAN_Error_16"
+msgstr ""
+
+msgid "WAN_Error_17"
+msgstr ""
+
+msgid "WAN_Error_18"
+msgstr ""
+
+msgid "WAN_Error_19"
+msgstr ""
+
+msgid "WAN_Error_2"
+msgstr ""
+
+msgid "WAN_Error_20"
+msgstr ""
+
+msgid "WAN_Error_21"
+msgstr ""
+
+msgid "WAN_Error_22"
+msgstr ""
+
+msgid "WAN_Error_4"
+msgstr ""
+
+msgid "WAN_Error_5"
+msgstr ""
+
+msgid "WAN_Error_6"
+msgstr ""
+
+msgid "WAN_IP_Address_Assignment"
+msgstr ""
+
+msgid "WAN_MAC_Address"
+msgstr ""
+
+msgid "WAN_Status"
+msgstr ""
+
+msgid "WLAN_2_dot_4_G_Station_Status"
+msgstr ""
+
+msgid "WLAN_5_G_Station_Status"
+msgstr ""
+
+msgid "WWW"
+msgstr ""
+
+msgid "Wake_MAC_Address"
+msgstr ""
+
+msgid "Wake_On_LAN"
+msgstr ""
+
+msgid "Wake_On_LAN_over_WAN_Settings"
+msgstr ""
+
+msgid "Web_Proxy"
+msgstr ""
+
+msgid "Web_Surfing"
+msgstr ""
+
+msgid "West_Central_Africa"
+msgstr ""
+
+msgid "XBox_Live"
+msgstr ""
+
+msgid "_encryption"
+msgstr ""
+
+msgid "a_i_keepflash"
+msgstr ""
+
+msgid "a_i_keepflash1"
+msgstr ""
+
+msgid "a_i_luci1"
+msgstr ""
+
+msgid "a_i_ucicommit"
+msgstr ""
+
+msgid "a_i_ucicommit1"
+msgstr ""
+
+msgid "a_n_conntrack"
+msgstr ""
+
+msgid "a_n_conntrack_desc"
+msgstr ""
+
+msgid "a_n_i_bridge"
+msgstr ""
+
+msgid "a_n_i_bridge1"
+msgstr ""
+
+msgid "a_n_i_stp"
+msgstr ""
+
+msgid "a_n_i_stp1"
+msgstr ""
+
+msgid "a_n_ifaces1"
+msgstr ""
+
+msgid "a_n_r_netmask1"
+msgstr ""
+
+msgid "a_n_r_target1"
+msgstr ""
+
+msgid "a_n_r_target6"
+msgstr ""
+
+msgid "a_n_routes"
+msgstr ""
+
+msgid "a_n_routes1"
+msgstr ""
+
+msgid "a_n_routes_kernel4"
+msgstr ""
+
+msgid "a_n_routes_kernel6"
+msgstr ""
+
+msgid "a_n_routes_static4"
+msgstr ""
+
+msgid "a_n_routes_static6"
+msgstr ""
+
+msgid "a_n_switch"
+msgstr ""
+
+msgid "a_n_switch1"
+msgstr ""
+
+msgid "a_s_changepw"
+msgstr ""
+
+msgid "a_s_changepw1"
+msgstr ""
+
+msgid "a_s_changepw_changed"
+msgstr ""
+
+msgid "a_s_crontab"
+msgstr ""
+
+msgid "a_s_crontab1"
+msgstr ""
+
+msgid "a_s_desc"
+msgstr ""
+
+msgid "a_s_fstab"
+msgstr ""
+
+msgid "a_s_fstab_active"
+msgstr ""
+
+msgid "a_s_fstab_avail"
+msgstr ""
+
+msgid "a_s_fstab_device1"
+msgstr ""
+
+msgid "a_s_fstab_fs1"
+msgstr ""
+
+msgid "a_s_fstab_mountpoint"
+msgstr ""
+
+msgid "a_s_fstab_mountpoints"
+msgstr ""
+
+msgid "a_s_fstab_mountpoints1"
+msgstr ""
+
+msgid "a_s_fstab_swap1"
+msgstr ""
+
+msgid "a_s_fstab_used"
+msgstr ""
+
+msgid "a_s_p_ipkg"
+msgstr ""
+
+msgid "a_s_sshkeys"
+msgstr ""
+
+msgid "a_s_sshkeys1"
+msgstr ""
+
+msgid "a_srv_d_pwauth"
+msgstr ""
+
+msgid "a_srv_d_pwauth1"
+msgstr ""
+
+msgid "a_srv_dropbear1"
+msgstr ""
+
+msgid "a_srv_http1"
+msgstr ""
+
+msgid "a_srv_http_authrealm"
+msgstr ""
+
+msgid "a_srv_http_authrealm1"
+msgstr ""
+
+msgid "a_srv_http_config1"
+msgstr ""
+
+msgid "a_srv_http_keepalive"
+msgstr ""
+
+msgid "a_srv_http_path"
+msgstr ""
+
+msgid "a_srv_http_root"
+msgstr ""
+
+msgid "a_srv_http_timeout"
+msgstr ""
+
+msgid "a_srv_lucittpd"
+msgstr ""
+
+msgid "a_w_adhoc"
+msgstr ""
+
+msgid "a_w_ahdemo"
+msgstr ""
+
+msgid "a_w_ap"
+msgstr ""
+
+msgid "a_w_cacert"
+msgstr ""
+
+msgid "a_w_channel"
+msgstr ""
+
+msgid "a_w_client"
+msgstr ""
+
+msgid "a_w_create"
+msgstr ""
+
+msgid "a_w_eaptype"
+msgstr ""
+
+msgid "a_w_monitor"
+msgstr ""
+
+msgid "a_w_nasid"
+msgstr ""
+
+msgid "a_w_netmanual"
+msgstr ""
+
+msgid "a_w_network1"
+msgstr ""
+
+msgid "a_w_networks1"
+msgstr ""
+
+msgid "a_w_peapauth"
+msgstr ""
+
+msgid "a_w_peapidentity"
+msgstr ""
+
+msgid "a_w_peappassword"
+msgstr ""
+
+msgid "a_w_radiusport"
+msgstr ""
+
+msgid "a_w_radiussrv"
+msgstr ""
+
+msgid "a_w_tlsprivkey"
+msgstr ""
+
+msgid "a_w_tlsprivkeypwd"
+msgstr ""
+
+msgid "a_w_txpwr"
+msgstr ""
+
+msgid "a_w_wds"
+msgstr ""
+
+msgid "active_log_alert"
+msgstr ""
+
+msgid "addresses"
+msgstr ""
+
+msgid "admin_inactive_timer"
+msgstr ""
+
+msgid "aliases"
+msgstr ""
+
+msgid "all_logs"
+msgstr ""
+
+msgid "allow"
+msgstr ""
+
+msgid "apply"
+msgstr ""
+
+msgid "association_list"
+msgstr ""
+
+msgid "association_time"
+msgstr ""
+
+msgid "at"
+msgstr ""
+
+msgid "auth_method"
+msgstr ""
+
+msgid "auto"
+msgstr ""
+
+msgid "auto_channel_select"
+msgstr ""
+
+msgid "backup"
+msgstr ""
+
+msgid "bak_configure"
+msgstr ""
+
+msgid "bak_remind1"
+msgstr ""
+
+msgid "bak_remind2"
+msgstr ""
+
+msgid "bak_rst"
+msgstr ""
+
+msgid "broadcast"
+msgstr ""
+
+msgid "buttons"
+msgstr ""
+
+msgid "buttons_desc"
+msgstr ""
+
+msgid "cancel"
+msgstr ""
+
+msgid "cbi_select"
+msgstr ""
+
+msgid "channel"
+msgstr ""
+
+msgid "channel_mode"
+msgstr ""
+
+msgid "channel_select"
+msgstr ""
+
+msgid "channel_width"
+msgstr ""
+
+msgid "cidr6"
+msgstr ""
+
+msgid "configfile"
+msgstr ""
+
+msgid "confirm_password"
+msgstr ""
+
+msgid "confirmation"
+msgstr ""
+
+msgid "cpu_usage"
+msgstr ""
+
+msgid "current_date"
+msgstr ""
+
+msgid "current_date_time"
+msgstr ""
+
+msgid "current_ipsec"
+msgstr ""
+
+msgid "current_time"
+msgstr ""
+
+msgid "current_time_date"
+msgstr ""
+
+msgid "dashboard_data"
+msgstr ""
+
+msgid "dashboard_item"
+msgstr ""
+
+msgid "day"
+msgstr ""
+
+msgid "daylight_savings"
+msgstr ""
+
+msgid "deny"
+msgstr ""
+
+msgid "design"
+msgstr ""
+
+msgid "destination"
+msgstr ""
+
+msgid "device"
+msgstr ""
+
+msgid "device_host_name"
+msgstr ""
+
+msgid "device_info"
+msgstr ""
+
+msgid "device_model_name"
+msgstr ""
+
+msgid "device_status"
+msgstr ""
+
+msgid "dhcp_host_name"
+msgstr ""
+
+msgid "dhcp_host_status"
+msgstr ""
+
+msgid "dhcp_host_status_on"
+msgstr ""
+
+msgid "dhcp_leases"
+msgstr ""
+
+msgid "dhcp_leases_active"
+msgstr ""
+
+msgid "dhcp_reserve"
+msgstr ""
+
+msgid "dhcp_timeremain"
+msgstr ""
+
+msgid "disable"
+msgstr ""
+
+msgid "dnsserver"
+msgstr ""
+
+msgid "do_fw_upgrade"
+msgstr ""
+
+msgid "domain_name"
+msgstr ""
+
+msgid "enable"
+msgstr ""
+
+msgid "encryption"
+msgstr ""
+
+msgid "end_date"
+msgstr ""
+
+msgid "factory_default"
+msgstr ""
+
+msgid "factory_dhcp"
+msgstr ""
+
+msgid "factory_lan_ip"
+msgstr ""
+
+msgid "factory_pwd"
+msgstr ""
+
+msgid "factory_remind1"
+msgstr ""
+
+msgid "factory_reset"
+msgstr ""
+
+msgid "file_path"
+msgstr ""
+
+msgid "file_upload"
+msgstr ""
+
+msgid "filesystem"
+msgstr ""
+
+msgid "filter_action"
+msgstr ""
+
+msgid "frag_threshold"
+msgstr ""
+
+msgid "fw_file_check"
+msgstr ""
+
+msgid "fw_remind1"
+msgstr ""
+
+msgid "fw_remind2"
+msgstr ""
+
+msgid "fw_remind3"
+msgstr ""
+
+msgid "fw_remind4"
+msgstr ""
+
+msgid "fw_remind5"
+msgstr ""
+
+msgid "fw_upgrade"
+msgstr ""
+
+msgid "fw_upgrading"
+msgstr ""
+
+msgid "fw_upgrading_message"
+msgstr ""
+
+msgid "fw_version"
+msgstr ""
+
+msgid "gateway"
+msgstr ""
+
+msgid "gateway6"
+msgstr ""
+
+msgid "general"
+msgstr ""
+
+msgid "get_from_server"
+msgstr ""
+
+msgid "hide_ssid"
+msgstr ""
+
+msgid "hostname"
+msgstr ""
+
+msgid "hostnames"
+msgstr ""
+
+msgid "hostnames_address"
+msgstr ""
+
+msgid "hostnames_entries"
+msgstr ""
+
+msgid "hostnames_hostname"
+msgstr ""
+
+msgid "hr"
+msgstr ""
+
+msgid "idle_mode"
+msgstr ""
+
+msgid "iface"
+msgstr ""
+
+msgid "iface_down"
+msgstr ""
+
+msgid "iface_lan"
+msgstr ""
+
+msgid "iface_status"
+msgstr ""
+
+msgid "iface_up"
+msgstr ""
+
+msgid "iface_wan"
+msgstr ""
+
+msgid "iface_wlan"
+msgstr ""
+
+msgid "interface"
+msgstr ""
+
+msgid "interface_status"
+msgstr ""
+
+msgid "interfaces"
+msgstr ""
+
+msgid "interval_select_none"
+msgstr ""
+
+msgid "intra_bss"
+msgstr ""
+
+msgid "ip6address"
+msgstr ""
+
+msgid "ip_addr"
+msgstr ""
+
+msgid "ip_subnet_mask"
+msgstr ""
+
+msgid "ipaddress"
+msgstr ""
+
+msgid "iwscan"
+msgstr ""
+
+msgid "iwscan1"
+msgstr ""
+
+msgid "iwscan_encr"
+msgstr ""
+
+msgid "iwscan_link"
+msgstr ""
+
+msgid "iwscan_noise"
+msgstr ""
+
+msgid "iwscan_signal"
+msgstr ""
+
+msgid "key"
+msgstr ""
+
+msgid "lan_info"
+msgstr ""
+
+msgid "language"
+msgstr ""
+
+msgid "language_selection"
+msgstr ""
+
+msgid "leds"
+msgstr ""
+
+msgid "leds_desc"
+msgstr ""
+
+msgid "limit"
+msgstr ""
+
+msgid "link"
+msgstr ""
+
+msgid "load"
+msgstr ""
+
+msgid "log"
+msgstr ""
+
+msgid "log_SysAlert"
+msgstr ""
+
+msgid "log_SysCritical"
+msgstr ""
+
+msgid "log_SysDebug"
+msgstr ""
+
+msgid "log_SysEmergency"
+msgstr ""
+
+msgid "log_SysError"
+msgstr ""
+
+msgid "log_SysInfo"
+msgstr ""
+
+msgid "log_SysNotice"
+msgstr ""
+
+msgid "log_SysWarning"
+msgstr ""
+
+msgid "log_clear"
+msgstr ""
+
+msgid "log_display"
+msgstr ""
+
+msgid "log_refresh"
+msgstr ""
+
+msgid "log_setting"
+msgstr ""
+
+msgid "log_summary"
+msgstr ""
+
+msgid "log_summary_msg"
+msgstr ""
+
+msgid "log_summary_time"
+msgstr ""
+
+msgid "luci_ethers"
+msgstr ""
+
+msgid "m_i_memory"
+msgstr ""
+
+msgid "m_i_processor"
+msgstr ""
+
+msgid "m_i_systemtime"
+msgstr ""
+
+msgid "m_i_uptime"
+msgstr ""
+
+msgid "mac_addr"
+msgstr ""
+
+msgid "mac_addr_filter"
+msgstr ""
+
+msgid "mac_filter"
+msgstr ""
+
+msgid "mac_filter_summary"
+msgstr ""
+
+msgid "macaddress"
+msgstr ""
+
+msgid "main_Msg_1"
+msgstr ""
+
+msgid "main_Msg_2"
+msgstr ""
+
+msgid "main_Msg_3"
+msgstr ""
+
+msgid "main_Msg_4"
+msgstr ""
+
+msgid "main_Msg_5"
+msgstr ""
+
+msgid "main_Msg_6"
+msgstr ""
+
+msgid "main_Msg_7"
+msgstr ""
+
+msgid "main_general"
+msgstr ""
+
+msgid "main_language"
+msgstr ""
+
+msgid "main_password"
+msgstr ""
+
+msgid "main_remind1"
+msgstr ""
+
+msgid "maintenance"
+msgstr ""
+
+msgid "manpage"
+msgstr ""
+
+msgid "mem_buffered"
+msgstr ""
+
+msgid "mem_cached"
+msgstr ""
+
+msgid "mem_free"
+msgstr ""
+
+msgid "memory_usage"
+msgstr ""
+
+msgid "metric"
+msgstr ""
+
+msgid "min"
+msgstr ""
+
+msgid "mode"
+msgstr ""
+
+msgid "monitor"
+msgstr ""
+
+msgid "monitor_dhcp_table"
+msgstr ""
+
+msgid "more_ap"
+msgstr ""
+
+msgid "msg_config"
+msgstr ""
+
+msgid "msg_confirm_1"
+msgstr ""
+
+msgid "msg_relogin"
+msgstr ""
+
+msgid "name"
+msgstr ""
+
+msgid "netmask"
+msgstr ""
+
+msgid "network"
+msgstr ""
+
+msgid "network_interface_apn"
+msgstr ""
+
+msgid "network_interface_connect"
+msgstr ""
+
+msgid "network_interface_connect_desc"
+msgstr ""
+
+msgid "network_interface_defaultroute"
+msgstr ""
+
+msgid "network_interface_defaultroute_desc"
+msgstr ""
+
+msgid "network_interface_demand"
+msgstr ""
+
+msgid "network_interface_demand_desc"
+msgstr ""
+
+msgid "network_interface_device"
+msgstr ""
+
+msgid "network_interface_device_desc"
+msgstr ""
+
+msgid "network_interface_disconnect"
+msgstr ""
+
+msgid "network_interface_disconnect_desc"
+msgstr ""
+
+msgid "network_interface_encaps"
+msgstr ""
+
+msgid "network_interface_fwzone"
+msgstr ""
+
+msgid "network_interface_fwzone_desc"
+msgstr ""
+
+msgid "network_interface_ipv6"
+msgstr ""
+
+msgid "network_interface_keepalive"
+msgstr ""
+
+msgid "network_interface_keepalive_desc"
+msgstr ""
+
+msgid "network_interface_maxwait"
+msgstr ""
+
+msgid "network_interface_maxwait_desc"
+msgstr ""
+
+msgid "network_interface_peerdns"
+msgstr ""
+
+msgid "network_interface_peerdns_desc"
+msgstr ""
+
+msgid "network_interface_pincode"
+msgstr ""
+
+msgid "network_interface_pincode_desc"
+msgstr ""
+
+msgid "network_interface_pppd_options"
+msgstr ""
+
+msgid "network_interface_pppd_options_desc"
+msgstr ""
+
+msgid "network_interface_prereq"
+msgstr ""
+
+msgid "network_interface_server"
+msgstr ""
+
+msgid "network_interface_service"
+msgstr ""
+
+msgid "networks"
+msgstr ""
+
+msgid "new_date"
+msgstr ""
+
+msgid "new_password"
+msgstr ""
+
+msgid "new_time"
+msgstr ""
+
+msgid "no_security"
+msgstr ""
+
+msgid "none"
+msgstr ""
+
+msgid "note"
+msgstr ""
+
+msgid "oclock"
+msgstr ""
+
+msgid "of"
+msgstr ""
+
+msgid "old_password"
+msgstr ""
+
+msgid "operate_channel"
+msgstr ""
+
+msgid "options"
+msgstr ""
+
+msgid "overview"
+msgstr ""
+
+msgid "passErrMsg1"
+msgstr ""
+
+msgid "passErrMsg2"
+msgstr ""
+
+msgid "passErrMsg3"
+msgstr ""
+
+msgid "passErrMsg4"
+msgstr ""
+
+msgid "passErrMsg5"
+msgstr ""
+
+msgid "passErrMsg6"
+msgstr ""
+
+msgid "passErrMsg7"
+msgstr ""
+
+msgid "passErrMsg8"
+msgstr ""
+
+msgid "password"
+msgstr ""
+
+msgid "pkt_collisions"
+msgstr ""
+
+msgid "pkt_statistics"
+msgstr ""
+
+msgid "pkt_statistics_lan"
+msgstr ""
+
+msgid "pkt_statistics_port"
+msgstr ""
+
+msgid "pkt_statistics_status"
+msgstr ""
+
+msgid "pkt_statistics_wan"
+msgstr ""
+
+msgid "pkt_statistics_wlan1"
+msgstr ""
+
+msgid "poll_interval"
+msgstr ""
+
+msgid "port"
+msgstr ""
+
+msgid "power"
+msgstr ""
+
+msgid "process_command"
+msgstr ""
+
+msgid "process_cpu"
+msgstr ""
+
+msgid "process_descr"
+msgstr ""
+
+msgid "process_head"
+msgstr ""
+
+msgid "process_hup"
+msgstr ""
+
+msgid "process_kill"
+msgstr ""
+
+msgid "process_mem"
+msgstr ""
+
+msgid "process_owner"
+msgstr ""
+
+msgid "process_pid"
+msgstr ""
+
+msgid "process_term"
+msgstr ""
+
+msgid "protocol"
+msgstr ""
+
+msgid "psk"
+msgstr ""
+
+msgid "refresh_interval"
+msgstr ""
+
+msgid "refresh_now"
+msgstr ""
+
+msgid "restarting"
+msgstr ""
+
+msgid "rst_configure"
+msgstr ""
+
+msgid "rst_err1"
+msgstr ""
+
+msgid "rst_info1"
+msgstr ""
+
+msgid "rst_remind1"
+msgstr ""
+
+msgid "rst_remind2"
+msgstr ""
+
+msgid "rst_remind3"
+msgstr ""
+
+msgid "rts_cts_threshold"
+msgstr ""
+
+msgid "rx_bps"
+msgstr ""
+
+msgid "rx_pkt"
+msgstr ""
+
+msgid "scan"
+msgstr ""
+
+msgid "sch_day"
+msgstr ""
+
+msgid "sch_everyday"
+msgstr ""
+
+msgid "sch_fri"
+msgstr ""
+
+msgid "sch_hour"
+msgstr ""
+
+msgid "sch_min"
+msgstr ""
+
+msgid "sch_mon"
+msgstr ""
+
+msgid "sch_note1"
+msgstr ""
+
+msgid "sch_off"
+msgstr ""
+
+msgid "sch_on"
+msgstr ""
+
+msgid "sch_sat"
+msgstr ""
+
+msgid "sch_sun"
+msgstr ""
+
+msgid "sch_thu"
+msgstr ""
+
+msgid "sch_time"
+msgstr ""
+
+msgid "sch_tue"
+msgstr ""
+
+msgid "sch_warn1"
+msgstr ""
+
+msgid "sch_wed"
+msgstr ""
+
+msgid "scheduling"
+msgstr ""
+
+msgid "sec"
+msgstr ""
+
+msgid "sec_association"
+msgstr ""
+
+msgid "seconds"
+msgstr ""
+
+msgid "security"
+msgstr ""
+
+msgid "security_mode"
+msgstr ""
+
+msgid "serial_number"
+msgstr ""
+
+msgid "server"
+msgstr ""
+
+msgid "server_address"
+msgstr ""
+
+msgid "set"
+msgstr ""
+
+msgid "set_interval"
+msgstr ""
+
+msgid "settings"
+msgstr ""
+
+msgid "shared_key"
+msgstr ""
+
+msgid "source"
+msgstr ""
+
+msgid "ssid_name"
+msgstr ""
+
+msgid "start"
+msgstr ""
+
+msgid "start_date"
+msgstr ""
+
+msgid "static"
+msgstr ""
+
+msgid "static_wep"
+msgstr ""
+
+msgid "stop_interval"
+msgstr ""
+
+msgid "sys_rst"
+msgstr ""
+
+msgid "system"
+msgstr ""
+
+msgid "system_led_mode_link"
+msgstr ""
+
+msgid "system_led_mode_rx"
+msgstr ""
+
+msgid "system_led_mode_tx"
+msgstr ""
+
+msgid "system_led_trigger_"
+msgstr ""
+
+msgid "system_name"
+msgstr ""
+
+msgid "system_resource"
+msgstr ""
+
+msgid "system_status"
+msgstr ""
+
+msgid "system_up_time"
+msgstr ""
+
+msgid "target"
+msgstr ""
+
+msgid "time"
+msgstr ""
+
+msgid "time_date_setup"
+msgstr ""
+
+msgid "time_manual"
+msgstr ""
+
+msgid "time_zone"
+msgstr ""
+
+msgid "time_zone_setup"
+msgstr ""
+
+msgid "timesrv"
+msgstr ""
+
+msgid "timezone"
+msgstr ""
+
+msgid "tx_bps"
+msgstr ""
+
+msgid "tx_pkt"
+msgstr ""
+
+msgid "tx_power"
+msgstr ""
+
+msgid "type"
+msgstr ""
+
+msgid "unknownerror"
+msgstr ""
+
+msgid "up_day"
+msgstr ""
+
+msgid "username"
+msgstr ""
+
+msgid "view_log"
+msgstr ""
+
+msgid "vpn_connect_name"
+msgstr ""
+
+msgid "vpn_local_addr"
+msgstr ""
+
+msgid "vpn_monitor"
+msgstr ""
+
+msgid "vpn_remote_addr"
+msgstr ""
+
+msgid "vpn_remote_gw"
+msgstr ""
+
+msgid "vpn_status"
+msgstr ""
+
+msgid "vpn_status_refresh"
+msgstr ""
+
+msgid "wan2_info"
+msgstr ""
+
+msgid "wan_info"
+msgstr ""
+
+msgid "webui"
+msgstr ""
+
+msgid "welcome"
+msgstr ""
+
+msgid "welcome_title_message"
+msgstr ""
+
+msgid "wep_open"
+msgstr ""
+
+msgid "wifi"
+msgstr ""
+
+msgid "wifi_ar"
+msgstr ""
+
+msgid "wifi_auto"
+msgstr ""
+
+msgid "wifi_bgscan"
+msgstr ""
+
+msgid "wifi_blacklist"
+msgstr ""
+
+msgid "wifi_bssid"
+msgstr ""
+
+msgid "wifi_bursting"
+msgstr ""
+
+msgid "wifi_compression"
+msgstr ""
+
+msgid "wifi_country"
+msgstr ""
+
+msgid "wifi_country_iso3166"
+msgstr ""
+
+msgid "wifi_distance"
+msgstr ""
+
+msgid "wifi_distance_desc"
+msgstr ""
+
+msgid "wifi_diversity"
+msgstr ""
+
+msgid "wifi_essid"
+msgstr ""
+
+msgid "wifi_ff"
+msgstr ""
+
+msgid "wifi_fh"
+msgstr ""
+
+msgid "wifi_frag"
+msgstr ""
+
+msgid "wifi_hidden"
+msgstr ""
+
+msgid "wifi_ht40m"
+msgstr ""
+
+msgid "wifi_ht40p"
+msgstr ""
+
+msgid "wifi_htcapab"
+msgstr ""
+
+msgid "wifi_htmode"
+msgstr ""
+
+msgid "wifi_isolate"
+msgstr ""
+
+msgid "wifi_isolate_desc"
+msgstr ""
+
+msgid "wifi_maclist"
+msgstr ""
+
+msgid "wifi_macpolicy"
+msgstr ""
+
+msgid "wifi_maxassoc"
+msgstr ""
+
+msgid "wifi_maxrate"
+msgstr ""
+
+msgid "wifi_mcast_rate"
+msgstr ""
+
+msgid "wifi_minrate"
+msgstr ""
+
+msgid "wifi_noprobereq"
+msgstr ""
+
+msgid "wifi_nosbeacon"
+msgstr ""
+
+msgid "wifi_outdoor"
+msgstr ""
+
+msgid "wifi_rate"
+msgstr ""
+
+msgid "wifi_regdomain"
+msgstr ""
+
+msgid "wifi_rts"
+msgstr ""
+
+msgid "wifi_rxantenna"
+msgstr ""
+
+msgid "wifi_slottime"
+msgstr ""
+
+msgid "wifi_turbo"
+msgstr ""
+
+msgid "wifi_txantenna"
+msgstr ""
+
+msgid "wifi_wdssep"
+msgstr ""
+
+msgid "wifi_whitelist"
+msgstr ""
+
+msgid "wifi_wmm"
+msgstr ""
+
+msgid "wifi_wpareq"
+msgstr ""
+
+msgid "wifi_xr"
+msgstr ""
+
+msgid "wireless_advance"
+msgstr ""
+
+msgid "wireless_advance_setup"
+msgstr ""
+
+msgid "wireless_lan"
+msgstr ""
+
+msgid "wireless_qos"
+msgstr ""
+
+msgid "wireless_setup"
+msgstr ""
+
+msgid "wlan24G_info"
+msgstr ""
+
+msgid "wlan_note1"
+msgstr ""
+
+msgid "wlan_note2"
+msgstr ""
+
+msgid "wlan_note3"
+msgstr ""
+
+msgid "wlan_scheduling"
+msgstr ""
+
+msgid "wlan_sta_status"
+msgstr ""
+
+msgid "wlan_status"
+msgstr ""
+
+msgid "wmm_note1"
+msgstr ""
+
+msgid "wmm_qos"
+msgstr ""
+
+msgid "wps"
+msgstr ""
+
+msgid "wps_station"
+msgstr ""
+
+msgid "zone"
+msgstr ""

@@ -1,0 +1,15 @@
+Index: linux-3.10.14/include/uapi/linux/if_arp.h
+===================================================================
+--- linux-3.10.14.orig/include/uapi/linux/if_arp.h	2016-01-08 14:06:59.000000000 +0800
++++ linux-3.10.14/include/uapi/linux/if_arp.h	2017-07-25 16:52:53.359323900 +0800
+@@ -94,6 +94,10 @@
+ #define ARPHRD_CAIF	822		/* CAIF media type		*/
+ #define ARPHRD_IP6GRE	823		/* GRE over IPv6		*/
+ 
++//Add for support customized IPv4 over IPv6
++#define ARPHRD_IP4OV6JPTUN	824	/* MAP-E/DS-Lite tunnel */ 
++//End add
++
+ #define ARPHRD_VOID	  0xFFFF	/* Void type, nothing is known */
+ #define ARPHRD_NONE	  0xFFFE	/* zero header length */
+ 

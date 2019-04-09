@@ -1,0 +1,20 @@
+msgid "Systemrebooting"
+msgstr ""
+
+msgid "bak_remind1"
+msgstr ""
+
+msgid "restarting"
+msgstr ""
+
+msgid "rst_err1"
+msgstr ""
+
+msgid "rst_info1"
+msgstr ""
+
+msgid "seconds"
+msgstr ""
+
+msgid "sys_rst"
+msgstr ""

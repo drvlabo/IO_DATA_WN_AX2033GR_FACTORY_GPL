@@ -1,0 +1,450 @@
+<%+header%>
+
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+
+<%
+
+local uci = require("luci.model.uci").cursor()
+local sys = require("luci.sys")
+local wan_mode = uci.get("network", "wan", "mode")
+
+-- read wifi client list
+local ifce={}
+local client_list_2g
+local client_list_5g
+uci.foreach("wireless", "wifi-iface", 
+function(s)
+	if s.mode == "ap" then
+		ifce[#ifce+1] = s[".name"]
+		if s.device == "mt7620" or s.device == "mt7602e" or s.device == "mt7603e" or s.device == "mt7628" or s.device == "mt7688" or s.device == "mt7615e2" then 
+			device_2g = s.device
+		end
+		if s.device == "mt7610e"  or s.device == "mt7612e" or s.device == "mt7615e5" then 
+			device_5g = s.device
+		end
+	end
+end)
+
+local file = io.popen("luci-stainfo ra0", 'r')
+if file then
+	client_list_2g = file:read('*all')
+	io.close(file)
+end
+
+local file = io.popen("luci-stainfo rai0", 'r')
+if file then
+	client_list_5g = file:read('*all')
+	io.close(file)
+end
+
+
+%>
+<script type="text/javascript">
+var post_url = "<%=controller%>/content/net_filtering/individual_settings";
+var waiting_url = "<%=controller%><%=src_url%>";
+var validIndex = '1';
+var bsUserList = [
+{enable:"0",index:"1",mac:"00:00:00:00:00:00",grp:"0", grp_jp:""},
+{enable:"0",index:"2",mac:"00:00:00:00:00:00",grp:"0", grp_jp:""},
+{enable:"0",index:"3",mac:"00:00:00:00:00:00",grp:"0", grp_jp:""},
+{enable:"0",index:"4",mac:"00:00:00:00:00:00",grp:"0", grp_jp:""},
+{enable:"0",index:"5",mac:"00:00:00:00:00:00",grp:"0", grp_jp:""},
+{enable:"0",index:"6",mac:"00:00:00:00:00:00",grp:"0", grp_jp:""},
+{enable:"0",index:"7",mac:"00:00:00:00:00:00",grp:"0", grp_jp:""},
+{enable:"0",index:"8",mac:"00:00:00:00:00:00",grp:"0", grp_jp:""},
+{enable:"0",index:"9",mac:"00:00:00:00:00:00",grp:"0", grp_jp:""},
+{enable:"0",index:"10",mac:"00:00:00:00:00:00",grp:"0", grp_jp:""}
+];
+
+<%
+	--MBA Sean, get the waiting time, default is 30 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+	local waiting_time_uci = uci_t.get("web", "gui_config", "network_apply_waiting_time")
+	local waiting_time = 30;
+	
+	if waiting_time_uci then
+		waiting_time = waiting_time_uci
+	end
+	
+	uci_t.set_confdir(original_confdir)
+%>
+
+var seconds=<%=waiting_time%>;
+
+function waiting()
+{
+	(seconds<=0)?seconds=0:seconds-=1;
+	document.getElementById("wait_time").value=seconds;
+	if(seconds==0)
+	{
+		location.href=waiting_url;
+		return true;
+	};
+	setTimeout('waiting()',1000);
+} 
+
+function checkMACRule(mac){
+	var str = mac.value;
+	var retVal = true;
+
+	if ( str.length < 12) {
+		retVal = false;
+	} else {
+		for (var i=0; i<str.length; i++) {
+			if ( (str.charAt(i) >= '0' && str.charAt(i) <= '9') ||
+				(str.charAt(i) >= 'a' && str.charAt(i) <= 'f') ||
+				(str.charAt(i) >= 'A' && str.charAt(i) <= 'F') ){
+					continue;
+			}
+			retVal = false;
+		}
+	}
+
+	if(retVal==false) {
+		alert("<%:Please enter a 12-digit hexadecimal number as MAC address.%>");
+		mac.focus();
+	}
+	
+	return retVal;
+}
+
+function copyClientList()
+{
+	var f = document.individual_settings;
+	
+	if (f.clientList.value != 0) {
+		f.mac.value = f.clientList.value.replace(/:/g,"");
+	}
+	ruleDataChange();
+}
+
+
+function addClick() {
+	var f = document.individual_settings;
+	
+	if (!checkMACRule(f.mac))
+		return false;
+		
+	try {
+		if (parseInt(validIndex) == -1) {
+			alert("<%:It cant be registered any more.%>");
+			return false;
+		}
+		
+		/* check if MAC address is a duplicate */
+		var tmpMac = f.mac.value.toUpperCase();
+		var tmpMac1 = tmpMac.substring(0,2) + ":" + tmpMac.substring(2,4) + ":" + tmpMac.substring(4,6) + ":" +
+			tmpMac.substring(6,8)+":" + tmpMac.substring(8,10)+":" + tmpMac.substring(10,12);
+		var conflict = false;
+		$("#maclist tr[name='ruleData']").each(function(){
+			dataMACAddr = $(this).find("td:eq(1) font").html();
+			if ( dataMACAddr ==  tmpMac1 ) {
+				conflict = true;
+			}
+		});
+		if ( conflict ) {
+			alert("<%:This MAC address is a duplicate.%>");
+			return false;
+		}
+	} catch(e){}
+	
+	
+	var new_grp ="";
+	if (document.getElementById("sUsrLimit").value == "element_mid"){
+		var new_grp = "<%:Elementary school students middle grade%>";
+	}else if (document.getElementById("sUsrLimit").value == "element_high"){
+		var new_grp = "<%:Elementary school upper grades%>";
+	}else if (document.getElementById("sUsrLimit").value == "junior"){
+		var new_grp = "<%:Junior high school%>";
+	}else if (document.getElementById("sUsrLimit").value == "senior"){
+		var new_grp = "<%:High school%>";
+	}else if (document.getElementById("sUsrLimit").value == "safety"){
+		var new_grp = "<%:Safety and security course%>";
+	}else if (document.getElementById("sUsrLimit").value == "security"){
+		var new_grp = "<%:Safety Course%>";
+	}else if (document.getElementById("sUsrLimit").value == "custom1"){
+		var new_grp = "<%:Customized 1%>";
+	}else if (document.getElementById("sUsrLimit").value == "custom2"){
+		var new_grp = "<%:Customized 2%>";
+	}else if (document.getElementById("sUsrLimit").value == "custom3"){
+		var new_grp = "<%:Customized 3%>";
+	}else if (document.getElementById("sUsrLimit").value == "custom4"){
+		var new_grp = "<%:Customized 4%>";
+	}else if (document.getElementById("sUsrLimit").value == "no_limit"){
+		var new_grp = "<%:Do not limit%>";
+	}
+	
+	var newMac = f.mac.value.replace(/ /g, "");
+	var mac_with_semicolon = newMac.substring(0, 2) + ":" + newMac.substring(2, 4) + ":" + newMac.substring(4, 6) + ":" + 
+								newMac.substring(6, 8) + ":" + newMac.substring(8, 10) + ":" + newMac.substring(10, 12);
+	var dataNum = parseInt($("#listDataNum").val(),10) + 1;
+	document.getElementById("listDataNum").value = dataNum;
+	var sUsrLimit_Val = document.getElementById("sUsrLimit").value;
+	var newRow = "<tr name=\"ruleData\">";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"2\">" + dataNum + "</td>";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"2\">" + mac_with_semicolon.toUpperCase() + "</td>";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"2\">" + new_grp + "</td>";
+	newRow += "<td style=\"display:none\">" + sUsrLimit_Val + "</td>";
+	newRow += "<td align=\"center\" class=\"table2\"><input type=\"checkbox\" name=\"select\" value=\"" + dataNum + "\"/></td>";
+	newRow += "</tr>";
+	$("#maclist tr:last").after(newRow)
+	$("#listDataNum").val(dataNum);
+	
+	f.mac.value = "";
+	//f.sUsrLimit.value = "1";
+	
+	ruleDataChange();
+	return false;
+}
+
+function ruleDataChange(){
+	if ( $("input[name='select']").length == 0 ) {
+		$("input[name='deleteSelFilterMac']").prop( "disabled", true );
+		$("input[name='deleteAllFilterMac']").prop( "disabled", true );
+	}
+	else {
+		$("input[name='deleteSelFilterMac']").prop( "disabled", false );
+		$("input[name='deleteAllFilterMac']").prop( "disabled", false );
+	}
+
+	if ( $("input[name='select']").length >= 10 ) {
+		$("input[name='addFilterMac']").prop( "disabled", true );
+		$("input[name='reset']").prop( "disabled", false );
+	}
+	else {
+		$("input[name='addFilterMac']").prop( "disabled", false );
+		$("input[name='reset']").prop( "disabled", false );
+	}
+}
+
+
+function deleteSelClick(){
+	var i = 0;
+	$("#maclist tr[name='ruleData']").each(function(){
+		if ( $(this).find("input[name='select']").prop("checked") == true ) {
+			$(this).remove();
+		}
+	});
+	
+	$("#maclist tr[name='ruleData']").each(function(){
+		i++;
+		$(this).find("td:first font").html(i);
+	});
+	$("#listDataNum").val(i);
+	ruleDataChange();
+}
+
+function deleteAllClick(){
+	$("#maclist tr[name='ruleData']").each(function(){
+		$(this).remove();
+	});
+	$("#listDataNum").val("0");
+	ruleDataChange();
+}
+
+function clearSelect(){
+	$("input[name='select']").prop("checked", false);
+}
+
+function frmLoad(){
+	ruleDataChange();
+}
+
+function goToApply()
+{
+	var f = document.individual_settings;
+	var dataCnt = 0;
+	var dataMac = "";
+	var dataGrp = "";
+	var dataStr = "";
+	
+	$("#maclist tr[name='ruleData']").each(function(){
+		 dataMac = $(this).find("td:eq(1) font").html().replace(/ /g, "");
+		 dataGrp = $(this).find("td:eq(3)").html().replace(/ /g, "");
+	
+		 if ( dataStr != "" )
+			dataStr += ">";
+			
+		dataStr += dataMac + ";" + dataGrp;
+		dataCnt++;
+	});
+
+	if ( dataCnt > 10 ) {
+		alert("<%:It has been registered up to the maximum number of entries%>");
+		return false;
+	}
+
+	$("#idv_RuleDataStr").val(dataStr);
+	
+	//MBA Sean, show the waiting page & hide the original content
+	document.getElementById("top_menu").style.display = 'none';
+	document.getElementById("content").style.display = 'none';
+	document.getElementById("waiting").style.display = 'block';
+	//MBA Sean, start to countdown.
+	waiting();
+
+	//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+	$.ajax({
+		type:"POST",
+		url: post_url,
+		data: $("#content_send").serialize(),// serializes the form's elements.
+	});
+	
+	return false;
+}
+
+
+function stripMACColon(mac){
+	var str = mac;
+	return str.substring(0,2) + str.substring(3,5) + str.substring(6,8) 
+		+ str.substring(9,11) + str.substring(12,14) + str.substring(15,17);
+}
+</script>
+
+<div id="content">
+<form id="content_send" name="individual_settings">
+<blockquote>
+<table border="0" cellspacing="4" width="600">
+	<tr>
+		<td><%:You can set the limit level for each instrument.%></td>
+	</tr>
+</table>
+<table border=0 width="600" cellspacing=4 cellpadding=0>
+	<tr>
+		<td style="font-weight:bold;"><%:Individual limits%>:</td>
+	</tr>
+	<tr>
+		<td>
+			<tr>
+				<td width="10%" class="background"><%:MAC address%>:</td>
+				<td width="30%">
+					<input type="text" name="mac" size="22" maxlength="12" value=""/>
+				<% if (wan_mode) and (wan_mode == "router" or wan_mode == "v6plus" or wan_mode == "transix") then%>
+					<input type="button" value="<" onclick="copyClientList()"/>
+						<select name="clientList">
+							<option value="0"><%:Computer Selection%></option>
+							<%
+							luci.sys.net.arptable(function(x)
+								if (x["Device"] == "br-lan") and (x["Flags"] ~= "0x0") then
+							%>
+								<option value="<%=x["HW address"]%>"><%=x["HW address"]%></option>
+							<%
+								end
+							end)
+							%>
+							<%
+							uci.foreach("dhcp", "host",function(s)
+								for mac in luci.util.imatch(s.mac) do
+									print("<option value=\"mac\">" .. mac .. "</option>")
+								end
+							end)
+							%>
+						</select>
+				<%end%>
+						<select name="sUsrLimit" size="1" id="sUsrLimit"  align="left">
+							<option value="element_mid" ><%:Elementary school students middle grade%> </option>	
+							<option value="element_high" ><%:Elementary school upper grades%> </option>
+							<option value="junior" ><%:Junior high school%> </option>
+							<option value="senior" ><%:High school%> </option>
+							<option value="safety" ><%:Safety and security course%></option>
+							<option value="security" ><%:Safety Course%> </option>
+							<option value="custom1" ><%:Customized 1%></option>
+							<option value="custom2"><%:Customized 2%></option>
+							<option value="custom3"><%:Customized 3%></option>
+							<option value="custom4"><%:Customized 4%></option>
+							<option value="no_limit" ><%:Do not limit%></option>
+						</select>
+					<input type="button" value="<%:Add%>" name="addFilterMac" onClick="addClick()";>
+				</td>
+			</tr>
+		</td>
+		<td></td>
+	</tr>
+</table>
+<tbody id="aclDel">
+	<table id="maclist" border=0 width="500" cellspacing="2" cellpadding="5">
+		<tr>
+			<td colspan="3" style="font-weight:bold;"><%:Individual limits list%>:</td>
+		</tr>
+		<tr class="background" align=center> 
+			<td width="5%" class="background" style="text-align:center"><%:NO.%></td>
+			<td width="50%" class="background" style="text-align:center"><%:MAC address%></td>
+			<td width="40%" class="background" style="text-align:center"><%:Level%></td>
+			<td width="5%" class="background" style="text-align:center"><%:Select%></td>
+		</tr>
+		 <%
+			local cnt = 0
+			uci.foreach("siteblock", "single_limit",
+			function(s)
+				cnt = cnt + 1
+				print("<tr name=\"ruleData\">");
+				print("<td class=\"table2\" align=\"center\"><font size=\"2\">" .. cnt .. "</td>")
+				print("<td class=\"table2\" align=\"center\"><font size=\"2\">" .. s.mac .. "</td>")
+				local lua_sbgrp = s.limit_rule
+				if lua_sbgrp ~= "" then
+					if (lua_sbgrp == "element_mid") then
+						print("<td class=\"table2\" align=\"center\"><font size=\"2\"><span name=\"limit_rule_element_mid\"></span></td>")
+					elseif (lua_sbgrp == "element_high")  then
+						print("<td class=\"table2\" align=\"center\"><font size=\"2\"><span name=\"limit_rule_element_high\"></span></td>")
+					elseif (lua_sbgrp == "junior") then
+						print("<td class=\"table2\" align=\"center\"><font size=\"2\"><span name=\"limit_rule_junior\"></span></td>")
+					elseif (lua_sbgrp == "senior") then
+						print("<td class=\"table2\" align=\"center\"><font size=\"2\"><span name=\"limit_rule_senior\"></span></td>")
+					elseif (lua_sbgrp == "safety") then
+						print("<td class=\"table2\" align=\"center\"><font size=\"2\"><span name=\"limit_rule_safety\"></span></td>")
+					elseif (lua_sbgrp == "security") then
+						print("<td class=\"table2\" align=\"center\"><font size=\"2\"><span name=\"limit_rule_security\"></span></td>")
+					elseif (lua_sbgrp == "custom1") then
+						print("<td class=\"table2\" align=\"center\"><font size=\"2\"><span name=\"limit_rule_custom1\"></span></td>")
+					elseif (lua_sbgrp == "custom2") then
+						print("<td class=\"table2\" align=\"center\"><font size=\"2\"><span name=\"limit_rule_custom2\"></span></td>")
+					elseif (lua_sbgrp == "custom3") then
+						print("<td class=\"table2\" align=\"center\"><font size=\"2\"><span name=\"limit_rule_custom3\"></span></td>")
+					elseif (lua_sbgrp == "custom4") then
+						print("<td class=\"table2\" align=\"center\"><font size=\"2\"><span name=\"limit_rule_custom4\"></span></td>")
+					elseif (lua_sbgrp == "no_limit") then
+						print("<td class=\"table2\" align=\"center\"><font size=\"2\"><span name=\"limit_rule_no_limit\"></span></td>")
+					end
+					print("<td style=\"display:none\">" .. lua_sbgrp .. "</td>")
+				end
+				print("<td align=\"center\" class=\"table2\"><input type=\"checkbox\" name=\"select\" value=\"" .. cnt .. "\"/></td>")
+				print("</tr>")
+			end)
+			%>
+			<script type="text/javascript">
+				$("span[name='limit_rule_element_mid']").html("<%:Elementary school students middle grade%>");
+				$("span[name='limit_rule_element_high']").html("<%:Elementary school upper grades%>");
+				$("span[name='limit_rule_junior']").html("<%:Junior high school%>");
+				$("span[name='limit_rule_senior']").html("<%:High school%>");
+				$("span[name='limit_rule_safety']").html("<%:Safety and security course%>");
+				$("span[name='limit_rule_security']").html("<%:Safety Course%>");
+				$("span[name='limit_rule_custom1']").html("<%:Customized 1%>");
+				$("span[name='limit_rule_custom2']").html("<%:Customized 2%>");
+				$("span[name='limit_rule_custom3']").html("<%:Customized 3%>");
+				$("span[name='limit_rule_custom4']").html( "<%:Customized 4%>");
+				$("span[name='limit_rule_no_limit']").html("<%:Do not limit%>");
+			</script>
+
+	</table>
+	<br>
+	<input type="hidden" id="listDataNum" value="<%=cnt%>">
+	<input type="button" value="<%:Delete selected%>" name="deleteSelFilterMac" onClick="deleteSelClick()" />&nbsp;&nbsp;
+	<input type="button" value="<%:Delete all%>" name="deleteAllFilterMac" onClick="deleteAllClick()" />&nbsp;&nbsp;&nbsp;
+	<input type="button" value="<%:Reset%>" name="reset" onclick="return clearSelect();" />
+</tbody>
+<table width="300" border="0" cellspacing="0" cellpadding="0" align="right">
+	<tbody>
+		<tr><td align="right">
+			<input type="submit" value="<%:Apply%>" onClick="return goToApply()" width="105" height="30" border="0"/>
+			<input type="reset" value="<%:Cancel%>" onclick="window.location.reload()"/>
+			<input type="hidden" value="" id="idv_RuleDataStr" name="idv_RuleDataStr"/>
+			<input type="hidden" value="1" name="isApply"/>
+		</td></tr>
+	</tbody>
+</table>
+</blockquote>
+</form> 
+</div>
+<%+footer%>

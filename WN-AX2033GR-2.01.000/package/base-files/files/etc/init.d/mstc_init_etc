@@ -1,0 +1,188 @@
+#!/bin/sh /etc/rc.common
+. /lib/functions.sh
+
+START=02
+config_mtd="\"Config\""
+config_mtd2="\"Config_2\""
+config_mtd_num=`cat /proc/mtd | grep $config_mtd | sed 's/:.*//g' | sed 's/mtd//g'`
+config_mtd_num2=`cat /proc/mtd | grep $config_mtd2 | sed 's/:.*//g' | sed 's/mtd//g'`
+
+MSTC_PERSIST=/sbin/mstc_persist
+MSTC_CFG_CHKSUM=/usr/bin/mstc_cfg_chksum
+
+CONFIG_1_DIR=/etc/config
+CONFIG_2_DIR=/tmp/mnt/config2
+
+CONFIG_1=1
+CONFIG_2=2
+
+CFG_1_SIZE=cfg1Size
+CFG_1_CHKSUM=cfg1Chksum
+CFG_2_SIZE=cfg2Size
+CFG_2_CHKSUM=cfg2Chksum
+
+handle_parse_account() {
+	local config="$1"
+	local custom="$2"
+	if [ $custom = "shadow" ]; then
+		local options="name password lastChanged min max warnPeriod inactivityPeriod expirationDate reserved"
+		local shadow=""
+		local tmp=""
+		for option in $options
+		do
+			config_get tmp "$config" $option
+			if [ -z "$shadow" ]; then
+				shadow="$tmp"
+			else
+				shadow="$shadow":"$tmp"
+			fi
+		done
+		echo "$shadow" >> /etc/shadow
+		chmod 600 /etc/shadow
+	fi
+
+	if [ $custom = "passwd" ]; then
+		local options="name password uid gid info home shell"
+		local passwd=""
+		local tmp=""
+		for option in $options
+		do
+			config_get tmp "$config" $option
+			if [ -z "$passwd" ]; then
+				passwd="$tmp"
+			else
+				passwd="$passwd":"$tmp"
+			fi
+		done
+		echo "$passwd" >> /etc/passwd
+		chmod 644 /etc/passwd
+	fi
+}
+
+transform_shadow_passwd() {
+	if [ -f /etc/config/account ]; then
+		rm -f /etc/shadow
+		rm -f /etc/passwd
+		config_load account
+		config_foreach handle_parse_account shadow shadow
+		config_foreach handle_parse_account passwd passwd
+	fi
+}
+
+
+mount_etc_tmp() {
+	mkdir /tmp/etc_tmp
+	cp -r /etc/* /tmp/etc_tmp
+	rm -rf /tmp/etc_tmp/uci-defaults/*
+	mount -w /tmp/etc_tmp /etc/
+}
+
+
+mount_config() {
+	mount -w -t jffs2 /dev/mtdblock$config_mtd_num $CONFIG_1_DIR
+}
+
+
+mount_config2() {
+	mkdir -p $CONFIG_2_DIR
+	mount -w -t jffs2 /dev/mtdblock$config_mtd_num2 $CONFIG_2_DIR
+}
+
+
+writeCfgSizeChksum() {
+	DIR=$1
+	SIZE=$2
+	CHKSUM=$3
+	Which_Config=$4
+	
+	cfg_chksum=`$MSTC_CFG_CHKSUM chksum $Which_Config`
+	cfg_size=`$MSTC_CFG_CHKSUM size $Which_Config`
+	
+	$MSTC_PERSIST write $CHKSUM $cfg_chksum
+	$MSTC_PERSIST write $SIZE $cfg_size
+}
+
+
+backup_to_config2() {
+	cp -r $CONFIG_1_DIR/* $CONFIG_2_DIR
+	writeCfgSizeChksum $CONFIG_2_DIR $CFG_2_SIZE $CFG_2_CHKSUM $CONFIG_2
+}
+
+
+restore_to_config1() {
+	cp -r $CONFIG_2_DIR/* $CONFIG_1_DIR
+	writeCfgSizeChksum $CONFIG_1_DIR $CFG_1_SIZE $CFG_1_CHKSUM $CONFIG_1
+}
+
+
+verify_config_2_chksum() {
+	cfg_2_chksum=`$MSTC_CFG_CHKSUM chksum 2`
+	cfg_2_size=`$MSTC_CFG_CHKSUM size 2`
+	
+	cfg_2_chksum_persist=`$MSTC_PERSIST read $CFG_2_CHKSUM`
+	cfg_2_size_persist=`$MSTC_PERSIST read $CFG_2_SIZE`
+	
+	if [ "$cfg_2_chksum" == "$cfg_2_chksum_persist" -a "$cfg_2_size" == "$cfg_2_size_persist" ]; then
+		echo "##### Restore Config. #####" > /dev/console
+		restore_to_config1
+		$MSTC_PERSIST write cfgapply 0
+	else
+		resetResult=`sys romreset 0`
+		if [ "$resetResult" == "PASS" ]; then
+			echo "##### Reset Config Successfully. #####" > /dev/console
+			writeCfgSizeChksum $CONFIG_1_DIR $CFG_1_SIZE $CFG_1_CHKSUM $CONFIG_1
+		else
+			echo "##### Reset Config Fail. #####" > /dev/console
+		fi
+	fi
+}
+
+
+verify_config_1_chksum() {
+	cfg_1_chksum=`$MSTC_CFG_CHKSUM chksum 1`
+	cfg_1_size=`$MSTC_CFG_CHKSUM size 1`
+	
+	cfg_1_chksum_persist=`$MSTC_PERSIST read $CFG_1_CHKSUM`
+	cfg_1_size_persist=`$MSTC_PERSIST read $CFG_1_SIZE`
+	
+	cfg_2_chksum=`$MSTC_CFG_CHKSUM chksum 2`
+	
+	if [ "$cfg_1_chksum" == "$cfg_1_chksum_persist" -a "$cfg_1_size" == "$cfg_1_size_persist" ]; then
+		if [ "$cfg_1_chksum" != "$cfg_2_chksum" ]; then
+			echo "##### Backup Config. #####" > /dev/console
+			backup_to_config2
+		else
+			echo "##### Config is OK. #####" > /dev/console
+		fi		
+		$MSTC_PERSIST write cfgapply 0
+	else
+		verify_config_2_chksum
+	fi
+}
+
+
+verify_config_chksum() {
+	cfgapply=`$MSTC_PERSIST read cfgapply`
+	
+	if [ "$cfgapply" -eq 1 ]; then
+		verify_config_1_chksum
+	else
+		echo "##### Skip Checking Config. #####" > /dev/console
+	fi
+}
+
+
+start() {
+	mount_etc_tmp
+	mount_config
+	mount_config2
+	verify_config_chksum
+	transform_shadow_passwd
+
+	# MSTC, Terence, 20160525 append simple log
+	[ -f /sbin/simple_logrec.sh ] && {
+		. /etc/openwrt_release
+		simple_logrec.sh -w "SYS, Application Version: $DISTRIB_RELEASE"
+	}
+}
+

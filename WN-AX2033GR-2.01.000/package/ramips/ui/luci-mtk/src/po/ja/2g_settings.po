@@ -1,0 +1,192 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "2.4Ghz Settings"
+msgstr "2.4GHz設定"
+
+msgid "ASCII (13 characters)"
+msgstr "ASCII (13 文字)"
+
+msgid "ASCII (5 characters)"
+msgstr "ASCII (5 文字)"
+
+msgid "Authentication Type"
+msgstr "認証方式"
+
+msgid "Auto"
+msgstr "自動"
+
+msgid "Basic Settings"
+msgstr "基本設定"
+
+msgid "Character"
+msgstr "文字"
+
+msgid "Copy SSID"
+msgstr "文字"
+
+msgid "Copy SSID Function"
+msgstr "Copy SSID機能"
+
+msgid "Default Key"
+msgstr "デフォルトキー"
+
+msgid "Diasable"
+msgstr "無効"
+
+msgid "Enable"
+msgstr "有効"
+
+msgid ""
+"Encryption function of the wireless LAN is set to WEP. It is strongly "
+"recommended to use WPA-PSK."
+msgstr "無線LANの暗号化機能が設定されていないかWEPに設定されています。安全にご使用いただくためにWPA-PSKに設定することを強くお勧めします。"
+
+msgid ""
+"Encryption function of the wireless LAN is set to none. It is strongly "
+"recommended to use WPA-PSK."
+msgstr "無線LANの暗号化機能が設定されていないかWEPに設定されています。安全にご使用いただくためにWPA-PSKに設定することを強くお勧めします。"
+
+msgid "Key"
+msgstr "キー"
+
+msgid "Key Length"
+msgstr "キーの長さ"
+
+msgid "Key Type"
+msgstr "キーの種類"
+
+msgid "Key Update Interval"
+msgstr "キーの更新間隔"
+
+msgid "Key Update Interval can only input numbers!"
+msgstr "キーの更新間隔は600～86400の範囲で入力してください。"
+
+msgid "Key Update Interval is empty!"
+msgstr "キーの更新間隔を入力してください。"
+
+msgid "Key Update Interval is out of range!"
+msgstr "キーの更新間隔は600～86400の範囲で入力してください。"
+
+msgid "SSID Broadcast"
+msgstr "SSID通知"
+
+msgid "SSID 1"
+msgstr ""
+
+msgid "SSID 2"
+msgstr ""
+
+msgid "SSID1 Characters that can not be used."
+msgstr "SSIDに使用できない文字が含まれています。"
+
+msgid "SSID1 default Key is empty!"
+msgstr "暗号キーを入力してください。"
+
+msgid "SSID1 is empty!"
+msgstr "SSIDを入力してください。"
+
+msgid "SSID1 key1 is empty!"
+msgstr "暗号キーを入力してください。"
+
+msgid "SSID1 key2 is empty!"
+msgstr "暗号キーを入力してください。"
+
+msgid "SSID1 key3 is empty!"
+msgstr "暗号キーを入力してください。"
+
+msgid "SSID1 key4 is empty!"
+msgstr "暗号キーを入力してください。"
+
+msgid "SSID3"
+msgstr ""
+
+msgid "SSID3 Characters that can not be used."
+msgstr "SSIDに使用できない文字が含まれています。"
+
+msgid "SSID3 default Key is empty!"
+msgstr "暗号キーを入力してください。"
+
+msgid "SSID3 is empty!"
+msgstr "SSIDを入力してください。"
+
+msgid "SSID3 key1 is empty!"
+msgstr "暗号キーを入力してください。"
+
+msgid "SSID3 key2 is empty!"
+msgstr "暗号キーを入力してください。"
+
+msgid "SSID3 key3 is empty!"
+msgstr "暗号キーを入力してください。"
+
+msgid "SSID3 key4 is empty!"
+msgstr "暗号キーを入力してください。"
+
+msgid "Sec"
+msgstr "秒"
+
+msgid "Security"
+msgstr "セキュリティ"
+
+msgid "Security_sub"
+msgstr "暗号化"
+
+msgid "Security Key"
+msgstr "暗号化キー"
+
+msgid "Security_Key_2g"
+msgstr "暗号キー"
+
+msgid "WEP"
+msgstr ""
+
+msgid "WEP key is not HEX numbers!"
+msgstr "正しい暗号キーを入力してください。"
+
+msgid "WEP key length is wrong!"
+msgstr "暗号キーの文字数が正しくありません。"
+
+msgid "WMM"
+msgstr ""
+
+msgid "WPA Type"
+msgstr "WPAの種類"
+
+msgid "WPA-PSK"
+msgstr ""
+
+msgid "WPA-PSK(HEX) key can only enter HEX numbers!"
+msgstr "暗号キーは64文字の16進数で入力してください。"
+
+msgid "WPA-PSK(HEX) key length is less than 64"
+msgstr "暗号キーは64文字の16進数で入力してください。"
+
+msgid "WPA-PSK(Passphrase) key length is less than 8 and bigger than 63"
+msgstr "暗号キーは8～63文字入力してください。"
+
+msgid "WPA2(AES)"
+msgstr ""
+
+msgid "Wireless Lan"
+msgstr "無線LAN"
+
+msgid "auto"
+msgstr "自動"
+
+msgid "none"
+msgstr "無効"
+
+msgid "if you set ssid broadcast to disable, it will disable the WPS!"
+msgstr "SSID通知を無効に設定するとWPSは無効になります。設定しますか。"
+
+msgid "if you set the encryption to none,the WPS will be disabled! Do you want to set?"
+msgstr "暗号化をなしに設定するとWPSは無効になります。設定しますか。"
+
+msgid "if you set security to WEP, it will disable the WPS!"
+msgstr "暗号化をWEPに設定するとWPSは無効になります。設定しますか。"
+
+msgid "Repeater 2.4Ghz Settings"
+msgstr "2.4GHz中継SSID"
+
+msgid "Repeater SSID Change"
+msgstr "中継SSID変更"

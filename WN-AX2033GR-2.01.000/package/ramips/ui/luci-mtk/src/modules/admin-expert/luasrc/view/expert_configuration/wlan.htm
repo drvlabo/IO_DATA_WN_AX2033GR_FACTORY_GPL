@@ -1,0 +1,991 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: header.htm 4891 2009-06-22 10:23:21Z jow $
+
+-%>
+<%
+require "luci.sys"
+require("luci.i18n").loadc("default")
+local i18n = require("luci.i18n")
+require("luci.http").prepare_content("text/html")
+local uci = require("luci.model.uci").cursor()
+local sys = require("luci.sys")
+local lang = uci:get("luci","main","lang")
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+-%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"  />
+<title>.::Welcome to the Web-Based Configurator::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<style>
+.on {display:on}
+.off {display:none}
+</style>
+<script type="text/javascript" src="<%=media%>/js/jquery-1.6.2.min.js" ></script>
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script language="JavaScript" type="text/javascript">
+
+var wirelessmode  = 0;
+var changed = 0;
+
+function show_div(show,id) {
+	if(show)
+		document.getElementById(id).className  = "on" ;
+	else
+		document.getElementById(id).className  = "off" ;
+}
+
+function hideWep()
+{
+	show_div(false, "div_wep");
+}
+
+function showWep(mode)
+{
+	show_div(true, "div_wep");
+}
+
+function clickAutoChannel()
+{
+	if (document.forms[0].Auto_Channel.checked == true) {
+		document.forms[0].Channel_ID.disabled = true;
+		document.forms[0].Channel_ID_5G.disabled = true;
+	}	
+	else {
+		document.forms[0].Channel_ID.disabled = false;
+		document.forms[0].Channel_ID_5G.disabled = false;
+	}	
+}
+
+function setChange(c){
+	changed = c;
+}
+
+function doWEP64_128(selectedindex)
+{
+	document.forms[0].WEP64_128.value =document.forms[0].wep_encry.value;
+	return
+}
+
+function doModeChange(selectedindex)
+{
+        var wireless_mode=document.forms[0].Mode_select.value;
+
+        if( wireless_mode == "11b" || wireless_mode == "11g" || wireless_mode == "11bg" ){
+                document.forms[0].ChWidth_select.options[0].selected=true;
+        }else{
+		document.forms[0].ChWidth_select.options[1].selected=true;
+		}
+}
+
+function doWidthChange(selectedindex)
+{
+        var wireless_mode=document.forms[0].Mode_select.value;
+        if( wireless_mode == "11b" || wireless_mode == "11g" || wireless_mode == "11bg" ){
+                document.forms[0].ChWidth_select.options[0].selected=true;
+        }else{
+		document.forms[0].ChWidth_select.options[1].selected=true;
+		}
+}
+
+function doSecurityChange(selectedindex)
+{
+	var security_mode;
+	
+	hideWep();
+
+	show_div(false, "wpa_passphrase");
+	show_div(false, "div_encryption");
+	
+	document.forms[0].security_value.value = document.forms[0].security_mode.value
+	security_mode = document.forms[0].security_mode.value;
+
+	if(security_mode == "WEP"){
+		//alert("security_1");
+		showWep(security_mode);
+	}else if (security_mode == "WPAPSK" || security_mode == "WPA2PSK" || security_mode == "WPAPSKWPA2PSK") {
+		<!-- WPA -->
+		//alert("security_2");
+		show_div(true, "wpa_passphrase");
+		show_div(true, "div_encryption");
+
+	}else if(security_mode == "None"){
+		hideWep();
+
+		show_div(false, "wpa_passphrase");
+	}	
+}
+
+function checkWEPKEY(str)
+{
+	var len = str.length;
+        switch(len){
+                case 5:
+                        re=/^[a-zA-Z0-9]{5}$/;
+                        if (re.test(str))
+                                return true;
+                        else
+                                return false;
+                break;
+                case 10:
+                        re=/^[a-fA-F0-9]{10}$/;
+                        if (re.test(str))
+                                return true;
+                        else
+                                return false;
+                break;
+                case 13:
+                        re=/^[a-zA-Z0-9]{13}$/;
+                        if (re.test(str))
+                                return true;
+                        else
+                                return false;
+                break;
+                case 26:
+                        re=/^[a-fA-F0-9]{26}$/;
+                        if (re.test(str))
+                                return true;
+                        else
+                                return false;
+                break;
+        }	
+}
+
+function check_Wep(securitymode)
+{
+	var defaultid, i;
+	for (i=0; i<=3; i++){	
+		if (document.forms[0].DefWEPKey[i].checked == true){
+			defaultid = i;
+		}
+	}	
+	defaultid = defaultid+1;
+
+	if ( defaultid == 1 )
+		var keyvalue = document.forms[0].wep_key_1.value;
+	else if (defaultid == 2)
+		var keyvalue = document.forms[0].wep_key_2.value;
+	else if (defaultid == 3)
+		var keyvalue = document.forms[0].wep_key_3.value;
+	else if (defaultid == 4)
+		var keyvalue = document.forms[0].wep_key_4.value;
+
+	if (keyvalue.length == 0 ){
+		alert('Please input wep key'+defaultid+' !');
+		return false;
+	}
+
+	var keylength = document.forms[0].wep_key_1.value.length;
+	if (keylength != 0 && defaultid == 1){
+		if (document.forms[0].WEPKey_Code[0].checked == true){ //ASCII
+			if (document.getElementById("wep_encry").selectedIndex == 0 ){ // 64-bits (ASCII)
+				if(keylength != 5) {
+					alert('Please input 5 characters of wep key1 !');
+					return false;
+				}
+				if(checkWEPKEY(document.forms[0].wep_key_1.value)== false){
+					alert('Wep key1 contains invalid characters.');
+					return false;
+				}
+			}else{ // 128-bits (ASCII)
+				if(keylength != 13) {
+					alert('Please input 13 characters of wep key1 !');
+					return false;
+				}
+				if(checkWEPKEY(document.forms[0].wep_key_1.value)== false){
+					alert('Wep key1 contains invalid characters.');
+					return false;
+				}
+			}
+		}else{ //HEX
+			if (document.getElementById("wep_encry").selectedIndex == 0 ){ // 64-bits (HEX)
+				if(keylength != 10) {
+					alert('Please input 10 characters of wep key1 !');
+					return false;
+				}
+				if(checkWEPKEY(document.forms[0].wep_key_1.value) == false){
+					alert('Invalid Wep key1 format!');
+					return false;
+				}			
+			}else{ // 128-bits (HEX)
+				if(keylength != 26) {
+					alert('Please input 26 characters of wep key1 !');
+					return false;
+				}
+				if(checkWEPKEY(document.forms[0].wep_key_1.value) == false){
+					alert('Invalid Wep key1 format!');
+					return false;
+				}							
+			}		
+		
+		}
+	}
+
+	var keylength = document.forms[0].wep_key_2.value.length;
+	if (keylength != 0 && defaultid == 2){
+		if (document.forms[0].WEPKey_Code[0].checked == true){ //ASCII
+			if (document.getElementById("wep_encry").selectedIndex == 0 ){ // 64-bits (ASCII)
+				if(keylength != 5) {
+					alert('Please input 5 characters of wep key2 !');
+					return false;
+				}
+				if(checkWEPKEY(document.forms[0].wep_key_2.value)== false){
+					alert('Wep key2 contains invalid characters.');
+					return false;
+				}
+			}else{ // 128-bits (ASCII)
+				if(keylength != 13) {
+					alert('Please input 13 characters of wep key2 !');
+					return false;
+				}
+				if(checkWEPKEY(document.forms[0].wep_key_2.value)== false){
+					alert('Wep key2 contains invalid characters.');
+					return false;
+				}
+			}
+		}else{ //HEX
+			if (document.getElementById("wep_encry").selectedIndex == 0 ){ // 64-bits (HEX)
+				if(keylength != 10) {
+					alert('Please input 10 characters of wep key2 !');
+					return false;
+				}
+				if(checkWEPKEY(document.forms[0].wep_key_2.value) == false){
+					alert('Invalid Wep key2 format!');
+					return false;
+				}			
+			}else{ // 128-bits (HEX)
+				if(keylength != 26) {
+					alert('Please input 26 characters of wep key2 !');
+					return false;
+				}
+				if(checkWEPKEY(document.forms[0].wep_key_2.value) == false){
+					alert('Invalid Wep key2 format!');
+					return false;
+				}							
+			}		
+		
+		}
+	}
+
+	var keylength = document.forms[0].wep_key_3.value.length;
+	if (keylength != 0 && defaultid == 3){
+		if (document.forms[0].WEPKey_Code[0].checked == true){ //ASCII
+			if (document.getElementById("wep_encry").selectedIndex == 0 ){ // 64-bits (ASCII)
+				if(keylength != 5) {
+					alert('Please input 5 characters of wep key3 !');
+					return false;
+				}
+				if(checkWEPKEY(document.forms[0].wep_key_3.value)== false){
+					alert('Wep key3 contains invalid characters.');
+					return false;
+				}
+			}else{ // 128-bits (ASCII)
+				if(keylength != 13) {
+					alert('Please input 13 characters of wep key3 !');
+					return false;
+				}
+				if(checkWEPKEY(document.forms[0].wep_key_3.value)== false){
+					alert('Wep key3 contains invalid characters.');
+					return false;
+				}
+			}
+		}else{ //HEX
+			if (document.getElementById("wep_encry").selectedIndex == 0 ){ // 64-bits (HEX)
+				if(keylength != 10) {
+					alert('Please input 10 characters of wep key3 !');
+					return false;
+				}
+				if(checkWEPKEY(document.forms[0].wep_key_3.value) == false){
+					alert('Invalid Wep key3 format!');
+					return false;
+				}			
+			}else{ // 128-bits (HEX)
+				if(keylength != 26) {
+					alert('Please input 26 characters of wep key3 !');
+					return false;
+				}
+				if(checkWEPKEY(document.forms[0].wep_key_3.value) == false){
+					alert('Invalid Wep key3 format!');
+					return false;
+				}							
+			}		
+		
+		}
+	}	
+
+	var keylength = document.forms[0].wep_key_4.value.length;
+	if (keylength != 0 && defaultid == 4){
+		if (document.forms[0].WEPKey_Code[0].checked == true){ //ASCII
+			if (document.getElementById("wep_encry").selectedIndex == 0 ){ // 64-bits (ASCII)
+				if(keylength != 5) {
+					alert('Please input 5 characters of wep key4 !');
+					return false;
+				}
+				if(checkWEPKEY(document.forms[0].wep_key_4.value)== false){
+					alert('Wep key4 contains invalid characters.');
+					return false;
+				}
+			}else{ // 128-bits (ASCII)
+				if(keylength != 13) {
+					alert('Please input 13 characters of wep key4 !');
+					return false;
+				}
+				if(checkWEPKEY(document.forms[0].wep_key_4.value)== false){
+					alert('Wep key4 contains invalid characters.');
+					return false;
+				}
+			}
+		}else{ //HEX
+			if (document.getElementById("wep_encry").selectedIndex == 0 ){ // 64-bits (HEX)
+				if(keylength != 10) {
+					alert('Please input 10 characters of wep key4 !');
+					return false;
+				}
+				if(checkWEPKEY(document.forms[0].wep_key_4.value) == false){
+					alert('Invalid Wep key4 format!');
+					return false;
+				}			
+			}else{ // 128-bits (HEX)
+				if(keylength != 26) {
+					alert('Please input 26 characters of wep key4 !');
+					return false;
+				}
+				if(checkWEPKEY(document.forms[0].wep_key_4.value) == false){
+					alert('Invalid Wep key4 format!');
+					return false;
+				}							
+			}		
+		
+		}
+	}	
+
+	return true;
+}
+
+function checkPSK(str)
+{
+	var len = str.length;
+	
+	if( len == 0 )
+        	return false;
+
+	if( len < 8 )
+		return false;
+	
+	if( len > 64 )
+		return false;		
+	
+	if ( len == 64 ){
+		re=/^[a-fA-F0-9]{64}$/;
+		if (re.test(str))
+			return true;
+		else
+			return false;
+	}
+}
+
+function checkData()
+{
+	var securitymode;
+	securitymode = document.forms[0].security_mode.value;
+
+	if (securitymode == "WEP")
+	{
+		if(! check_Wep(securitymode) )
+			return false;
+	}else if (securitymode == "WPAPSK" || securitymode == "WPA2PSK" || securitymode == "WPAPSKWPA2PSK" /* || security_mode == 5 */){
+		
+		if(checkPSK(document.forms[0].PSKey.value) == false){
+			alert('Please enter 8~63 ASCII or 8~64 Hex characters in Pre-Shared Key.');
+			return false;
+		}
+
+	}
+	return true;
+}
+
+function submit_apply()
+{
+	var security_mode;
+	var channel_freq;
+	
+	channel_freq = document.forms[0].Channel_Freq.value;
+	security_mode = document.forms[0].security_mode.value;
+	
+	if (channel_freq == 0) {
+		document.forms[0].Channel_ID_index.value = document.forms[0].Channel_ID.value;
+	}
+	else {
+		document.forms[0].Channel_ID_index.value = document.forms[0].Channel_ID_5G.value;	
+	}
+
+	if ((wirelessmode == 2) || (wirelessmode == 6)){
+	    alert("You CANNOT select WISP or Client mode to configure this page");	
+	    return false;
+	}
+	
+	if (document.forms[0].SSID_value.value == "")
+	{
+		alert("Please enter SSID!");
+		document.forms[0].SSID_value.focus();
+		document.forms[0].SSID_value.select();
+		return false;
+	}	
+	
+	var ssid_rule = /^[\x20-\x21\x23-\x25\x27-\x2b\x2d-\x7e]+$/;
+	if (!ssid_rule.test(document.forms[0].SSID_value.value)){
+		alert("Only contain printable ascii characters except , & \"");
+		document.forms[0].SSID_value.focus();
+		return false;
+	}
+	
+	if ( document.forms[0].Mode_select.value == "11n" ){
+		if( security_mode == "WEP" || security_mode == "WPA" || security_mode == "WPAPSK") {
+			alert("802.11 n mode only doesn't support WEP, WPAPSK, and WPA now!!");
+			return false;
+		}
+	}
+
+	if (checkData() == true){
+		changed = 0;
+		showWebMessage( 1 , "<%:Message%>" , "<%:msg_config%>" );
+		return true;
+	}
+        else {
+                return false;
+        }
+}
+
+
+function initAll()
+{
+	showWebMessage( 0, "<%:Message%>", "<%:Ready%>" );
+
+	hideWep();
+
+	show_div(false, "wpa_passphrase");
+
+	security_mode = document.forms[0].security_mode.value;
+	if(security_mode == "WEP"){
+	//	alert("security_1");
+		showWep(security_mode);
+	}else if (security_mode == "WPAPSK" || security_mode == "WPA2PSK" || security_mode == "WPAPSKWPA2PSK"){
+		<!-- WPA -->
+	//	alert("security_2");
+		show_div(true, "wpa_passphrase");
+		show_div(true, "div_encryption");
+	}else if(security_mode == "None"){
+		hideWep();
+
+		show_div(false, "wpa_passphrase");
+	}
+	
+	channelValue();
+}
+function path_msg_init(){
+	showFullPath(' <%:Network%> > <%:wireless_lan%>');
+	showWebMessage( 0, "<%:Message%>", "<%:Ready%>");
+}
+</script>
+</head>
+<body onload="initAll();path_msg_init();">
+<form onSubmit="return submit_apply()" method="post" name="security_form" action="<%=controller%>/expert/configuration/network/wlan">	
+<div id="tabs" style="word-break:break-all;(">
+  <ul>
+    <li class="hightline"><a title="<%:wireless_lan%>"><span><%:wireless_lan%></span></a></li>
+	
+    <li><a href="<%=controller%>/expert/configuration/network/wlan/wlanmacfilter" title="<%:mac_filter%>"><span><%:mac_filter%></span></a></li>
+<!--
+    <li><a href="<%=controller%>/expert/configuration/network/wlan/wlanadvanced" title="<%:wireless_advance%>"><span><%:wireless_advance%></span></a></li>
+    <li><a href="<%=controller%>/expert/configuration/network/wlan/wlanqos" title="<%:wireless_qos%>"><span><%:wireless_qos%></span></a></li>
+    <li><a href="<%=controller%>/expert/configuration/network/wlan/wlanscheduling" title="<%:scheduling%>"><span><%:scheduling%></span></a></li>
+-->
+  </ul>
+  <br class="clearfloat" />
+</div>
+<!-- Tab -->
+<div id="table">
+  <ul>
+    <li class="table_top"></li>
+    <li class="table_content">
+      <div class="data">
+        <ul>
+          <div class="w_text">
+            <ul>
+	      <li class="title" id="GeneralWirelessSetup">
+	      <%:wireless_setup%>
+	      </li>
+	      <li class="left_table" id="GeneralWirelessLAN" >
+	      <%:wireless_lan%> :
+	      </li>
+	      <% local wireless_enable = uci:get("wireless", "general", "disabled") %>
+	      <li class="right_table"id="radio_switch">
+	        <input name="ssid_state" id="radio" type="radio" value="0" <%if wireless_enable == "0" then%> checked = "CHECKED" <%end%> />
+	        <%:enable%>
+	        <input name="ssid_state" id="radio2" type="radio" value="1" <%if wireless_enable == "1" then%> checked = "CHECKED" <%end%> />
+	        <%:disable%>
+              </li>
+	    </ul>
+	  </div>
+	  <% local ssid = uci:get("wireless", "wlan0", "ssid")%>
+	  <div class="w_text">
+            <ul>
+              <li class="left_table"><%:ssid_name%> (SSID) :</li>
+	      <li class="right_table">
+                <input name="SSID_value" id="SSID_value" maxlength="32" size="32" <%if ssid then%> value="<%=ssid%>" <%end%> type="text"/>
+	      </li>
+	    </ul>
+	  </div>
+          <%local wireless_hidden = uci:get("wireless","wlan0","hidden")%>
+          <div class="w_text">
+            <ul>
+              <li class="all_table">
+                <input type="checkbox" name="Hide_SSID" value="1" <%if wireless_hidden == "1" then%> checked="CHECKED" <%end%> /><%:hide_ssid%> 
+              </li>
+            </ul>
+          </div>
+		  <div class="w_text2">
+		    <ul>
+			  <li class="left_table">Channel Frequency :</li>
+			  <% local hwmode = uci:get("wireless", "general", "hwmode") %>
+			  <li class="right_table" style="word-break:break-all;">
+			    <% local channel_freq = uci:get("wireless", "general", "frequency") %>
+			    <select name="Channel_Freq" id="Channel_Freq" size="1" onchange = "doFreqChange()">
+				  <script language="javascript">
+				    var i;
+					var channel_freq = "<%=channel_freq%>";
+				    for ( i = 0; i < 2; i++) {
+												
+						if (i == channel_freq) {
+							document.write("  <option value='" + i + "' selected > ");
+						}
+						else {
+							document.write("  <option value='" + i + "'> ");
+						}
+						
+						if (i == 0) {
+							document.writeln("2.4GHz");
+						}
+						else {
+							document.writeln("5GHz");
+						}
+					}
+				  </script>
+				</select>
+				<script language="javascript">
+					function doFreqChange() 
+					{									
+						//var hwmode = "<%=hwmode%>";
+						
+						$("#Channel_ID").show();
+						$("#Channel_ID_5G").show();
+						
+						$("#Mode_select").show();
+						$("#Mode_select_5G").show();
+						
+						
+						if (document.getElementById("Channel_Freq").value == 0) {
+							$("#Channel_ID_5G").hide();
+							$("#Mode_select_5G").hide();
+							document.getElementById("Mode_select").value = "11ng";
+							document.getElementById("Mode_select_5G").value = "";
+						}
+						else {
+							$("#Channel_ID").hide();																					
+							$("#Mode_select").hide();
+							document.getElementById("Mode_select_5G").value = "11n";
+							document.getElementById("Mode_select").value = "";
+						}
+						
+					}
+				</script>
+			  </li>
+			</ul>
+		  </div>
+          <div class="w_text2">
+            <ul>
+              <li class="left_table"><%:channel_select%> :</li>
+			  <% local channel_freq = uci:get("wireless", "general", "frequency") %>
+              <% local wireless_channel = uci:get("wireless", "general", "ch_op")%>
+			  <% local wireless_channel_operate = uci:get("wireless", "general", "channel")%>
+			  <% local Auto_Channel = "0" %>
+			  <% if wireless_channel == "auto" then
+					Auto_Channel = "1"
+				end
+			  %>
+              <li class="right_table" style="word-break:break-all;">
+                <select name="Channel_ID" id="Channel_ID" size="1" <% if Auto_Channel == "1" then %>disabled="disabled"<%end%>>
+                  <script language="javascript">
+                  {
+				    var channel_freq = "<%=channel_freq%>";
+					var channels = "<%=channels%>";
+					var selectedChannel = "<%=wireless_channel_operate%>";
+					var channel = channels.split("-");
+					var i = 0;
+					//var freq; 
+					
+					for(i=parseInt(channel[0]);i<=parseInt(channel[1]);i++){
+						if(i == selectedChannel){
+							document.write("  <option value='" + i + "' selected > ");
+						}
+						else{
+							document.write("  <option value='" + i + "'> ");
+						}
+						//freq = 2412 + (i-1)*5; 
+						document.writeln("Channel-" + i);
+					}
+
+					if (channel_freq == 1) {
+						$("#Channel_ID").hide();
+					}
+				  }
+                  </script>
+                </select>
+
+                <select name="Channel_ID_5G" id="Channel_ID_5G" size="1" <% if Auto_Channel == "1" then %>disabled="disabled"<%end%>>
+                  <script language="javascript">
+                  {
+				    var channel_freq = "<%=channel_freq%>";
+					var channels = "<%=channels%>";
+					var selectedChannel = "<%=wireless_channel_operate%>";
+					var channel = channels.split("-");
+
+					var i = 0;
+					
+					for ( i = 149; i <= 165; i += 4){
+						if(i == selectedChannel){
+							document.write("  <option value='" + i + "' selected > ");
+						}
+						else{
+							document.write("  <option value='" + i + "'> ");
+						}
+						
+						document.writeln("Channel-" + i);
+					}
+
+					if (channel_freq == 0) {
+						$("#Channel_ID_5G").hide();
+					}
+				  }
+
+                  </script>
+                </select>				
+				  <script language = "JavaScript">
+				  /*
+				  function channelValue(freq)
+				  {
+				    if (freq == 0) {
+						document.forms[0].Channel_ID_index.value = document.forms[0].Channel_ID.value;
+					}
+					else {
+						document.forms[0].Channel_ID_index.value = document.forms[0].Channel_ID_5G.value;					
+					}
+				  }
+				  */
+				  </script>
+                <input name="Channel_ID_index" id="Channel_ID_index" type= "hidden" maxlength="15" size="15" value="<%=wireless_channel%>" />
+                <input type="checkbox" name="Auto_Channel" onclick="clickAutoChannel()" value = "1" <% if Auto_Channel == "1" then %>checked = "CHECKED"<%end%>/>
+                <%:auto_channel_select%>                     
+              </li>
+            </ul>
+          </div>
+          <div class="w_text2" style="display:none;">
+            <ul>
+              <li class="left_table"><%:operate_channel%> :</li>
+              <li class="right_table"><%:channel%>-<%=wireless_channel_operate%> </li>
+            </ul>
+          </div>
+          <div class="w_text2" style="display:none;">
+            <ul>
+              <li class="left_table"><%:tx_power%>   :</li>
+	      <% local TxPower = uci:get("wireless", "general", "txpower")%>
+              <li class="right_table">
+                <select name="tx_power" size="1" onchange = "TxPowerValue()">
+                  <option value = 18 <%if TxPower == "18" then%> selected <%end%> >18 dBm</option>
+                  <option value = 12  <%if TxPower == "12"  then%> selected <%end%> >12 dBm</option>
+                  <option value = 6  <%if TxPower == "6"  then%> selected <%end%> >6 dBm</option>
+                  <option value = 2  <%if TxPower == "2"  then%> selected <%end%> >2 dBm</option>
+                </select>
+                <script language = "JavaScript">
+	        function TxPowerValue()
+	        {
+	        	var TxPowerValue = document.forms[0].tx_power.value;
+	                //alert(TxPowerValue)
+	                document.forms[0].TxPower_value.value = TxPowerValue;
+                }
+	        </script>
+	        <input name="TxPower_value" id="TxPower_value" type= "hidden" maxlength="15" size="15" value="<%=TxPower%>" />		
+	      </li>
+            </ul>
+          </div>
+          <div class="w_text2" style="display:none;">
+          <%local bandwidth = uci:get("wireless", "general","htmode")%>
+            <ul>
+              <li class="left_table"><%:channel_width%> :</li>
+              <li class="right_table">
+                <select name="ChWidth_select" size="1" onchange="doWidthChange(this.selectedIndex);">
+                  <option value="HT20" <%if bandwidth == "HT20" then%> selected="selected" <%end%>>20 MHz</option>
+                  <option value="HT40" <%if ((bandwidth == "HT40-") or (bandwidth == "HT40+")) then%>selected="selected"<%end%>>40 MHz</option>
+                </select>
+              </li>
+            </ul>
+          </div>
+          <div class="w_text2">
+          <%local mode = uci:get("wireless", "general", "hwmode")%>
+			<ul>
+              <li class="left_table"><%:channel_mode%> :</li>
+			  <% local hwmode = uci:get("wireless", "general", "hwmode") %>
+              <li class="right_table">
+                <select name="Mode_select" id="Mode_select" size="1">
+                  <option value="11g"   <%if mode == "11g"   then%>selected="selected"<%end%>>802.11 b/g   </option>
+                  <option value="11ng"  <%if mode == "11ng"  then%>selected="selected"<%end%>>802.11 b/g/n   </option>
+                </select>
+                <select name="Mode_select_5G" id="Mode_select_5G" size="1">
+                  <option value="11n"   <%if mode == "11n"   then%>selected="selected"<%end%>>802.11 n   </option>
+                </select>
+				<script language="javascript">
+				{
+					var hwmode = "<%=hwmode%>";
+					
+					if (hwmode == "11n") {
+						$("#Mode_select").hide();
+						document.getElementById("Mode_select").value = "";
+						document.getElementById("Mode_select_5G").value = hwmode;
+					}
+					
+					if (hwmode == "11g" || hwmode == "11ng") {
+						$("#Mode_select_5G").hide();
+						document.getElementById("Mode_select_5G").value = "";
+						document.getElementById("Mode_select").value = hwmode;
+					}					
+					
+				}
+				</script>				
+              </li>
+            </ul>
+          </div>
+		  <div class="w_text2" style="display:none;">
+		  <%local idlemode = uci:get("wireless", "general", "idlemode")%>
+		  <ul>
+		  <li class="left_table"><%:idle_mode%> :</li>
+		  <li class="right_table">
+			<select name="idlemode_select" size="1" onchange="doModeChange(this.selectedIndex);">
+				<option value="0"   <%if idlemode == "0"   then%>selected="selected"<%end%>>Disable   </option>
+				<option value="1200"   <%if idlemode == "1200"   then%>selected="selected"<%end%>>20 Min   </option>
+			</select>
+		  </li>
+		  </ul>
+		  </div>
+          <% local auth = uci:get("wireless", "wlan0", "auth")%>
+          <% local _encryption = uci:get("wireless", "wlan0", "_encryption")%>
+          <% local security = "NONE"
+             if _encryption =="NONE" then
+           	security ="NONE"
+             end
+             if _encryption =="WEP" then
+                security ="WEP"
+             end
+             if auth =="WPAPSK" then
+                security ="WPAPSK"
+             end
+             if auth =="WPA2PSK" then
+                security ="WPA2PSK"
+             end
+             if auth =="WPAPSKWPA2PSK" then
+                security ="WPAPSKWPA2PSK"
+             end			 
+          %>
+          <div class="space"></div>
+          <div class="title"><%:security%></div>
+          <div class="w_text">
+            <ul>
+              <li class="left_table"><%:security_mode%> :</li>
+              <li class="right_table">
+                <select name="security_mode" size="1" onchange="doSecurityChange(this.selectedIndex);">
+                  <option value="NONE" 	     <%if _encryption == "NONE" then%>selected="selected"<%end%> ><%:no_security%></option>
+                  <option value="WEP"  	     <%if _encryption =="WEP" then %>selected="selected"<%end%>><%:static_wep%></option>
+                  <option value="WPAPSK"     <%if auth =="WPAPSK" then %>selected="selected"<%end%>><%:wpa_psk%></option>
+                  <option value="WPA2PSK"    <%if auth =="WPA2PSK" then %>selected="selected"<%end%>><%:wpa2_psk%></option>
+				  <option value="WPAPSKWPA2PSK"    <%if auth =="WPAPSKWPA2PSK" then %>selected="selected"<%end%>><%:wpa2_wpa_psk%></option>
+                </select>
+                <input name="security_value" id="security_value" type= "hidden" maxlength="15" size="15" value="<%=security%>" />			
+              </li>
+            </ul>
+          </div>
+		  <span id="div_encryption" class="off">
+		  <div class="w_text">
+		    <ul>
+			  <li class="left_table"><%:encryption_method%> :</li>
+			  <li class="right_table">
+                <select name="encryption_method" size="1">
+                  <option value="AES" 	     <%if _encryption == "AES" then%>selected="selected"<%end%> ><%:aes%></option>
+				  <option value="TKIP" 	     <%if _encryption == "TKIP" then%>selected="selected"<%end%> ><%:tkip%></option>
+				  <option value="AES/TKIP" 	     <%if _encryption == "AES/TKIP" then%>selected="selected"<%end%> ><%:aes_tkip%></option>
+                </select>			  
+			  </li>
+			</ul>  
+		  </div>
+		  </span>
+<!-- WEP -->
+          <div class="space"></div>
+          <span id="div_wep" class="off">
+            <div class="w_text">
+            <% local GeneralWEPEncryp64_128 = uci:get("wireless", "wlan0", "wepencryp128")%>
+              <ul>
+                <li class="left_table">WEP <%:_encryption%> :</li>
+                <li class="right_table">
+                  <select name="wep_encry" id="wep_encry" size="1" onchange="doWEP64_128(this.selectedIndex)">
+                    <option value="0" <%if GeneralWEPEncryp64_128 == "0" then%>selected="selected"<%end%> ><%:64bits%></option>
+                    <option value="1" <%if GeneralWEPEncryp64_128 == "1" then%>selected="selected"<%end%> ><%:128bits%></option>
+                  </select>
+                  <input name="WEP64_128" id="WEP64_128" type= "hidden" maxlength="15" size="15" value="WEP64_128" />
+                  <input name="wep_key128" id="wep_key128" type= "hidden" maxlength="15" value="">	
+                </li>
+              </ul>
+            </div>
+            <div class="w_text">
+              <ul>
+                <li class="left_table"><%:auth_method%> :</li>
+                <li class="right_table">
+                  <select name="auth_method" id="auth_method" size="1">
+                    <option value="WEPOPEN" <%if auth == "WEPOPEN" then%>selected="selected"<%end%> ><%:wep_open%></option>
+                    <option value="SHARED" <%if auth == "SHARED" then%>selected="selected"<%end%>><%:shared_key%></option>
+                  </select>
+                </li>
+              </ul>
+            </div>
+            <div class="spaceair"></div>
+            <div class="w_text"><span class="i_note"><%:note%>:</span> </div>
+            <div class="w_text">
+              <span class="i_note_a"><%:wlan_note1%></span>
+            </div>
+            <div class="w_text">
+              <span class="i_note_a"><%:wlan_note2%></span>
+            </div>
+            <div class="w_text">
+              <span class="i_note_a">(<%:wlan_note3%>)</span>
+            </div>
+            <div class="spaceair"></div>
+            <% local key_index = uci:get("wireless", "wlan0", "key")%>
+            <% local WEPKey_Code = uci:get("wireless", "wlan0", "keytype")%>
+            <% local key1 = uci:get("wireless", "wlan0", "key1")%>
+            <% local key2 = uci:get("wireless", "wlan0", "key2")%>
+            <% local key3 = uci:get("wireless", "wlan0", "key3")%>
+            <% local key4 = uci:get("wireless", "wlan0", "key4")%>
+            <div class="w_text">
+              <li class="w_text">
+                <table width="95%" border="0" align="center" cellpadding="0" cellspacing="0">
+                  <tr>                
+                    <td width="15%"></td>
+                    <td>
+		      <input name="WEPKey_Code" id="radio" type="radio"  value="0" <%if WEPKey_Code == "0" then%> checked = "CHECKED" <%end%> />
+		      <font id="GeneralWEPASCII">ASCII</font>
+		      <input name="WEPKey_Code" id="radio2" type="radio"  value="1" <%if WEPKey_Code ~= "0" then%> checked = "CHECKED" <%end%> />
+		      <font id="GeneralWEPHex">Hex</font>
+                    </td>
+                  </tr>
+                </table>
+              </li>
+              <li class="w_text">
+                <table width="95%" border="0" align="center" cellpadding="0" cellspacing="0">                  
+                  <tr>
+                    <td width="15%" id="secureWEPKey1">
+                      <input type="radio" name="DefWEPKey" value="1" <%if (key_index == "1" or ((auth ~= "WEPOPEN") or (auth ~= "SHARED"))) then%> checked = "CHECKED" <%end%> />
+                      <font id="GeneralWEPKEY1"><%:key%> 1</font>
+                    </td>
+                    <td>
+		      <input name="wep_key_1" id="wep_key_1" size="28" maxlength="26" <%if (key1 and ((auth == "WEPOPEN") or (auth == "SHARED"))) then%> value="<%=key1%>" <%else%> value="" <%end%> type="password" onKeyUp="setChange(1)" />
+                    </td>
+                  </tr>
+                </table>
+              </li>									
+              <li class="w_text">
+                <table width="95%" border="0" align="center" cellpadding="0" cellspacing="0">
+                  <tr>               
+                    <td width="15%" id="secureWEPKey2">
+                      <input type="radio" name="DefWEPKey" value="2" <%if key_index == "2" then%> checked = "CHECKED" <%end%> />
+                      <font id="GeneralWEPKEY2"><%:key%> 2</font>
+                    </td>
+                    <td>
+                      <input name="wep_key_2" id="wep_key_2" size="28" maxlength="26" <%if (key2 and ((auth == "WEPOPEN") or (auth == "SHARED"))) then%> value="<%=key2%>" <%else%> value="" <%end%> type="password" onKeyUp="setChange(1)" />
+                    </td>
+                  </tr>
+                </table>
+	      </li>
+              <li class="w_text">
+                <table width="95%" border="0" align="center" cellpadding="0" cellspacing="0">
+                  <tr>                  
+                    <td width="15%" id="secureWEPKey3">
+                      <input type="radio" name="DefWEPKey" value="3" <%if key_index == "3" then%> checked = "CHECKED" <%end%> />
+                      <font id="GeneralWEPKEY3"><%:key%> 3</font>
+                    </td>
+                    <td>
+                      <input name="wep_key_3" id="wep_key_3" size="28" maxlength="26" <%if (key3 and ((auth == "WEPOPEN") or (auth == "SHARED"))) then%> value="<%=key3%>" <%else%> value="" <%end%> type="password" onKeyUp="setChange(1)" />
+                    </td>
+                  </tr>
+                </table>
+              </li>
+              <li class="w_text">
+                <table width="95%" border="0" align="center" cellpadding="0" cellspacing="0">
+                  <tr>                  
+                    <td width="15%" id="secureWEPKey4">
+                      <input type="radio" name="DefWEPKey" value="4" <%if key_index == "4" then%> checked = "CHECKED" <%end%> />
+                      <font id="GeneralWEPKEY4"><%:key%> 4</font>
+                    </td>
+                    <td>
+                      <input name="wep_key_4" id="wep_key_4" size="28" maxlength="26" <%if (key4 and ((auth == "WEPOPEN") or (auth == "SHARED"))) then%> value="<%=key4%>" <%else%> value="" <%end%> type="password" onKeyUp="setChange(1)" />
+                    </td>
+                  </tr>
+                </table>
+              </li>			
+            </div>
+          </span>
+          <span id="wpa_passphrase" class="off">                
+            <div class="w_text">
+              <ul>
+                <li class="left_table"><%:psk%></li>
+                <li class="right_table">
+	          <% 
+				-- Modify the display errors of "Pre-Shared Key" for expert mode, NBG5715, WenHsiang, 2012/04/30
+                -- The 『"』 character and the 『\』 character will lead to some display errors.
+                -- We must use the escape characters to avoid some display errors. 
+			    local PSKey = uci:get("wireless", "wlan0", "WPAPSKkey")
+				if PSKey then
+					PSKey = PSKey:gsub("\\","\\\\")
+					PSKey = PSKey:gsub("\"", "\\\"")
+				end
+              %>
+	          <input name="PSKey" id="PSKey" size="28" maxlength="64" onKeyUp="setChange(1)" <% if (PSKey and ((auth == "WPAPSK") or (auth == "WPA2PSK") or (auth == "WPAPSKWPA2PSK")))then %>value="<%=PSKey%>"	<%else%> value=""	<% end %> type="password" />
+			 </li>
+	      </ul>
+            </div>
+          </span>
+          <div class="spaceair"></div>
+        </ul>				
+      </div>
+    </li>
+    <li class="table_button"> 
+      <div class="button" align="center">
+        <input name="sysSubmit" value="<%:apply%>" type="submit" />
+        &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+        <input name="Cancel" value="<%:cancel%>" type="button" onclick="window.location.href=window.location.href" /> 
+      </div> 
+    </li>
+  </ul>
+</div>
+</form>
+</body>
+</html>

@@ -1,0 +1,354 @@
+Index: u-boot-2014.04/common/image.c
+===================================================================
+--- u-boot-2014.04.orig/common/image.c	2016-03-03 15:28:57.908706117 +0800
++++ u-boot-2014.04/common/image.c	2016-03-03 15:31:05.334861694 +0800
+@@ -138,6 +138,8 @@
+ 	{	IH_TYPE_STANDALONE, "standalone", "Standalone Program", },
+ 	{	IH_TYPE_UBLIMAGE,   "ublimage",   "Davinci UBL image",},
+ 	{	IH_TYPE_MXSIMAGE,   "mxsimage",   "Freescale MXS Boot Image",},
++	/* __MSTC__, Ben add below to support combo image header */
++	{	IH_TYPE_COMBO,   "comboimage",   "kernel + RootFS",},
+ 	{	-1,		    "",		  "",			},
+ };
+ 
+Index: u-boot-2014.04/include/image.h
+===================================================================
+--- u-boot-2014.04.orig/include/image.h	2016-03-03 15:13:12.932272764 +0800
++++ u-boot-2014.04/include/image.h	2016-03-03 16:06:03.256629483 +0800
+@@ -218,6 +218,8 @@
+ #define IH_TYPE_KERNEL_NOLOAD	14	/* OS Kernel Image, can run from any load address */
+ #define IH_TYPE_PBLIMAGE	15	/* Freescale PBL Boot Image	*/
+ #define IH_TYPE_MXSIMAGE	16	/* Freescale MXSBoot Image	*/
++/* __MSTC__, Ben add below */
++#define IH_TYPE_COMBO	17	/* MSTC, kernel + RootFS */
+ 
+ /*
+  * Compression Types
+@@ -229,7 +231,8 @@
+ #define IH_COMP_LZO		4	/* lzo   Compression Used	*/
+ 
+ #define IH_MAGIC	0x27051956	/* Image Magic Number		*/
+-#define IH_NMLEN		32	/* Image Name Length		*/
++#define IH_COMBO_MAGIC	0x434F4D42	/* __MSTC__, Ben: Combo Image Magic Number		*/
++#define IH_NMLEN		24	/* Image Name Length		*/
+ 
+ /* Reused from common.h */
+ #define ROUND(a, b)		(((a) + (b) - 1) & ~((b) - 1))
+@@ -251,6 +254,9 @@
+ 	uint8_t		ih_type;	/* Image Type			*/
+ 	uint8_t		ih_comp;	/* Compression Type		*/
+ 	uint8_t		ih_name[IH_NMLEN];	/* Image Name		*/
++	/* __MSTC__, Ben add below for combo image checksum */
++	uint32_t	ih_combo_size;	/* Combo Image Data Size */
++	uint32_t	ih_combo_dcrc;	/* Combo Image Data CRC Checksum	*/
+ } image_header_t;
+ 
+ typedef struct image_info {
+@@ -511,6 +517,8 @@
+ image_get_hdr_l(load)		/* image_get_load */
+ image_get_hdr_l(ep)		/* image_get_ep */
+ image_get_hdr_l(dcrc)		/* image_get_dcrc */
++/* __MSTC__, Ben add below to support combo iamge header */
++image_get_hdr_l(combo_size)		/* image_get_combo_size */
+ 
+ #define image_get_hdr_b(f) \
+ 	static inline uint8_t image_get_##f(const image_header_t *hdr) \
+@@ -569,6 +577,9 @@
+ image_set_hdr_l(load)		/* image_set_load */
+ image_set_hdr_l(ep)		/* image_set_ep */
+ image_set_hdr_l(dcrc)		/* image_set_dcrc */
++/* __MSTC__, Ben add below */
++image_set_hdr_l(combo_size)		/* image_set_combo_size */
++image_set_hdr_l(combo_dcrc)		/* image_set_combo_dcrc */
+ 
+ #define image_set_hdr_b(f) \
+ 	static inline void image_set_##f(image_header_t *hdr, uint8_t val) \
+Index: u-boot-2014.04/tools/Makefile
+===================================================================
+--- u-boot-2014.04.orig/tools/Makefile	2016-03-03 15:13:48.485235472 +0800
++++ u-boot-2014.04/tools/Makefile	2016-03-03 15:17:23.218833599 +0800
+@@ -87,7 +87,8 @@
+ 			sha1.o \
+ 			ublimage.o \
+ 			$(LIBFDT_OBJS) \
+-			$(RSA_OBJS-y)
++			$(RSA_OBJS-y) \
++			comboimage.o
+ 
+ dumpimage$(SFX)-objs := $(dumpimage-mkimage-objs) dumpimage.o
+ mkimage$(SFX)-objs   := $(dumpimage-mkimage-objs) mkimage.o
+Index: u-boot-2014.04/tools/comboimage.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ u-boot-2014.04/tools/comboimage.c	2016-03-03 15:56:38.045494812 +0800
+@@ -0,0 +1,184 @@
++/*
++ * (C) Copyright 2008 Semihalf
++ *
++ * (C) Copyright 2000-2004
++ * DENX Software Engineering
++ * Wolfgang Denk, wd@denx.de
++ *
++ * Updated-by: Prafulla Wadaskar <prafulla@marvell.com>
++ *		default_image specific code abstracted from mkimage.c
++ *		some functions added to address abstraction
++ *
++ * All rights reserved.
++ *
++ * SPDX-License-Identifier:	GPL-2.0+
++ */
++
++#include "imagetool.h"
++#include <image.h>
++#include <u-boot/crc.h>
++
++static image_header_t header;
++
++static int image_check_image_types(uint8_t type)
++{
++	if (type == IH_TYPE_COMBO)
++		return EXIT_SUCCESS;
++	else
++		return EXIT_FAILURE;
++}
++
++static int image_check_params(struct image_tool_params *params)
++{
++	return	((params->dflag && (params->fflag || params->lflag)) ||
++		(params->fflag && (params->dflag || params->lflag)) ||
++		(params->lflag && (params->dflag || params->fflag)));
++}
++
++static int image_verify_header(unsigned char *ptr, int image_size,
++			struct image_tool_params *params)
++{
++	uint32_t len;
++	const unsigned char *data;
++	uint32_t checksum;
++	image_header_t header;
++	image_header_t *hdr = &header;
++
++	/*
++	 * create copy of header so that we can blank out the
++	 * checksum field for checking - this can't be done
++	 * on the PROT_READ mapped data.
++	 */
++	memcpy(hdr, ptr, sizeof(image_header_t));
++
++	if (be32_to_cpu(hdr->ih_magic) != IH_COMBO_MAGIC) {
++		fprintf(stderr,
++			"%s: Bad Magic Number: \"%s\" is no valid image...\n",
++			params->cmdname, params->imagefile);
++		return -FDT_ERR_BADMAGIC;
++	}
++
++	data = (const unsigned char *)hdr;
++	len  = sizeof(image_header_t);
++
++	checksum = be32_to_cpu(hdr->ih_hcrc);
++	hdr->ih_hcrc = cpu_to_be32(0);	/* clear for re-calculation */
++
++	if (crc32(0, data, len) != checksum) {
++		fprintf(stderr,
++			"%s: ERROR: \"%s\" has bad header checksum!\n",
++			params->cmdname, params->imagefile);
++		return -FDT_ERR_BADSTATE;
++	}
++
++	data = (const unsigned char *)ptr + sizeof(image_header_t);
++	len  = image_size - sizeof(image_header_t) ;
++
++	checksum = be32_to_cpu(hdr->ih_combo_dcrc);
++	if (crc32(0, data, len) != checksum) {
++		fprintf(stderr,
++			"%s: ERROR: \"%s\" has corrupted data!\n",
++			params->cmdname, params->imagefile);
++		return -FDT_ERR_BADSTRUCTURE;
++	}
++	return 0;
++}
++
++static void image_set_header(void *ptr, struct stat *sbuf, int ifd,
++				struct image_tool_params *params)
++{
++	uint32_t checksum;
++
++	image_header_t * hdr = (image_header_t *)ptr;
++	checksum = crc32(0,
++			(const unsigned char *)(ptr +
++				sizeof(image_header_t)),
++			sbuf->st_size - sizeof(image_header_t));
++
++	/* Update header */
++	image_set_magic(hdr, IH_COMBO_MAGIC);
++
++	image_set_combo_size(hdr, sbuf->st_size - sizeof(image_header_t));
++	image_set_combo_dcrc(hdr, checksum);
++
++	image_set_hcrc(hdr, 0); // clean old header checksum before re-calculation
++	checksum = crc32(0, (const unsigned char *)hdr,
++				sizeof(image_header_t));
++	image_set_hcrc(hdr, checksum);
++}
++
++static int image_save_datafile(struct image_tool_params *params,
++			       ulong file_data, ulong file_len)
++{
++	int dfd;
++	const char *datafile = params->outfile;
++
++	dfd = open(datafile, O_RDWR | O_CREAT | O_TRUNC | O_BINARY,
++		   S_IRUSR | S_IWUSR);
++	if (dfd < 0) {
++		fprintf(stderr, "%s: Can't open \"%s\": %s\n",
++			params->cmdname, datafile, strerror(errno));
++		return -1;
++	}
++
++	if (write(dfd, (void *)file_data, file_len) != (ssize_t)file_len) {
++		fprintf(stderr, "%s: Write error on \"%s\": %s\n",
++			params->cmdname, datafile, strerror(errno));
++		close(dfd);
++		return -1;
++	}
++
++	close(dfd);
++
++	return 0;
++}
++
++static int image_extract_datafile(void *ptr, struct image_tool_params *params)
++{
++	const image_header_t *hdr = (const image_header_t *)ptr;
++	ulong file_data;
++	ulong file_len;
++
++	if (image_check_type(hdr, IH_TYPE_MULTI)) {
++		ulong idx = params->pflag;
++		ulong count;
++
++		/* get the number of data files present in the image */
++		count = image_multi_count(hdr);
++
++		/* retrieve the "data file" at the idx position */
++		image_multi_getimg(hdr, idx, &file_data, &file_len);
++
++		if ((file_len == 0) || (idx >= count)) {
++			fprintf(stderr, "%s: No such data file %ld in \"%s\"\n",
++				params->cmdname, idx, params->imagefile);
++			return -1;
++		}
++	} else {
++		file_data = image_get_data(hdr);
++		file_len = image_get_size(hdr);
++	}
++
++	/* save the "data file" into the file system */
++	return image_save_datafile(params, file_data, file_len);
++}
++
++/*
++ * Combo image type parameters definition
++ */
++static struct image_type_params comboimage_params = {
++	.name = "Combo Image support",
++	.header_size = sizeof(image_header_t),
++	.hdr = (void*)&header,
++	.check_image_type = image_check_image_types,
++	.verify_header = image_verify_header,
++	.print_header = image_print_contents,
++	.set_header = image_set_header,
++	.extract_datafile = image_extract_datafile,
++	.check_params = image_check_params,
++};
++
++void init_combo_image_type(void)
++{
++	register_image_type(&comboimage_params);
++}
+Index: u-boot-2014.04/tools/imagetool.c
+===================================================================
+--- u-boot-2014.04.orig/tools/imagetool.c	2016-03-03 15:13:34.607976946 +0800
++++ u-boot-2014.04/tools/imagetool.c	2016-03-03 15:15:01.348568452 +0800
+@@ -45,6 +45,8 @@
+ 	init_ubl_image_type();
+ 	/* Init Davinci AIS support */
+ 	init_ais_image_type();
++	/* __MSTC__, Ben: Init combo image (Kernel+RootFS) support */
++	init_combo_image_type();
+ }
+ 
+ /*
+Index: u-boot-2014.04/tools/imagetool.h
+===================================================================
+--- u-boot-2014.04.orig/tools/imagetool.h	2016-03-03 15:13:40.617245838 +0800
++++ u-boot-2014.04/tools/imagetool.h	2016-03-03 15:15:09.112888221 +0800
+@@ -58,6 +58,7 @@
+ 	const char *keydest;	/* Destination .dtb for public key */
+ 	const char *comment;	/* Comment to add to signature node */
+ 	int require_keys;	/* 1 to mark signing keys as 'required' */
++	int updatehdr; /* __MSTC__, Ben: only update original header for combo image */
+ };
+ 
+ /*
+@@ -168,6 +169,8 @@
+ void init_fit_image_type(void);
+ void init_ubl_image_type(void);
+ void init_omap_image_type(void);
++/* __MSTC__, Ben add below */
++void init_combo_image_type(void);
+ 
+ void pbl_load_uboot(int fd, struct image_tool_params *mparams);
+ 
+Index: u-boot-2014.04/tools/mkimage.c
+===================================================================
+--- u-boot-2014.04.orig/tools/mkimage.c	2016-03-03 15:13:59.112793650 +0800
++++ u-boot-2014.04/tools/mkimage.c	2016-03-03 16:10:55.989088064 +0800
+@@ -279,6 +279,9 @@
+ 			case 'x':
+ 				params.xflag++;
+ 				break;
++			case 'u':
++				params.updatehdr = 1;
++				break;
+ 			default:
+ 				usage ();
+ 			}
+@@ -393,11 +396,13 @@
+ 	else
+ 		memset(tparams->hdr, 0, tparams->header_size);
+ 
+-	if (write(ifd, tparams->hdr, tparams->header_size)
+-					!= tparams->header_size) {
+-		fprintf (stderr, "%s: Write error on %s: %s\n",
+-			params.cmdname, params.imagefile, strerror(errno));
+-		exit (EXIT_FAILURE);
++	if (!params.updatehdr) { /* create new header */
++		if (write(ifd, tparams->hdr, tparams->header_size)
++						!= tparams->header_size) {
++			fprintf (stderr, "%s: Write error on %s: %s\n",
++				params.cmdname, params.imagefile, strerror(errno));
++			exit (EXIT_FAILURE);
++		}
+ 	}
+ 
+ 	if (!params.skipcpy) {
+@@ -634,7 +639,7 @@
+ 	fprintf (stderr, "Usage: %s -l image\n"
+ 			 "          -l ==> list image header information\n",
+ 		params.cmdname);
+-	fprintf (stderr, "       %s [-x] -A arch -O os -T type -C comp -M magic "
++	fprintf (stderr, "       %s [-u] [-x] -A arch -O os -T type -C comp -M magic "
+ 			 "-a addr -e ep -n name -d data_file[:data_file...] image\n"
+ 			 "          -A ==> set architecture to 'arch'\n"
+ 			 "          -O ==> set operating system to 'os'\n"
+@@ -645,7 +650,8 @@
+ 			 "          -e ==> set entry point to 'ep' (hex)\n"
+ 			 "          -n ==> set image name to 'name'\n"
+ 			 "          -d ==> use image data from 'datafile'\n"
+-			 "          -x ==> set XIP (execute in place)\n",
++			 "          -x ==> set XIP (execute in place)\n"
++			 "          -u ==> only update original image header, don't add new header\n",
+ 		params.cmdname);
+ 	fprintf(stderr, "       %s [-D dtc_options] [-f fit-image.its|-F] fit-image\n",
+ 		params.cmdname);

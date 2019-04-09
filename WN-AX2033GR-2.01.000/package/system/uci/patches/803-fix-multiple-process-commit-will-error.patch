@@ -1,0 +1,266 @@
+Index: uci-2014-04-11.1/cli.c
+===================================================================
+--- uci-2014-04-11.1.orig/cli.c	2017-02-16 10:31:42.277543296 +0800
++++ uci-2014-04-11.1/cli.c	2017-02-16 14:10:33.871103894 +0800
+@@ -15,14 +15,17 @@
+ #include <string.h>
+ #include <stdlib.h>
+ #include <unistd.h>
++#include "uci.h"
+ #ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
+ #include <sys/wait.h>
+ #include <errno.h>
++#include <fcntl.h>
++#include <semaphore.h>
+ #endif
+-#include "uci.h"
+ 
+ #define MAX_ARGS	4 /* max command line arguments for batch mode */
+ 
++
+ static const char *delimiter = " ";
+ static const char *appname;
+ static enum {
+@@ -380,10 +383,77 @@
+ 	unsigned long chksum1;
+ 	unsigned long chksum2;
+ 	int i;
++	sem_t *semaphore;
++	int uci_pid = 0;
++	char pidbuf[6];
++	FILE *fp;
++	struct timespec ts;
++	int st;
+ #endif
+ 	if (argc > 2)
+ 		return 255;
+ #ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++	semaphore = sem_open(SEM_NAME, O_CREAT, 0644, 1);
++	if (semaphore == SEM_FAILED) {
++		perror("sem_open(3) failed");
++		exit(EXIT_FAILURE);
++	}
++	if (clock_gettime(CLOCK_REALTIME, &ts) == -1) {
++		perror("clock_gettime");
++		exit(EXIT_FAILURE);
++	}
++	ts.tv_sec += SEM_TIMEOUT;
++get_sem:
++	st = sem_timedwait(semaphore, &ts);
++	memset(pidbuf, 0, 6);
++	if (st == -1) {
++		if (errno == ETIMEDOUT) {
++			printf("sem_timedwait() timed out\n");
++			fp = fopen(UCI_PID_PATH, "r");
++			if ( fp == NULL ) {
++				if (errno == ENOENT) {
++					if (sem_post(semaphore) < 0)
++						perror("sem_post(3) error on child");
++					goto get_sem;
++				}
++				perror("fopen pid");
++				if (sem_close(semaphore) < 0)
++					perror("sem_close(3) failed");
++				exit(EXIT_FAILURE);
++			}
++			fgets(pidbuf, 5, fp);
++			fclose(fp);
++			if (uci_pid == atoi(pidbuf)) {
++				if (sem_post(semaphore) < 0)
++					perror("sem_post(3) error on child");
++			}
++			else
++				uci_pid = atoi(pidbuf);
++			goto get_sem;
++		}
++		else {
++			perror("sem_timedwait");
++			exit(EXIT_FAILURE);
++		}
++	}
++	uci_pid = getpid();
++	fp = fopen(UCI_PID_PATH, "w");
++	if ( fp == NULL ) {
++		perror("fopen pid");
++		if (sem_post(semaphore) < 0)
++			perror("sem_post(3) error on child");
++
++		if (sem_close(semaphore) < 0)
++			perror("sem_close(3) failed");
++		exit(EXIT_FAILURE);
++	}
++	else {
++		snprintf(pidbuf, 6, "%d", uci_pid);
++		pidbuf[5] = '\0';
++		fputs(pidbuf, fp);	//	Save my PID to the file
++		fclose(fp);
++	}
++
+ 	switch(cmd) {
+ 	case CMD_COMMIT:
+ 		if (flags & CLI_FLAG_NOCOMMIT)
+@@ -423,8 +493,17 @@
+ 		//so that the file used to calculate cksum will contain all config file content.
+ 		//if command is commit, only run package_cmd once.
+ #endif
+-		if (argc == 2)
++		if (argc == 2) {
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++			if (sem_post(semaphore) < 0)
++				perror("sem_post(3) error on child");
++
++			if (sem_close(semaphore) < 0)
++				perror("sem_close(3) failed");
++			unlink(UCI_PID_PATH);
++#endif
+ 			return package_cmd(cmd, argv[1]);
++		}
+ #ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
+ 	}
+ #endif
+@@ -520,12 +599,25 @@
+ 		}
+ 		freeFileNameStrings(gint_config_num);
+ 	}
++
++	if (sem_post(semaphore) < 0)
++		perror("sem_post(3) error on child");
++
++	if (sem_close(semaphore) < 0)
++		perror("sem_close(3) failed");
++	unlink(UCI_PID_PATH);
+ #endif
+ 	return 0;
+ 
+ #ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
+ quit_do_package_cmd:	
+ 	freeFileNameStrings(gint_config_num);
++	if (sem_post(semaphore) < 0)
++		perror("sem_post(3) error on child");
++
++	if (sem_close(semaphore) < 0)
++		perror("sem_close(3) failed");
++	unlink(UCI_PID_PATH);
+ 	return 1;
+ #endif
+ }
+Index: uci-2014-04-11.1/uci.h
+===================================================================
+--- uci-2014-04-11.1.orig/uci.h	2017-02-16 10:31:27.881543097 +0800
++++ uci-2014-04-11.1/uci.h	2017-02-16 10:56:42.931985132 +0800
+@@ -47,6 +47,9 @@
+ #define MSTC_PERSIST_CFG1SIZE		"cfg1Size"
+ #define MSTC_PERSIST_CFG1CHKSUM		"cfg1Chksum"
+ #define MSTC_UCI_CFG_FILE_WHITE_LIST	"/etc/uciConfigList"
++#define SEM_NAME					"/semaphore_uci"
++#define UCI_PID_PATH				"/var/run/uci.pid"
++#define SEM_TIMEOUT					5	//sec
+ #endif
+ enum
+ {
+Index: uci-2014-04-11.1/lua/uci.c
+===================================================================
+--- uci-2014-04-11.1.orig/lua/uci.c	2017-02-16 10:31:27.881543097 +0800
++++ uci-2014-04-11.1/lua/uci.c	2017-02-16 13:38:33.985945283 +0800
+@@ -22,6 +22,8 @@
+ #include <errno.h>
+ #ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
+ #include <sys/wait.h>
++#include <fcntl.h>
++#include <semaphore.h>
+ #endif
+ 
+ #include <lauxlib.h>
+@@ -670,8 +672,77 @@
+ 	unsigned long chksum1;
+ 	unsigned long chksum2;
+ 	int i;
++	sem_t *semaphore;
++	int uci_pid = 0;
++	char pidbuf[6];
++	FILE *fp;
++	struct timespec ts;
++	int st;
+ 	#endif
+ 
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++	semaphore = sem_open(SEM_NAME, O_CREAT, 0644, 1);
++	if (semaphore == SEM_FAILED) {
++		perror("sem_open(3) failed");
++		exit(EXIT_FAILURE);
++	}
++	if (clock_gettime(CLOCK_REALTIME, &ts) == -1) {
++		perror("clock_gettime");
++		exit(EXIT_FAILURE);
++	}
++	ts.tv_sec += SEM_TIMEOUT;
++get_sem:
++	st = sem_timedwait(semaphore, &ts);
++	memset(pidbuf, 0, 6);
++	if (st == -1) {
++		if (errno == ETIMEDOUT) {
++			printf("sem_timedwait() timed out\n");
++			fp = fopen(UCI_PID_PATH, "r");
++			if ( fp == NULL ) {
++				if (errno == ENOENT) {
++					if (sem_post(semaphore) < 0)
++						perror("sem_post(3) error on child");
++					goto get_sem;
++				}
++				perror("fopen pid");
++				if (sem_close(semaphore) < 0)
++					perror("sem_close(3) failed");
++				exit(EXIT_FAILURE);
++			}
++			fgets(pidbuf, 5, fp);
++			fclose(fp);
++			if (uci_pid == atoi(pidbuf)) {
++				if (sem_post(semaphore) < 0)
++					perror("sem_post(3) error on child");
++			}
++			else
++				uci_pid = atoi(pidbuf);
++			goto get_sem;
++		}
++		else {
++			perror("sem_timedwait");
++			exit(EXIT_FAILURE);
++		}
++	}
++	uci_pid = getpid();
++	fp = fopen(UCI_PID_PATH, "w");
++	if ( fp == NULL ) {
++		perror("fopen pid");
++		if (sem_post(semaphore) < 0)
++			perror("sem_post(3) error on child");
++
++		if (sem_close(semaphore) < 0)
++			perror("sem_close(3) failed");
++		exit(EXIT_FAILURE);
++	}
++	else {
++		snprintf(pidbuf, 6, "%d", uci_pid);
++		pidbuf[5] = '\0';
++		fputs(pidbuf, fp);	//	Save my PID to the file
++		fclose(fp);
++	}
++#endif
++
+ 	ctx = find_context(L, &offset);
+ 	nargs = lua_gettop(L);
+ 	if ((cmd != CMD_REVERT) && (nargs - offset > 1))
+@@ -814,6 +885,14 @@
+ err:
+ 	if (s)
+ 		free(s);
++#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++	if (sem_post(semaphore) < 0)
++		perror("sem_post(3) error on child");
++
++	if (sem_close(semaphore) < 0)
++		perror("sem_close(3) failed");
++	unlink(UCI_PID_PATH);
++#endif
+ 	return uci_push_status(L, ctx, false);
+ }
+ 

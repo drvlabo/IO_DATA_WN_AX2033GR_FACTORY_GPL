@@ -1,0 +1,41 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Applying the settings. Please wait a moment"
+msgstr "設定反映中。しばらくお待ちください。"
+
+msgid "Seconds"
+msgstr "秒"
+
+msgid "Easy Connection"
+msgstr "かんたん接続"
+
+msgid "Look at the Screen Manual"
+msgstr "画面で見るマニュアル"
+
+msgid "Mobile View"
+msgstr "モバイル表示"
+
+msgid "Net Filtering"
+msgstr "ネットフィルタリング"
+
+msgid "Parental Control"
+msgstr "ペアレンタルコントロール"
+
+msgid "System Settings"
+msgstr "システム設定"
+
+msgid "Wireless Settings"
+msgstr "無線設定"
+
+msgid "PC Display"
+msgstr "詳細設定"
+
+msgid "Status"
+msgstr ""
+
+msgid "ECO"
+msgstr ""
+
+msgid "iobb.net"
+msgstr ""

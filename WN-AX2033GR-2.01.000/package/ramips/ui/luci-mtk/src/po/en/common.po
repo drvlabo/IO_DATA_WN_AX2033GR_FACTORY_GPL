@@ -1,0 +1,128 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "welcome_title_message"
+msgstr "Welcome to LTE Portable Router"
+
+msgid "Message"
+msgstr "Message"
+
+msgid "Ready"
+msgstr "Ready"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "dashboard"
+msgstr "Dashboard"
+
+msgid "Dashboard"
+msgstr "Dashboard"
+
+msgid "configuration"
+msgstr "Configuration"
+
+msgid "Configuration"
+msgstr "Configuration"
+
+msgid "monitor"
+msgstr "Monitor"
+
+msgid "Monitor"
+msgstr "Monitor"
+
+msgid "maintenance"
+msgstr "Maintenance"
+
+msgid "Maintenance"
+msgstr "Maintenance"
+
+msgid "Error"
+msgstr "Error"
+
+msgid "Apply"
+msgstr "Apply"
+
+msgid "apply"
+msgstr "Apply"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "cancel"
+msgstr "Cancel"
+
+msgid "disable"
+msgstr "Disable"
+
+msgid "enable"
+msgstr "Enable"
+
+msgid "Disable"
+msgstr "Disable"
+
+msgid "Enable"
+msgstr "Enable"
+
+msgid "passErrMsg2"
+msgstr "Your <New Password> is empty!"
+
+msgid "passErrMsg3"
+msgstr "Your <Retype to Confirm> is empty!"
+
+msgid "passErrMsg5"
+msgstr "Your <New Password> is not equal to <Retype to Confirm>!"
+
+msgid "passErrMsg8"
+msgstr "Password is not modified!"
+
+msgid "change_pw"
+msgstr "Change password"
+
+msgid "pass_warning_msg"
+msgstr "It is highly recommended to setup a new password instead of using the default one for security concern."
+
+msgid "new_password"
+msgstr "New Password"
+
+msgid "confirm_password"
+msgstr "Retype to Confirm"
+
+msgid "Skip"
+msgstr "Skip"
+
+msgid "Login_Msg_1_1"
+msgstr "Welcome to "
+
+msgid "Login_Msg_1_2"
+msgstr " configuration interface. Please enter username and password to login."
+
+msgid "Login_Msg_3"
+msgstr "An online administrator session already exists , still login in and substitute it?"
+
+msgid "Login_Msg_4"
+msgstr "Wrong account or password,please input again!"
+
+msgid "Login_Msg_4_1"
+msgstr " login attempts left."
+
+msgid "Login_Msg_5"
+msgstr "3 failed login attempts, login page will be blocked for 5 minutes."
+
+msgid "Username"
+msgstr "Username"
+
+msgid "Password"
+msgstr "Password"
+
+msgid "msg_confirm_1"
+msgstr "Are you sure you want to do that?"
+
+msgid "welcome"
+msgstr "Welcome"
+
+msgid "open_all"
+msgstr "open all"
+
+msgid "close_all"
+msgstr "close all"

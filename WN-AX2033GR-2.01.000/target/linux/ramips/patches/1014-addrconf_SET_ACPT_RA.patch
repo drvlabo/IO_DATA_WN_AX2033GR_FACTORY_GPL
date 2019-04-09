@@ -1,0 +1,22 @@
+Index: linux-3.10.14/net/ipv6/addrconf.c
+===================================================================
+--- linux-3.10.14.orig/net/ipv6/addrconf.c	2016-01-08 14:07:06.000000000 +0800
++++ linux-3.10.14/net/ipv6/addrconf.c	2017-07-25 16:55:31.986127300 +0800
+@@ -173,7 +173,7 @@
+ 	.forwarding		= 0,
+ 	.hop_limit		= IPV6_DEFAULT_HOPLIMIT,
+ 	.mtu6			= IPV6_MIN_MTU,
+-	.accept_ra		= 1,
++	.accept_ra		= 0,	//Exchange for support customized IPv4 over IPv6
+ 	.accept_redirects	= 1,
+ 	.autoconf		= 1,
+ 	.force_mld_version	= 0,
+@@ -208,7 +208,7 @@
+ 	.forwarding		= 0,
+ 	.hop_limit		= IPV6_DEFAULT_HOPLIMIT,
+ 	.mtu6			= IPV6_MIN_MTU,
+-	.accept_ra		= 1,
++	.accept_ra		= 0,	//Exchange for support customized IPv4 over IPv6
+ 	.accept_redirects	= 1,
+ 	.autoconf		= 1,
+ 	.dad_transmits		= 1,

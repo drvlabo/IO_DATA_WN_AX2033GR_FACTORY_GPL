@@ -1,0 +1,101 @@
+<%
+--require("luci.i18n").loadc("default")
+local i18n = require("luci.i18n")
+require("luci.http").prepare_content("text/html")
+local uci = require("luci.model.uci").cursor()
+-%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"  />
+<title>.::<%:welcome_title_message%>::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="<%=media%>/js/jquery-1.3.1.min.js"></script>
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script>
+$(document).ready(function()
+{		
+	path_msg_init();
+});
+var InitMode;
+function path_msg_init(){
+	showFullPath(' <%:maintenance%> > <%:oled_display%>');
+	showWebMessage( 0, '<%:Message%>', '<%:Ready%>' );
+}
+
+function SetOLEDDisplayTime()
+{
+		if(document.getElementById("screen_timeout").value == "0"){
+			document.getElementById("_screen_timeout").value = 0;
+		}else if (document.getElementById("screen_timeout").value == "30"){
+			document.getElementById("_screen_timeout").value = 30;
+		}else if (document.getElementById("screen_timeout").value == "60"){
+			document.getElementById("_screen_timeout").value = 60;
+		}else if (document.getElementById("screen_timeout").value == "300"){
+			document.getElementById("_screen_timeout").value = 300;
+		}else if (document.getElementById("screen_timeout").value == "600"){
+			document.getElementById("_screen_timeout").value = 600;
+		}else{
+			alert("Configuration error");
+		}
+}
+
+
+
+
+function submit_apply()
+{	
+	SetOLEDDisplayTime();
+}
+
+</script>
+</head>
+<body>
+<form onSubmit="return submit_apply()" method="post" name="OLEDForm" id="OLEDForm" action="<%=controller%>/expert/maintenance/oled">
+
+<div id="tabs">
+  <ul>
+	<li class="hightline"><a title="<%:oled_display%>"><span><%:oled_display%></span></a></li>
+  </ul>
+  <br class="clearfloat" />
+</div>
+<!-- Tab --> 
+<form name="oled_config">
+<div id="table">
+  <ul>
+    <li class="table_top"></li>
+    <li class="table_content">
+		<div class="data"> 
+			<ul>
+				<div class="title"><%:screen_management%></div>
+				<div class="w_text div_index"><b><%:screen_timeout%> : </b>
+					  <%							
+							local screen_timeout = uci.get("mtoled","oled","sleeptime")
+					  %>		
+						<select name="screen_timeout" id="screen_timeout" size="1" >						
+									<option value="0" <% if screen_timeout == "0" then %>selected="selected"<% end %> ><%:keep_screen_turned_on%></option>
+									<option value="30" <% if screen_timeout == "30" then %>selected="selected"<% end %> ><%:oled_30_sec%></option>
+									<option value="60" <% if screen_timeout == "60" then %>selected="selected"<% end %> ><%:oled_1_min%></option>
+									<option value="300" <% if screen_timeout == "300" then %>selected="selected"<% end %> ><%:oled_5_min%></option>
+									<option value="600" <% if screen_timeout == "600" then %>selected="selected"<% end %> ><%:oled_10_min%></option>
+						</select>
+						<input name="_screen_timeout" id="_screen_timeout" type="hidden" value="0"/> 
+						<input value="<%:set%>" id="sysSubmit" name="sysSubmit"  type="submit" />
+				  </div>			
+										
+				<div class="w_text"><b><span><%:oled_clear_wan_count%> </span></b>
+				<input value=<%:clear%> id="sysClear" name="sysClear" type="submit" />
+				</div>					
+				<div class="w_text">- <%:oled_clear_wan_count_warn%></div>		
+				
+				<div class="spaceair"></div>  
+			 </ul>				
+		 </div>
+     </li>
+     <li class="table_button">	
+	 </li>
+  </ul>
+</div>
+</form>
+</body>
+</html>

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ "$ACTION" = "start" ]; then
+[ -f /tmp/ipv6Debug ] && {
+echo "Dhcp6c hotpluc RA_dhcp6c start" > /dev/console
+}
+/etc/init.d/RA_dhcp6c start
+fi

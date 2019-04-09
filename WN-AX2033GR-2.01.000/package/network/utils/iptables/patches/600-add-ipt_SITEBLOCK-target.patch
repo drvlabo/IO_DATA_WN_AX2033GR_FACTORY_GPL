@@ -1,0 +1,124 @@
+Index: iptables-1.4.21/extensions/libipt_SITEBLOCK.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ iptables-1.4.21/extensions/libipt_SITEBLOCK.c	2016-10-03 16:31:29.639300929 +0800
+@@ -0,0 +1,119 @@
++#include <stdio.h>
++#include <string.h>
++#include <xtables.h>
++/* For 64bit kernel / 32bit userspace */
++#include <ipt_SITEBLOCK.h>
++
++#define IPT_SITEBLOCK_TIMEOUT_MIN 1000
++#define IPT_SITEBLOCK_TIMEOUT_MAX 3000
++
++enum {
++	O_SITEBLOCK_TARGET = 0,
++	O_SITEBLOCK_TIMEOUT,
++	O_SITEBLOCK_TRIGGER_STEP,
++};
++
++static void siteblock_help(void)
++{
++	printf(
++	"siteblock target options:\n"
++	" --timeout    						specify timeout value (msec) to free skb\n"
++	"              						***be careful! siteblock doesn't free skb, you must to set this value\n"
++	" --trigger_step [input|forward]	specify siteblock trigger by netfilter step\n"
++	);
++}
++
++static const struct xt_option_entry siteblock_opts[] = {
++	{.name = "timeout", .id = O_SITEBLOCK_TIMEOUT, .type = XTTYPE_UINT32,
++	 .min = IPT_SITEBLOCK_TIMEOUT_MIN, .max = IPT_SITEBLOCK_TIMEOUT_MAX},
++	{.name = "trigger_step", .id = O_SITEBLOCK_TRIGGER_STEP, .type = XTTYPE_STRING},
++	XTOPT_TABLEEND,
++};
++
++static void siteblock_init(struct xt_entry_target *t)
++{
++	struct ipt_siteblock_info *sbinfo = (struct ipt_siteblock_info *) t->data;
++
++	sbinfo->target = IPT_SITEBLOCK;
++}
++
++static void siteblock_parse(struct xt_option_call *cb)
++{
++	struct ipt_siteblock_info *sbinfo = cb->data;
++
++	xtables_option_parse(cb);
++	switch (cb->entry->id) {
++	case O_SITEBLOCK_TIMEOUT:
++		sbinfo->timeout = cb->val.u32;
++		break;
++	case O_SITEBLOCK_TRIGGER_STEP:
++		if ( !strcmp(cb->arg, "input") ) {
++			sbinfo->flags |= IPT_SITEBLOCK_FLAG_INPUT_TRIGGER;
++		}
++		else if ( !strcmp(cb->arg, "forward") ) {
++			sbinfo->flags |= IPT_SITEBLOCK_FLAG_FORWARD_TRIGGER;
++		}
++		else {
++			xtables_error(PARAMETER_PROBLEM, "Bad trigger_step \"%s\"", cb->arg);
++		}
++		break;
++	}
++}
++
++static void siteblock_save(const void *ip, const struct xt_entry_target *target)
++{
++	const struct ipt_siteblock_info *sbinfo
++	    = (const struct ipt_siteblock_info *) target->data;
++#if 0
++	if ( sbinfo->timeout != 0 ) {
++		fputs(" --tiemout", stdout);
++		xtables_save_string(loginfo->prefix);
++	}
++
++	if (loginfo->nl_group != ULOG_DEFAULT_NLGROUP)
++		printf(" --ulog-nlgroup %d", ffs(loginfo->nl_group));
++	if (loginfo->copy_range)
++		printf(" --ulog-cprange %u", (unsigned int)loginfo->copy_range);
++
++	if (loginfo->qthreshold != ULOG_DEFAULT_QTHRESHOLD)
++		printf(" --ulog-qthreshold %u", (unsigned int)loginfo->qthreshold);
++#endif
++}
++
++static void siteblock_print(const void *ip, const struct xt_entry_target *target,
++                       int numeric)
++{
++	const struct ipt_siteblock_info *sbinfo
++	    = (const struct ipt_siteblock_info *) target->data;
++
++	if ( sbinfo->timeout != 0 ) {
++		printf("tiemout %d(ms) ", sbinfo->timeout);
++	}
++
++	if ( sbinfo->flags & IPT_SITEBLOCK_FLAG_INPUT_TRIGGER ) {
++		printf("trigger_step at input");
++	}
++	else if ( sbinfo->flags & IPT_SITEBLOCK_FLAG_FORWARD_TRIGGER ) {
++		printf("trigger_step at forward");
++	}
++}
++
++static struct xtables_target siteblock_tg_reg = {
++	.name		= IPT_SITEBLOCK_NAME,
++	.version	= XTABLES_VERSION,
++	.family		= NFPROTO_IPV4,
++	.size		= XT_ALIGN(sizeof(struct ipt_siteblock_info)),
++	.userspacesize	= XT_ALIGN(sizeof(struct ipt_siteblock_info)),
++	.help		= siteblock_help,
++	.init		= siteblock_init,
++	.print		= siteblock_print,
++	.save		= siteblock_save,
++	.x6_parse	= siteblock_parse,
++	.x6_options	= siteblock_opts,
++};
++
++void _init(void)
++{
++	xtables_register_target(&siteblock_tg_reg);
++}
++

@@ -1,0 +1,32 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Time limit"
+msgstr "時間の制限"
+
+msgid "Enable Time Limit function."
+msgstr "時間の制限機能を利用する"
+
+msgid "Description"
+msgstr "説明"
+
+msgid "MAC address of limited device"
+msgstr "制限する機器のMACアドレス"
+
+msgid "Time that can be used"
+msgstr "使用できる時間"
+
+msgid "Parental Control List"
+msgstr "ペアレンタルコントロール一覧"
+
+msgid "Description is empty."
+msgstr "説明を入力してください。"
+
+msgid "The end time is larger than start time."
+msgstr "使用できる時間の終了時間は開始時間より遅い時間を設定してください。"
+
+msgid "Start time"
+msgstr "開始時間"
+
+msgid "End Time"
+msgstr "終了時間"

@@ -1,0 +1,18 @@
+Index: linux-3.10.14/include/net/netfilter/nf_nat.h
+===================================================================
+--- linux-3.10.14.orig/include/net/netfilter/nf_nat.h	2016-01-08 14:06:57.000000000 +0800
++++ linux-3.10.14/include/net/netfilter/nf_nat.h	2017-07-25 16:44:33.639589100 +0800
+@@ -55,6 +55,13 @@
+ 				      const struct nf_nat_range *range,
+ 				      enum nf_nat_manip_type maniptype);
+ 
++//Add for support customized IPv4 over IPv6
++/* for multiple range */
++extern unsigned int nf_nat_setup_info_mr(struct nf_conn *ct,
++					 const struct nf_nat_ipv4_multi_range_compat *mr,
++					 enum nf_nat_manip_type maniptype);
++//End add
++
+ /* Is this tuple already taken? (not by us)*/
+ extern int nf_nat_used_tuple(const struct nf_conntrack_tuple *tuple,
+ 			     const struct nf_conn *ignored_conntrack);

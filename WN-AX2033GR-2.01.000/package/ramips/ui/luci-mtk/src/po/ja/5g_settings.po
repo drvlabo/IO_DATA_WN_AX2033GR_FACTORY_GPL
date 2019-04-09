@@ -1,0 +1,189 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "5Ghz Settings"
+msgstr "5GHz設定"
+
+msgid "ASCII (13 characters)"
+msgstr "ASCII (13 文字)"
+
+msgid "ASCII (5 characters)"
+msgstr "ASCII (5 文字)"
+
+msgid "HEX (10 characters)"
+msgstr "HEX (10 文字)"
+
+msgid "HEX (26 characters)"
+msgstr "HEX (26 文字)"
+
+msgid "Authentication Type"
+msgstr "認証方式"
+
+msgid "Auto"
+msgstr "自動"
+
+msgid "Auto come back to selected channel"
+msgstr "指定したチャンネルへ自動で戻す"
+
+msgid "Basic Settings"
+msgstr "基本設定"
+
+msgid "Character"
+msgstr "文字"
+
+msgid "Copy SSID"
+msgstr ""
+
+msgid "Copy SSID_en"
+msgstr "Copy SSID"
+
+msgid "Copy SSID Function"
+msgstr "Copy SSID機能"
+
+msgid "Default Key"
+msgstr "デフォルトキー"
+
+msgid "Diasable"
+msgstr "無効"
+
+msgid "Enable"
+msgstr "有効"
+
+msgid ""
+"Encryption function of the wireless LAN is set to WEP. It is strongly "
+"recommended to use WPA-PSK."
+msgstr "無線LANの暗号化機能が設定されていないかWEPに設定されています。安全にご使用いただくためにWPA-PSKに設定することを強くお勧めします。"
+
+msgid ""
+"Encryption function of the wireless LAN is set to none. It is strongly "
+"recommended to use WPA-PSK."
+msgstr "無線LANの暗号化機能が設定されていないかWEPに設定されています。安全にご使用いただくためにWPA-PSKに設定することを強くお勧めします。"
+
+
+msgid ""
+"If W53/W56Channel is choosed, there are the following limitations by law."
+msgstr "W53/W56のチャンネルを選択した場合、法令により次のような制限事項があります。"
+
+msgid "Key"
+msgstr "キー"
+
+msgid "Key Length"
+msgstr "キーの長さ"
+
+msgid "Key Type"
+msgstr "キーの種類"
+
+msgid "Key Update Interval"
+msgstr "キーの更新間隔"
+
+msgid "Key Update Interval can only input numbers!"
+msgstr "キーの更新間隔は600～86400の範囲で入力してください。"
+
+msgid "Key Update Interval is empty!"
+msgstr "キーの更新間隔を入力してください。"
+
+msgid "Key Update Interval is out of range!"
+msgstr "キーの更新間隔は600～86400の範囲で入力してください。"
+
+msgid "SSID Broadcast"
+msgstr "SSID通知"
+
+msgid "SSID1"
+msgstr ""
+
+msgid "SSID"
+msgstr ""
+
+msgid "SSID Broadcast"
+msgstr "SSID通知"
+
+msgid "SSID2"
+msgstr ""
+
+msgid "SSID2 Characters that can not be used."
+msgstr "SSIDに使用できない文字が含まれています。"
+
+msgid "SSID2 default Key is empty!"
+msgstr "暗号キーを入力してください。"
+
+msgid "SSID2 is empty!"
+msgstr "SSIDを入力してください。"
+
+msgid "SSID2 key1 is empty!"
+msgstr "暗号キーを入力してください。"
+
+msgid "SSID2 key2 is empty!"
+msgstr "暗号キーを入力してください。"
+
+msgid "SSID2 key3 is empty!"
+msgstr "暗号キーを入力してください。"
+
+msgid "SSID2 key4 is empty!"
+msgstr "暗号キーを入力してください。"
+
+msgid "Sec"
+msgstr "秒"
+
+msgid "Security"
+msgstr "暗号化"
+
+msgid "Security Key"
+msgstr "暗号化キー"
+
+msgid "Security_Key_5g"
+msgstr "暗号キー"
+
+msgid "WEP"
+msgstr ""
+
+msgid "WEP key is not HEX numbers!"
+msgstr "正しい暗号キーを入力してください。"
+
+msgid "WEP key length is wrong!"
+msgstr "暗号キーの文字数が正しくありません。"
+
+msgid "WMM"
+msgstr ""
+
+msgid "WPA Type"
+msgstr "WPAの種類"
+
+msgid "WPA-PSK"
+msgstr ""
+
+msgid "WPA-PSK(HEX) key can only enter HEX numbers!"
+msgstr "暗号キーは64文字の16進数で入力してください。"
+
+msgid "WPA-PSK(HEX) key length is less than 64"
+msgstr "暗号キーは64文字の16進数で入力してください。"
+
+msgid "WPA-PSK(Passphrase) key length is less than 8 and bigger than 63"
+msgstr "暗号キーは8～63文字入力してください。"
+
+msgid "WPA2(AES)"
+msgstr ""
+
+msgid "Wireless Lan"
+msgstr "無線LAN"
+
+msgid "auto"
+msgstr "自動"
+
+msgid "none"
+msgstr "無効"
+
+msgid "If detect radar it will move to W52 Channel"
+msgstr "・設定後1分間はレーダー波検出をおこなうため、無線LANをご利用いただけません。"
+
+msgid ""
+"after apply, it will detect radar wave for 1 minute to use the channel"
+msgstr "・レーダー波を検知し、W52のチャンネルに移動する場合があります。"
+
+msgid "Repeater 5Ghz Settings"
+msgstr "5GHz中継SSID"
+
+msgid "Repeater SSID Change"
+msgstr "中継SSID変更"
+
+msgid "DFS is working. Please wait a moment"
+msgstr "DFS動作中です。しばらくお待ちください。"

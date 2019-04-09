@@ -1,0 +1,432 @@
+<html lang="<%=luci.i18n.context.lang%>">
+
+<!-- Mirrored from 192.168.0.1/mobile_iobb.htm by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 24 Feb 2016 01:58:15 GMT -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0" />
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Cache-Control" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title><%=luci.sys.hostname() %></title>
+<script language="javascript" src="<%=media%>/iobbtxt_mobile.txt"></script>
+<link href="<%=media%>/smart.html" type="text/css" rel="stylesheet">
+<link rel="stylesheet" href="<%=media%>/css2.html">
+<script language="JavaScript" src="<%=media%>/functionjs.html"></script>
+<script language="javascript" src="<%=media%>/bstxt.txt"></script>
+<script type="text/javascript" src="<%=media%>/js/jquery-1.12.1.min.js"></script>
+<script type="text/javascript" src="<%=media%>/js/baseJS.js"></script>
+<script src="<%=resource%>/xhr.js"></script>
+<script type="text/javascript">
+var url ="<%=controller%>/mobile/mobile_netfilter"; //current page url
+<%
+	local sys  = require "luci.sys"
+
+	local Lua_netfilter_enable = uci.get("siteblock","config","enabled")
+	local Lua_LicenseNum = uci.get("siteblock","config","license_number")
+	local License_limit = uci.get("siteblock","config","limit_rule")
+	local agreement = uci.get("siteblock","config","agreement")
+
+	if not Lua_LicenseNum then
+		local getLicenseFromEnv = sys.exec("fw_printenv | grep nfLicense")
+		Lua_LicenseNum = string.match(getLicenseFromEnv,"%w+=(%w+)")
+	end
+
+	--MBA Sean, get the waiting time, default is 30 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+	local waiting_time_uci = uci_t.get("web", "gui_config", "network_apply_waiting_time")
+	local waiting_time = 30;
+
+	if waiting_time_uci then
+		waiting_time = waiting_time_uci
+	end
+
+	uci_t.set_confdir("/tmp/siteblock")
+	local state_available = uci_t.get("certificate_stat", "state", "available")
+	local state_endday = uci_t.get("certificate_stat", "state", "endday")
+
+	if not state_available then
+		state_available = ""
+	end
+	if not state_endday then
+		state_endday = ""
+	end
+
+	uci_t.set_confdir(original_confdir)
+%>
+var st={bsEnable:"<%=Lua_netfilter_enable%>",allLimit:"",license:"",status:"<%=state_available%>",endday:"<%=state_endday%>"};
+
+var seconds=30;
+
+function waiting()
+{
+	(seconds<=0)?seconds=0:seconds-=1;
+	document.getElementById("wait_time").value=seconds;
+	if(seconds==0)
+	{
+		location.href=url;
+		return true;
+	};
+	setTimeout('waiting()',1000);
+}
+
+function isValidLicense(){
+	var objLic = $("#License");
+	var letterNumber = /^[0-9a-zA-Z]+$/;
+
+	if ( objLic.val().length == 0 ) {
+		alert("<%:Please enter the license number.%>");
+		objLic.focus();
+		return false;
+	}
+
+	if ( objLic.val().length != 12 ) {
+		alert("<%:Invalid license number.%>");
+		objLic.focus();
+		return false;
+	}
+
+	if ( !objLic.val().match(letterNumber) ) {
+		alert("<%:Invalid license number.%>");
+		objLic.focus();
+		return false;
+	}
+
+	return true;
+}
+
+function confirmMessage(){
+	if (confirm("<%:Do you agree with the net filtering User Agreement%>")) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+function change_limit_type(){
+	if (document.getElementById("sAllLimit").selectedIndex == 0){
+		$("span[name='limit_text']").html("<%:Limit the games, movies and music and other entertainment%>");
+	}else if ((document.getElementById("sAllLimit").selectedIndex == 1) || (document.getElementById("sAllLimit").selectedIndex == 2)){
+		$("span[name='limit_text']").html("<%:Limit the shopping auction, etc.%>");
+	}else if (document.getElementById("sAllLimit").selectedIndex == 3){
+		$("span[name='limit_text']").html("<%:Prohibit the inappropriate sites to children%>");
+	}else if (document.getElementById("sAllLimit").selectedIndex == 4){
+		$("span[name='limit_text']").html("<%:It will block the fraud-virus offensive content of the site%>");
+	}else if (document.getElementById("sAllLimit").selectedIndex == 5){
+		$("span[name='limit_text']").html("<%:Phishing, it will block the distribution site of the virus.%>");
+	}else if (document.getElementById("sAllLimit").selectedIndex == 6){
+		$("span[name='limit_text']").html("");
+	}else if (document.getElementById("sAllLimit").selectedIndex == 7){
+		$("span[name='limit_text']").html("");
+	}else if (document.getElementById("sAllLimit").selectedIndex == 8){
+		$("span[name='limit_text']").html("");
+	}else if (document.getElementById("sAllLimit").selectedIndex == 9){
+		$("span[name='limit_text']").html("");
+	}else if (document.getElementById("sAllLimit").selectedIndex == 10){
+		$("span[name='limit_text']").html("<%:There is a risk of fraud and virus infection because it does not put a limit%>");
+	}else if (document.getElementById("sAllLimit").selectedIndex == 11){
+		$("span[name='limit_text']").html("");
+	}
+}
+
+function goToagree(){
+	document.getElementById("doagree").value ="1";
+	goToApply();
+}
+
+function goTodisagree(){
+	document.getElementById("doagree").value ="0";
+	document.getElementById("mainPage").style.display='block';
+	document.getElementById("term_condition").style.display='none';
+	return false
+}
+
+function goToApply() {
+
+	if ( isValidLicense() == false ) {
+		return false;
+	}
+
+	//var after_start_service = "0";
+	<%if not agreement then%>
+	if (document.getElementById("doagree").value != "1"){
+		document.getElementById("mainPage").style.display='none';
+		document.getElementById("term_condition").style.display='block';
+		return false;
+	}
+	<%end%>
+
+	var limit_value = document.getElementById("sAllLimit").value;
+	if (limit_value == "disable"){
+			document.formBSEnable.hBSEnable.value = "0";
+	}else{
+		document.formBSEnable.hBSEnable.value = "1";
+	}
+
+	//MBA Sean, show the waiting page & hide the original content
+	//document.getElementById("top_menu").style.display = 'none';
+	document.getElementById("content").style.display = 'none';
+	document.getElementById("waiting").style.display = 'block';
+	//MBA Sean, start to countdown.
+	waiting();
+
+	//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+	$.ajax({
+		type:"POST",
+		url: url,
+		data: $("#content_send").serialize(),// serializes the form's elements.
+	});
+
+	return false;
+}
+
+function clearTextbox(){
+	var f = document.formBSEnable;
+	f.comment.value="";
+}
+
+function buyLicense(){
+	window.open('http://www.ioplaza.jp/filterupdate.htm','_blank','');
+}
+
+function frmLoad(){
+	var LicenseNum = "<%=Lua_LicenseNum%>"
+	if (LicenseNum != "") {
+	<%if ( not agreement ) or ( Lua_netfilter_enable ==  "0" ) then%>
+		document.getElementById("License").readOnly = true;
+	<%end%>
+		document.getElementById("License").value = LicenseNum;
+	}
+
+	document.getElementById("mainPage").style.display='block';
+	document.getElementById("term_condition").style.display='none';
+	
+	<% if agreement then%>
+		<% if (Lua_netfilter_enable ==  "0") then %>
+			document.getElementById("sAllLimit").selectedIndex = 11;
+			$("span[name='limit_text']").html("");
+		<% elseif (License_limit == "no_limit") then %>
+			document.getElementById("sAllLimit").selectedIndex = 10;
+			$("span[name='limit_text']").html("<%:There is a risk of fraud and virus infection because it does not put a limit%>");
+		<% elseif (License_limit == "element_mid") then %>
+			document.getElementById("sAllLimit").selectedIndex = 0;
+			$("span[name='limit_text']").html("<%:Limit the games, movies and music and other entertainment%>");
+		<% elseif (License_limit == "element_high") then %>
+			document.getElementById("sAllLimit").selectedIndex = 1;
+			$("span[name='limit_text']").html("<%:Limit the shopping auction, etc.%>");
+		<% elseif (License_limit == "junior") then %>
+			document.getElementById("sAllLimit").selectedIndex = 2;
+			$("span[name='limit_text']").html("<%:Limit the shopping auction, etc.%>");
+		<% elseif (License_limit == "senior") then %>
+			document.getElementById("sAllLimit").selectedIndex = 3;
+			$("span[name='limit_text']").html("<%:Prohibit the inappropriate sites to children%>");
+		<% elseif (License_limit == "safety") then %>
+			document.getElementById("sAllLimit").selectedIndex = 4;
+			$("span[name='limit_text']").html("<%:It will block the fraud-virus offensive content of the site%>");
+		<% elseif (License_limit == "security") then %>
+			document.getElementById("sAllLimit").selectedIndex = 5;
+			$("span[name='limit_text']").html("<%:Phishing, it will block the distribution site of the virus.%>");
+		<% elseif (License_limit == "custom1") then %>
+			document.getElementById("sAllLimit").selectedIndex = 6;
+			$("span[name='limit_text']").html("");
+		<% elseif (License_limit == "custom2") then %>
+			document.getElementById("sAllLimit").selectedIndex = 7;
+			$("span[name='limit_text']").html("");
+		<% elseif (License_limit == "custom3") then %>
+			document.getElementById("sAllLimit").selectedIndex = 8;
+			$("span[name='limit_text']").html("");
+		<% elseif (License_limit == "custom4") then %>
+			document.getElementById("sAllLimit").selectedIndex = 9;
+			$("span[name='limit_text']").html("");
+		<%else%>
+			document.getElementById("sAllLimit").selectedIndex = 10;
+			$("span[name='limit_text']").html("<%:There is a risk of fraud and virus infection because it does not put a limit%>");
+		<%end%>
+	<%end%>
+}
+
+function backSmartIndexPage(){
+	return window.location.href='<%=controller%>/mobile';
+}
+
+</script>
+
+<%+csrf%>
+
+</head>
+<body onLoad="frmLoad()">
+<div id="content">
+<form id="content_send" name="formBSEnable" method="post">
+<blockquote>
+<input type="hidden" name="page" value="bsmain">
+<input type="hidden" name="hDeleteMAC">
+<input type="hidden" name="hFirstAvailIdx">
+<input type="hidden" name="hSubmitFormNum">
+<input type="hidden" name="hBSEnable" value="0">
+<span id="mainPage" style="display:block;width:350px">
+<table border="0" width="100%">
+	<tr>
+		<td width="100%" style="text-align:center" >
+			<a onClick="return backSmartIndexPage()"><img src="<%=media%>/image/iodata.gif"></a>
+		</td>
+	</tr>
+</table>
+<table border="0" width="100%">
+	<tr>
+		<td width="100%" style="text-align:center"><font size="1">
+			<%:You agree to the net filtering User Agreement that appears after clicking the Service use the Start button%>
+		</font></td>
+	</tr>
+</table>
+<table border="0" width="100%">
+	<tr>
+		<td width="50%" class="background"><font size="1"><%:License number%>:</font></td>
+		<td width="15%">
+			<input type="text" name="License" id="License" size="12" maxlength="12" value="">
+		</td>
+		<td width="5%">
+			<font size="1"><input type="button" value="<%:License to purchase%>" name="bBuyLicense" onClick="return buyLicense()"/></font>
+		</td>
+	</tr>
+</table>
+<table border="0" width="100%">
+	<tr>
+		<td width="30%" class="background"><font size="1"><%:service%>:</font></td>
+		<td width="65%"><font size="1"><script type="text/javascript">
+		if(parseInt(st.bsEnable) == 0){ //smileFamily Disable
+			document.write("<%:Invalid%>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+			document.write("<%:Expiration date%>" + ": ----/--/--");
+		} else {
+			if(st.status==0){
+				document.write("<%:Invalid%>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+			}
+			else if(st.status==1){
+				document.write("<%:Start%>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+			}
+			else if(st.status==2){
+				document.write("<%:Expiration%>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+			}
+
+			if (st.endday == "") {
+				document.write("<%:Expiration date%>" + ": ----/--/--");
+			}
+			else {
+				document.write("<%:Expiration date%>" + ": "+ st.endday.substring(0,4)+'/'+st.endday.substring(4,6)+'/'+st.endday.substring(6,8));
+			}
+		}
+		</script>
+		</font></td>
+	</tr>
+</table>
+<table border="0" width="100%">
+	<tr>
+		<td width="30%" class="background" ><font size="1"><%:Limit all%>:</font></td>
+		<td width="65%"><select size="1" name="sAllLimit" id="sAllLimit" onchange="change_limit_type()">
+			<option value="element_mid" ><%:Elementary school students middle grade%> </option>	
+			<option value="element_high" ><%:Elementary school upper grades%> </option>
+			<option value="junior" ><%:Junior high school%> </option>
+			<option value="senior" ><%:High school%> </option>
+			<option value="safety" ><%:Safety and security course%></option>
+			<option value="security" selected="true" ><%:Safety Course%> </option>
+			<option value="custom1" ><%:Customized 1%></option>
+			<option value="custom2"><%:Customized 2%></option>
+			<option value="custom3"><%:Customized 3%></option>
+			<option value="custom4"><%:Customized 4%></option>
+			<option value="no_limit" ><%:Do not limit%></option>
+			<option value="disable" ><%:Disable%></option>
+		</select></td>
+	</tr>
+</table>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" align="right">
+	<tbody>
+		<tr>
+			<td align="right">
+				<%if ( not agreement ) then%> <!--disabled-->
+					<input type="submit" value="<%:Service start%>" onClick="return goToApply()" width="105" height="30" border="0"/>
+				<%else%> <!--enabled-->
+					<input type="submit" value="<%:Apply%>" onClick="return goToApply()" width="105" height="30" border="0"/>
+				<%end%>
+				<input type="hidden" name="isApply" value="isApply">
+			</td>
+		</tr>
+	</tbody>
+</table>
+</span>
+<span id="term_condition" style="display:none">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" align="right">
+		<%:							利用約款
+
+本約款は、お客様（以下「甲」といいます）が、アルプス システム インテグレーション株式会社「以下「乙」といいます）が提供する、規制対象ＵＲＬデータベースを使用したＵＲＬフィルタリングサービス「」（以下　「本サービス」といいます）を利用する際の利用条件につき定めるものです。
+ご利用を希望される方は、株式会社アイ･オー･データ機器製ブロードバンドルーター（以下「対象ルーター」といいます）の設定画面上に設置された［サービス利用開始］ボタンを押すことにより、本約款に同意したものとし、本サービスをご利用いただけるものといたします。
+
+第１条　（使用許諾）
+　　乙は甲に対して、次の各号の範囲で、本サービスを提供します。
+　　①　甲が本サービスの利用に同意した対象ルーターに限るものとします。　　
+	②　使用許諾の期間（以下「許諾期間」という）は、利用開始の日から5年間とします。ただし、乙は利用期間5年の保証をできない場合があることにつき、甲は同意するものとします。
+
+
+第２条　（サービス保証）
+	天災地変、停電、他の電気通信事業者のサービスの停止、電気通信設備の保守もしくは工事等のために、ネットワーク配信を正常に行うことができないときは、乙は、予告なく本サービスを一時停止することができるものとします。
+
+第３条　（対価および支払方法）
+	1.	甲は、対象ルーター購入後、許諾期間については本サービスを無料で使用できます。
+	2.	許諾期間終了後に、引き続き本サービスの継続を甲が希望する場合は、対象ルーターの設定画面上に設置された「ライセンス購入へ」ボタンをクリックすることで表示される株式会社アイ・オー・データ機器が運営するインターネット販売サイト「アイオープラザ」に購入を申し込む方法もしくは乙が別途提示する方法により、許諾期間を延長することができます。なお、甲は、アイオープラザでの購入に際して、アイオープラザの「ご利用規約」及び「会員規約」の内容に同意の上、会員登録（無料）を行うことに同意し、また、支払金額、支払方法を含む手続きの詳細はアイオープラザの購入申し込みページに表示される内容に従うものとします。
+
+第４条	（制限事項）
+　　甲は、本サービスの利用にあたって、以下の制限事項を承諾します。
+	①　本サービスの提供に必要となる機器の交換およびそれに伴う登録情報の相違による一時的な本サービスの停止。
+　　②　本約款に関連して乙が甲に対して負担する損害賠償の範囲は、本条により直接発生したものに限定されるものとします。本約款に明示された事項を除き、乙は甲に対して逸失利益、間接損害、紛争解決費用その他一切の費用を負担いたしません。
+　　③　対象ルーターの故障や不具合、対象ルーターが本サービスに対応しなくなった等の理由によって本サービスが利用できなくなった場合、乙は責任を負わず、本サービス利用対価の返金はいたしません。
+	④　本サービスは家庭での個人利用を目的としていますので、乙は、法人等の利用に関するサポートは行いません。
+	⑤	ＵＲＬデータの選定は乙が独自の判断に基づき行っており、その完全性、正確性、特定の用途への適合等については保証いたしません。
+
+第５条	（本サービスにおけるご利用システム情報の取扱い）
+乙は、甲の本サービスの利用に伴い取得したシステム情報を、以下の利用目的の達成に必要な範囲内で利用します。
+	①　サービスの利便性、機能向上。
+	②　個人を特定できない形式で行う分析、利用及び発表。
+
+第６条　（知的財産権）
+	１．甲は、本サービスにおいてＵＲＬデータベースの知的財産権について、次の各号の条件を承認します。
+		  ①　ＵＲＬデータベースの所有権、工業所有権、著作権等一切の権利は、乙または乙のライセンサー（以下「原著作者等」という）に留保されます。
+　　　　　②　甲はＵＲＬデータベースを解析、改変、バックアップの目的の範囲を超えた複製、その他ＵＲＬデータベースにかかる前項の乙または原著作者等の権利を侵害する行為をしてはなりません。また、甲の行為により乙または原著作者等が損害を被ったときは、甲はその損害を賠償します。
+　　　　　③　甲はＵＲＬデータベースを本サービスの目的以外に使用してはなりません。
+　　２．　第三者からＵＲＬデータベースが当該第三者の知的財産権を侵害する旨の主張がなされた場合、以下の各号のすべてが満たされることを条件として、乙はその責任において当該第三者との間の紛争解決にあたります。
+　　　　　①　当該知的財産権の侵害（その旨の主張も含む）が、ＵＲＬデータベースを他の物と組み合わせること若しくは改造することにより発生したものでないこと。
+　　　　　②　甲が当該侵害の主張がなされたことを知った時から２週間以内にその旨を乙に書面にて通知すること。
+　　　　　③　甲が、当該侵害の主張がなされたことを知った後速やかに、乙に対して当該第三者との交渉権限および訴訟（調停、仲裁、米国国際貿易委員会の審決手続その他これに類似する手続を含む）の追行権限を委ねること。
+　　　　　④　甲が乙に対して、前号の交渉・訴訟を進めるにあたって必要な情報提供その他協力をすること。
+
+第７条　（有効期間）
+　　本約款の有効期間は第１条第２号記載の許諾期間とします。
+
+第８条　（一般事項）
+　　１．　本約款は日本国法の適用を受け、日本国法に基づき解釈されるものとします。　　　　　
+　　２．　本約款の条項につき、日本国法に別の定めがある場合においては本条項の規定を優先的に適用するものとします。本約款について紛争を生じたときは、東京地方裁判所を第一審管轄裁判所とします。
+　　３．　本約款は、甲および乙との本サービスの使用許諾に関する完全かつ唯一の合意とします。
+
+
+																							以上
+
+																							アルプス システム インテグレーション株式会社
+%>
+	<tr>
+		<td align="center">
+			<input type="button" id="agree" name="agree" value="<%:agree%>" onClick="return goToagree();"/>
+			<input type="button" id="disagree" name="disagree" value="<%:disagree%>"  onClick="return goTodisagree();"/>
+			<input type="hidden" id="doagree" name="doagree" value="">
+		</td>
+	</tr>
+
+</table>
+</span>
+</form>
+</div>
+</body>
+<div id="waiting" style="display:none">
+<a><%:Applying the settings. Please wait a moment%><input type="text" id="wait_time" size="3" maxlength="3" readonly> </input><%:Seconds%></a>
+</div>
+<!-- Mirrored from 192.168.0.1/mobile_iobb.htm by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 24 Feb 2016 01:58:15 GMT -->
+</html>

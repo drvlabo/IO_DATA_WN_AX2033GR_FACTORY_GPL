@@ -1,0 +1,39 @@
+		function JSOTTSet()
+		{
+			document.easysetup.ottforcsrf.value = OTTforCSRF;
+		}
+
+		function JSCheckConfigData(frm){
+
+			if(document.easysetup.pppoeuser.value == ""){
+				window.alert('ユーザーIDが入力されていません。\nユーザーIDは必ず入力をしてください。');
+				return false;
+			}else{
+				if(document.easysetup.pppoepasswd.value == ""){
+					window.alert('接続パスワードが入力されていません。\n接続パスワードは必ず入力をしてください。');
+					return false;
+				}else{
+					return true;
+				}
+			}
+		}
+
+		function JSErrorMessageDisplay(status){
+			if(status == 1600){
+				alert("ユーザー名は、1〜128文字のASCII文字を入力してください。");
+			}else if(status == 1601){
+				alert("パスワードは、1〜128文字のASCII文字を入力してください。");
+			}
+		}
+
+		function initEasySetupwindow() {
+			/* OTT Set */
+			JSOTTSet();
+
+			JSErrorMessageDisplay(ErrorStatus);
+		}
+
+		/* When display this window */
+		window.onload = initEasySetupwindow;
+	</script>
+

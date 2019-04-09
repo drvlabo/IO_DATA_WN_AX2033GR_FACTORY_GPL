@@ -1,0 +1,6 @@
+msgid "SPI"
+msgstr "SPI"
+
+msgid "SPI setting."
+msgstr "SPI setting."
+

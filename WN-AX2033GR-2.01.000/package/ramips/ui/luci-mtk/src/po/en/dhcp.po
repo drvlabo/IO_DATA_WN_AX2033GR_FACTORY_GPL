@@ -1,0 +1,56 @@
+msgid "DHCP Client Table"
+msgstr "DHCP Client Table"
+
+msgid "DHCP Client Table will display the client’s address that ip is assigned by server."
+msgstr "DHCP Client Table will display the client’s address that ip is assigned by server."
+
+msgid "MAC Address"
+msgstr "MAC Address"
+
+msgid "Update"
+msgstr "Update"
+
+msgid "Assign particular MAC for particular IP Address."
+msgstr "Assign particular MAC for particular IP Address."
+
+msgid "Computer Selection"
+msgstr "Computer Selection"
+
+msgid "Reset"
+msgstr "Reset"
+
+msgid "Current Static DHCP Table："
+msgstr "Current Static DHCP Table："
+
+msgid "Select"
+msgstr "Select"
+
+msgid "Delete selected"
+msgstr "Delete selected"
+
+msgid "Delete all"
+msgstr "Delete all"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "IP address is empty."
+msgstr "IP address is empty."
+
+msgid "IP address is not correct."
+msgstr "IP address is not correct."
+
+msgid "IP address is already registered."
+msgstr "IP address is already registered."
+
+msgid "MAC address is empty."
+msgstr "MAC address is empty."
+
+msgid "MAC address is not correct."
+msgstr "MAC address is not correct."
+
+msgid "MAC address is already registered."
+msgstr "MAC address is already registered."
+
+msgid "The maximum number of static DHCP entries is limited to 10."
+msgstr "The maximum number of static DHCP entries is limited to 10."

@@ -1,0 +1,34 @@
+Index: linux-3.10.14/net/ipv6/ip4ov6jp_wrap.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-3.10.14/net/ipv6/ip4ov6jp_wrap.c	2017-07-25 17:01:08.923856037 +0800
+@@ -0,0 +1,29 @@
++/*
++ *
++ *
++ */
++
++#include <linux/module.h>
++
++#include <net/ipv6.h>
++#include <net/net_namespace.h>
++#include <net/netns/generic.h>
++
++int wrap_register_pernet_device(struct pernet_operations *ops)
++{
++	return register_pernet_device(ops);
++}
++EXPORT_SYMBOL(wrap_register_pernet_device);
++
++void wrap_unregister_pernet_device(struct pernet_operations *ops)
++{
++	unregister_pernet_device(ops);
++}
++EXPORT_SYMBOL(wrap_unregister_pernet_device);
++
++int wrap_ip6_local_out(struct sk_buff *skb)
++{
++	return ip6_local_out(skb);
++}
++EXPORT_SYMBOL(wrap_ip6_local_out);
++

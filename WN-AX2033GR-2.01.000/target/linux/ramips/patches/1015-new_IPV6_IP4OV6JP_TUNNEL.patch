@@ -1,0 +1,27 @@
+Index: linux-3.10.14/net/ipv6/Kconfig
+===================================================================
+--- linux-3.10.14.orig/net/ipv6/Kconfig	2016-01-08 14:07:06.000000000 +0800
++++ linux-3.10.14/net/ipv6/Kconfig	2017-07-25 16:58:09.974291800 +0800
+@@ -118,7 +118,7 @@
+ 
+ config INET6_TUNNEL
+ 	tristate
+-	default n
++	default y
+ 
+ config INET6_XFRM_MODE_TRANSPORT
+ 	tristate "IPv6: IPsec transport mode"
+@@ -264,4 +264,13 @@
+ 	  Support for IPv6 PIM multicast routing protocol PIM-SMv2.
+ 	  If unsure, say N.
+ 
++config IPV6_IP4OV6JP_TUNNEL
++	tristate  "IPv4: IPv4-in-IPv6 MAP/DS-Lite tunnel"
++	select INET6_TUNNEL
++	depends on IPV6
++	default m
++	---help---
++	  Support for IPv4-in-IPv6 MAP/DS-Lite tunnnel.
++	  If unsure, say N.
++
+ endif # IPV6

@@ -1,0 +1,262 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-03-30 17:00+0200\n"
+"PO-Revision-Date: 2012-11-14 17:32+0200\n"
+"Last-Translator: Kentaro <kentaro.matsuyama@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Pootle 2.0.6\n"
+
+msgid "Net filtering is to limit the viewing of inappropriate sites, is a service that can use the Internet with confidence."
+msgstr "「ネットフィルタリング」は、不適切なサイトの閲覧を制限し、安心してインターネットを利用できるサービスです。"
+
+msgid "There is a case where the Internet browsing speed is reduced."
+msgstr "※インターネットの閲覧スピードが低下する場合があります。"
+
+msgid "This feature is using the services of the Alps System Integration Co., Ltd."
+msgstr "※本機能はアルプス システム インテグレーション株式会社のサービス を利用しています。"
+
+msgid "License number"
+msgstr "ライセンス番号"
+
+msgid "service"
+msgstr "サービス"
+
+msgid "Limit all"
+msgstr "全体制限"
+
+msgid "Elementary school students middle grade"
+msgstr "小学生中学年相当"
+
+msgid "Elementary school upper grades"
+msgstr "小学生高学年相当"
+
+msgid "Junior high school"
+msgstr "中学生相当"
+
+msgid "High school"
+msgstr "高校生相当"
+
+msgid "Safety and security course"
+msgstr "安心・安全コース"
+
+msgid "Safety Course"
+msgstr "安全コース"
+
+msgid "Do not limit"
+msgstr "制限しない"
+
+msgid "License to purchase"
+msgstr "ライセンス購入へ"
+
+msgid "Check the license"
+msgstr "ライセンスの確認"
+
+msgid "Customized Edit"
+msgstr "カスタムレベルの編集"
+
+msgid "Start"
+msgstr "開始"
+
+msgid "Expiration"
+msgstr "期限切れ"
+
+msgid "Invalid"
+msgstr "無効"
+
+msgid "Expiration date"
+msgstr "有効期限"
+
+msgid "Phishing, it will block the distribution site of the virus."
+msgstr "フィッシング詐欺、ウイルスの配布サイトをブロックします。"
+
+msgid "Service start"
+msgstr "サービス利用開始"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "Invalid license number."
+msgstr "無効なライセンス番号です。"
+
+msgid "Please enter the license number."
+msgstr "ライセンス番号を入力してください。"
+
+msgid "Do you agree with the net filtering User Agreement"
+msgstr "ネットフィルタリング利用約款に同意しますか"
+
+msgid "Please put a check in the category you want to block."
+msgstr "ブロックするカテゴリにチェックを入れてください。"
+
+msgid "Customized 1"
+msgstr "カスタム1"
+
+msgid "Customized 2"
+msgstr "カスタム2"
+
+msgid "Customized 3"
+msgstr "カスタム3"
+
+msgid "Customized 4"
+msgstr "カスタム4"
+
+msgid "category"
+msgstr "カテゴリ"
+
+msgid "The information"
+msgstr "の情報を"
+
+msgid "Copy to"
+msgstr "にコピーする"
+
+msgid "Reflect"
+msgstr "反映"
+
+msgid "Acts that seems to be illegal"
+msgstr "違法と思われる行為"
+
+msgid "Infringement of copyright and trademark rights"
+msgstr "著作権や商標権の侵害行為"
+
+msgid "Drug that seems to be illegal"
+msgstr "違法と思われる薬物"
+
+msgid "Inappropriate drug use"
+msgstr "不適切な薬物利用"
+
+msgid "Suicide attractant"
+msgstr "自殺誘引"
+
+msgid "Encounter"
+msgstr "出会い"
+
+msgid "Violence organizations and cult"
+msgstr "暴力組織・カルト"
+
+msgid "Grotesque Shocking"
+msgstr "グロテスク・ショッキング"
+
+msgid "sexual act"
+msgstr "性行為"
+
+msgid "Nude semi-nude"
+msgstr "ヌード・セミヌード"
+
+msgid "Sexual mores"
+msgstr "性風俗"
+
+msgid "Adult Search and Links"
+msgstr "アダルト検索・リンク集	"
+
+msgid "Fetishism"
+msgstr "フェティシズム"
+
+msgid "Sexual expression by sentence"
+msgstr "文章による性的表現"
+
+msgid "Back information"
+msgstr "裏情報"
+
+msgid "Cracking"
+msgstr "クラッキング"
+
+msgid "Malicious code distribution"
+msgstr "不正コード配布"
+
+msgid "Phishing, one-click fraud"
+msgstr "フィッシング詐欺・ワンクリック詐欺"
+
+msgid "Web translation"
+msgstr "ウェブ翻訳"
+
+msgid "Searching cache"
+msgstr "検索キャッシュ"
+
+msgid "Proxy"
+msgstr "プロキシ"
+
+msgid "Lack of consideration for the use of children, adult subject"
+msgstr "子どもの利用への配慮が不足、大人が対象"
+
+msgid "Consideration level 1 to the use of children"
+msgstr "子どもの利用への配慮レベル１"
+
+msgid "Consideration level 2 to the use of children"
+msgstr "子どもの利用への配慮レベル２"
+
+msgid "Consideration level 3 to the use of children"
+msgstr "子どもの利用への配慮レベル３"
+
+msgid "Gamble lottery"
+msgstr "ギャンブル・宝くじ"
+
+msgid "Drinking"
+msgstr "飲酒"
+
+msgid "Smoking"
+msgstr "喫煙"
+
+msgid "Alcohol product"
+msgstr "アルコール製品"
+
+msgid "Adult entertainment"
+msgstr "成人娯楽"
+
+msgid "Extreme claims"
+msgstr "極端な主張"
+
+msgid "Auction Online Shopping"
+msgstr "オークション・オンラインショッピング"
+
+msgid "Sweepstakes Vice revenue"
+msgstr "懸賞・副収入"
+
+msgid "Game"
+msgstr "ゲーム"
+
+msgid "Animation"
+msgstr "動画"
+
+msgid "musics"
+msgstr "音楽"
+
+msgid "Fortune-telling"
+msgstr "占い"
+
+msgid "Talent entertainer"
+msgstr "タレント・芸能人"
+
+msgid "General entertainment"
+msgstr "娯楽一般"
+
+msgid "Professional sports"
+msgstr "プロスポーツ"
+
+msgid "Do you agree with the net filtering User Agreement"
+msgstr "ネットフィルタリング利用約款に同意しますか"
+
+msgid "Limit the games, movies and music and other entertainment"
+msgstr "ゲーム・動画・音楽・その他娯楽を制限"
+
+msgid "Limit the shopping auction, etc."
+msgstr "ショッピング・オークション等を制限"
+
+msgid "Prohibit the inappropriate sites to children"
+msgstr "子供に不適切なサイトを禁止"
+
+msgid "It will block the fraud-virus offensive content of the site"
+msgstr "詐欺・ウイルス・不快な内容のサイトをブロックします"
+
+msgid "Phishing, it will block the distribution site of the virus."
+msgstr "フィッシング詐欺、ウイルスの配布サイトをブロックします。"
+
+msgid "There is a risk of fraud and virus infection because it does not put a limit"
+msgstr "制限をかけないため詐欺やウイルス感染のリスクがあります"
+
+

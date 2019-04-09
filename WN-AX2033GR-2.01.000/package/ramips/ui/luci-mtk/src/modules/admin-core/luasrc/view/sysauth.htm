@@ -1,0 +1,141 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at 
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: header.htm 4891 2009-06-22 10:23:21Z jow $
+
+-%>
+<%
+sys = require("luci.sys")
+uci = require("luci.model.uci").cursor()
+local uci = require("luci.model.uci").cursor()
+local i18n = require("luci.i18n")
+local lang = uci:get("luci","main","lang") 
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+
+-%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<title>.::<%:welcome_title_message%>::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="/luci-static/web/js/jquery-1.6.2.min.js"></script>
+<script type="text/jvascript" src="<%=media%>/js/baseJS.js" ></script>
+<script language="JavaScript">
+<!--
+
+/* Modify "Password Visible in Source Code" for Login, NBG5715, WenHsiang, 2012/05/10 */
+function submit_data()  // Data validation in "authenticator.htmlauth" of "dispatcher.lua".
+{
+    var url="<%=controller%>/session_check";
+	var data = {};
+    var callback = function(responseData, textStatus) {
+					var response = eval('(' + responseData + ')');
+                     if (response.hassession=="true"){
+                        var flag = confirm("<%:Login_Msg_3%>"); 
+						if (flag)
+						{
+							document.web_login.Clearsession.value="1";
+						}
+						else {
+							document.web_login.Clearsession.value="2";
+						}
+                     }
+    };
+	$.ajaxSetup({async: false});
+    $.post(url, data, callback, "html");
+	document.web_login.action="<%=controller%>";
+	document.web_login.submit();
+}
+
+var objXMLHTTP;
+var time = 5;
+
+var code = -1;
+var temp = null;
+var city = null;
+var unit = null;
+	
+/* Modify "Password Visible in Source Code" for Login, NBG5715, WenHsiang, 2012/05/10 */
+function check()
+{
+	var status_check = "<%=chk_password%>";
+	if( status_check == "1" )
+		alert("<%:Login_Msg_4%>");
+}
+//-->
+</script>
+</head>
+<body onload="check();">
+
+<form method="post" name="web_login">
+<input name="Clearsession" type="hidden" class="text" id="Clearsession"  />
+<div id="wrapper">
+  <div id="top">
+    <div>
+	<% local logoshow_enable = uci:get("system","main","logoshow") %>
+	<% if logoshow_enable == "1" then %>
+      <div class="logo"><img src="<%=media%>/index/images/advance_logo.gif"/></div>
+	<% end %>
+    </div>
+  </div>
+ 
+<div class="wraplogin">
+ 	<ul>
+		<span class="title_index">Welcome</span><br />
+<div class="home_note">
+	<% local modelname_show = uci:get("mstc", "internal", "modelname") %>
+	<%	local customer_enable = uci:get("mstc", "customer")
+		if customer_enable == "enable" then
+			modelname_show = uci:get("mstc", "customer", "modelname")
+		end	
+		if modelname_show == nil then 
+			modelname_show = ""
+		end %>
+    <li class="welcome_text"><%:Login_Msg_1_1%><%=modelname_show%><%:Login_Msg_1_2%></li>
+    <li>
+	<div class="loginInput">
+	<fieldset>
+      <li style=" margin-top:15px;" >
+							<span ><label for="username" style="width: 100px;" class="content_word_title">
+											<span class="required"><%:Username%>:</span>
+								   </label>
+							</span>
+						    
+						    <span style="position:absolute; right:120px;">
+						    	<input name="username" type="text" class="text" id="username" size="20" />
+						    </span>
+				</li>
+      <li style=" margin-top:15px; clear:both;">
+							<span ><label for="userpassword" style="width: 100px;" class="content_word_title"><span class="required"><%:Password%>:</span></label></span>
+							<span style="position:absolute; right:120px;"><input name="password" type="password" class="text " id="userpassword" size="20" /></span>
+						</li>
+	<li class="login_button">
+			<input name="Submit" type="submit" value="Login" onclick='javascript:submit_data()' />
+  </fieldset>
+  </div>
+</li>
+</div>
+</li>
+</ul>
+
+
+</div>
+</div>
+
+</form>
+</body>
+
+</html>

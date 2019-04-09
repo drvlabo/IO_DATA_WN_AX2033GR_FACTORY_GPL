@@ -1,0 +1,179 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid ","
+msgstr ""
+
+msgid "Bootcode Version"
+msgstr "ブートコードのバージョン"
+
+msgid "Channel"
+msgstr "チャンネル"
+
+msgid "Channel(2.4G)"
+msgstr "チャンネル(2.4G)"
+
+msgid "Channel(5G)"
+msgstr "チャンネル(5G)"
+
+msgid "Client MAC Address (2.4G)"
+msgstr "子機MACアドレス(2.4G)"
+
+msgid "Client MAC Address (5G)"
+msgstr "子機MACアドレス(5G)"
+
+msgid "Connected MAC Address"
+msgstr "接続先MACアドレス"
+
+msgid "Connection Type"
+msgstr "接続方法"
+
+msgid "Copy SSID (2.4G)"
+msgstr ""
+
+msgid "Copy SSID (5G)"
+msgstr ""
+
+msgid "Current Time"
+msgstr "現在時刻"
+
+msgid "DHCP Server"
+msgstr "DHCPサーバー"
+
+msgid "DNS"
+msgstr ""
+
+msgid "Default Gateway"
+msgstr "デフォルト ゲートウェイ"
+
+msgid "Firmware Version"
+msgstr "ファームウェアバージョン"
+
+msgid "Function"
+msgstr "機能"
+
+msgid "Internet Settings"
+msgstr "インターネット設定"
+
+msgid "LAN Settings"
+msgstr "LAN設定"
+
+msgid "MAC Address"
+msgstr "MACアドレス"
+
+msgid "Model"
+msgstr "モデル"
+
+msgid "Notice Message"
+msgstr "お知らせ内容"
+
+msgid "SSID"
+msgstr ""
+
+msgid "SSID (2.4G)"
+msgstr ""
+
+msgid "SSID 5G)"
+msgstr ""
+
+msgid "SSID1 (2.4G)"
+msgstr ""
+
+msgid "SSID2 (5G)"
+msgstr ""
+
+msgid "SSID3 (2.4G)"
+msgstr ""
+
+msgid "Security"
+msgstr "セキュリティ"
+
+msgid "Status"
+msgstr "ステータス"
+
+msgid "Subnet Mask"
+msgstr "サブネットマスク"
+
+msgid "System"
+msgstr "システム"
+
+msgid "There are no announcements."
+msgstr "お知らせはありません。"
+
+msgid "Internet is not connected. Please check the connections and settings"
+msgstr "インターネットが接続されていません。接続および設定を確認してください。"
+
+msgid "Internet side does not Link. Please check the connection"
+msgstr "インターネット側がLinkしていません。接続を確認してください。"
+
+msgid "Expiration date of the family Smile has expired. Please update your license."
+msgstr "ファミリースマイルの有効期限が切れています。ライセンスを更新してください。"
+
+msgid "Expiration date of the Net filtering has expired. Please update your license."
+msgstr "ネットフィルタリングの有効期限が切れています。ライセンスを更新してください。"
+
+msgid "The new firmware is provided."
+msgstr "新しいファームウェアが提供されています。"
+
+msgid "here"
+msgstr "ここ"
+
+msgid "Please update to download the firmware and click the"
+msgstr "をクリックしてファームウェアをダウンロードして更新してください。"
+
+msgid "Firmware updates can be done from the System Settings on the left side of the screen."
+msgstr "ファームウェアの更新は画面左の「システム設定」より行えます。"
+
+msgid "Please check detailed instructions by clicking on the see on the screen Manual at the lower left of the screen."
+msgstr "詳しい手順は画面左下の「画面で見るマニュアル」をクリックしてご確認ください。"
+
+msgid "WEP"
+msgstr ""
+
+msgid "WPA-PSK/WPA2-PSK (AES)"
+msgstr ""
+
+msgid "WPA2-PSK(AES)"
+msgstr ""
+
+msgid "Wireless LAN Settings"
+msgstr "無線LANの設定"
+
+msgid "none"
+msgstr "なし"
+
+msgid "Set Static IP Address"
+msgstr "IPアドレス固定設定"
+
+msgid "PPPoE Authentication"
+msgstr "PPPoE認証"
+
+msgid "Obtain IP Address Automatically"
+msgstr "IPアドレス自動取得"
+
+msgid "Connected"
+msgstr "接続"
+
+msgid "Disconnected"
+msgstr "未接続"
+
+msgid "IPv6 address (global)"
+msgstr "IPv6アドレス(グローバル)"
+
+msgid "IPv6 address (EC)"
+msgstr "IPv6アドレス(EC)"
+
+msgid "Available port"
+msgstr "利用可能ポート"
+
+msgid "IPv6 address (link local)"
+msgstr "IPv6アドレス(リンクローカル)"
+
+msgid "DNS(IPv6)"
+msgstr "DNS(IPv6)"
+
+msgid "Default gateway (IPv6)"
+msgstr "デフォルト ゲートウェイ(IPv6)"
+
+msgid "V6 Plus"
+msgstr "v6プラス"

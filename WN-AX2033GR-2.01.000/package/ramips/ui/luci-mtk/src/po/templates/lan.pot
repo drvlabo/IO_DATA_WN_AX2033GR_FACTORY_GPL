@@ -1,0 +1,62 @@
+msgid "IP_Address"
+msgstr ""
+
+msgid "IP_Alias"
+msgstr ""
+
+msgid "IP_Subnet_Mask"
+msgstr ""
+
+msgid "LAN"
+msgstr ""
+
+msgid "LAN_Error_1"
+msgstr ""
+
+msgid "LAN_Error_2"
+msgstr ""
+
+msgid "Network"
+msgstr ""
+
+msgid "lan_ipv6"
+msgstr ""
+
+msgid "lan_ipv6_dhcpv6"
+msgstr ""
+
+msgid "lan_ipv6_dhcpv6_end_addr"
+msgstr ""
+
+msgid "lan_ipv6_dhcpv6_start_addr"
+msgstr ""
+
+msgid "lan_ipv6_dns"
+msgstr ""
+
+msgid "lan_ipv6_dns_server1"
+msgstr ""
+
+msgid "lan_ipv6_dns_server2"
+msgstr ""
+
+msgid "lan_ipv6_fromISP"
+msgstr ""
+
+msgid "lan_ipv6_setup"
+msgstr ""
+
+msgid "lan_ipv6_setup_stateful"
+msgstr ""
+
+msgid "lan_ipv6_setup_stateless"
+msgstr ""
+
+msgid "lan_ipv6_user_defined"
+msgstr ""
+
+msgid "msg_config"
+msgstr ""
+
+msgid "msg_relogin"
+msgstr ""

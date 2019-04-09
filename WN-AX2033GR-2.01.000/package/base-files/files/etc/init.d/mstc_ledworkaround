@@ -1,0 +1,11 @@
+#!/bin/sh /etc/rc.common
+
+STOP=99
+
+shutdown() {
+	mii_mgr -s -p 0 -r 13 -v 0x1f
+	mii_mgr -s -p 0 -r 14 -v 0x24   #LED0 of all port
+	mii_mgr -s -p 0 -r 13 -v 0x401f
+	mii_mgr -s -p 0 -r 14 -v 0x4000 #turn off lights
+}
+

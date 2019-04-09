@@ -1,0 +1,74 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Log"
+msgstr ""
+
+msgid "Message"
+msgstr ""
+
+msgid "Ready"
+msgstr ""
+
+msgid "all_logs"
+msgstr ""
+
+msgid "log"
+msgstr ""
+
+msgid "log_SysAlert"
+msgstr ""
+
+msgid "log_SysCritical"
+msgstr ""
+
+msgid "log_SysDebug"
+msgstr ""
+
+msgid "log_SysEmergency"
+msgstr ""
+
+msgid "log_SysError"
+msgstr ""
+
+msgid "log_SysInfo"
+msgstr ""
+
+msgid "log_SysNotice"
+msgstr ""
+
+msgid "log_SysWarning"
+msgstr ""
+
+msgid "log_clear"
+msgstr ""
+
+msgid "log_display"
+msgstr ""
+
+msgid "log_refresh"
+msgstr ""
+
+msgid "log_setting"
+msgstr ""
+
+msgid "log_summary"
+msgstr ""
+
+msgid "log_summary_msg"
+msgstr ""
+
+msgid "log_summary_time"
+msgstr ""
+
+msgid "monitor"
+msgstr ""
+
+msgid "msg_config"
+msgstr ""
+
+msgid "view_log"
+msgstr ""
+
+msgid "welcome_title_message"
+msgstr ""

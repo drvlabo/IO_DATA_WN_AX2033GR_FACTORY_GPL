@@ -1,0 +1,68 @@
+#MSTC MBA Sean
+
+ip6tables -D delegate_input -i eth1 -j zone_wan_input
+ip6tables -D delegate_forward -i eth1 -j zone_wan_forward
+ip6tables -D delegate_output -o eth1 -j zone_wan_output
+ip6tables -A delegate_input -i eth1 -j zone_wan_input
+ip6tables -A delegate_forward -i eth1 -j zone_wan_forward
+ip6tables -A delegate_output -o eth1 -j zone_wan_output
+
+ip6tables -D zone_wan_dest_ACCEPT -o eth1 -j ACCEPT
+ip6tables -D zone_wan_dest_DROP -o eth1 -j DROP
+ip6tables -D zone_wan_dest_REJECT -o eth1 -j reject
+ip6tables -D zone_wan_src_REJECT -i eth1 -j reject
+ip6tables -A zone_wan_dest_ACCEPT -o eth1 -j ACCEPT
+ip6tables -A zone_wan_dest_DROP -o eth1 -j DROP
+ip6tables -A zone_wan_dest_REJECT -o eth1 -j reject
+ip6tables -A zone_wan_src_REJECT -i eth1 -j reject
+
+#delete old rule
+# Permit needed ICMP packet types for IPv6 per RFC 4890.
+ip6tables -D input_wan_rule -p udp -m udp --dport 546 -m comment --comment Allow-v6_DHCP -j ACCEPT
+ip6tables -D input_wan_rule              -p ipv6-icmp --icmpv6-type 1   -j ACCEPT
+ip6tables -D input_wan_rule              -p ipv6-icmp --icmpv6-type 2   -j ACCEPT
+ip6tables -D input_wan_rule              -p ipv6-icmp --icmpv6-type 3   -j ACCEPT
+ip6tables -D input_wan_rule              -p ipv6-icmp --icmpv6-type 4   -j ACCEPT
+ip6tables -D input_wan_rule              -p ipv6-icmp --icmpv6-type 133 -j ACCEPT
+ip6tables -D input_wan_rule              -p ipv6-icmp --icmpv6-type 134 -j ACCEPT
+ip6tables -D input_wan_rule              -p ipv6-icmp --icmpv6-type 135 -j ACCEPT
+ip6tables -D input_wan_rule              -p ipv6-icmp --icmpv6-type 136 -j ACCEPT
+ip6tables -D input_wan_rule              -p ipv6-icmp --icmpv6-type 137 -j ACCEPT
+ip6tables -D input_wan_rule              -p ipv6-icmp --icmpv6-type 141 -j ACCEPT
+ip6tables -D input_wan_rule              -p ipv6-icmp --icmpv6-type 142 -j ACCEPT
+ip6tables -D input_wan_rule -s fe80::/10 -p ipv6-icmp --icmpv6-type 130 -j ACCEPT
+ip6tables -D input_wan_rule -s fe80::/10 -p ipv6-icmp --icmpv6-type 131 -j ACCEPT
+ip6tables -D input_wan_rule -s fe80::/10 -p ipv6-icmp --icmpv6-type 132 -j ACCEPT
+ip6tables -D input_wan_rule -s fe80::/10 -p ipv6-icmp --icmpv6-type 143 -j ACCEPT
+ip6tables -D input_wan_rule              -p ipv6-icmp --icmpv6-type 148 -j ACCEPT
+ip6tables -D input_wan_rule              -p ipv6-icmp --icmpv6-type 149 -j ACCEPT
+ip6tables -D input_wan_rule -s fe80::/10 -p ipv6-icmp --icmpv6-type 151 -j ACCEPT
+ip6tables -D input_wan_rule -s fe80::/10 -p ipv6-icmp --icmpv6-type 152 -j ACCEPT
+ip6tables -D input_wan_rule -s fe80::/10 -p ipv6-icmp --icmpv6-type 153 -j ACCEPT
+
+# Permit needed ICMP packet types for IPv6 per RFC 4890.
+ip6tables -A input_wan_rule -p udp -m udp --dport 546 -m comment --comment Allow-v6_DHCP -j ACCEPT
+ip6tables -A input_wan_rule              -p ipv6-icmp --icmpv6-type 1   -j ACCEPT
+ip6tables -A input_wan_rule              -p ipv6-icmp --icmpv6-type 2   -j ACCEPT
+ip6tables -A input_wan_rule              -p ipv6-icmp --icmpv6-type 3   -j ACCEPT
+ip6tables -A input_wan_rule              -p ipv6-icmp --icmpv6-type 4   -j ACCEPT
+ip6tables -A input_wan_rule              -p ipv6-icmp --icmpv6-type 133 -j ACCEPT
+ip6tables -A input_wan_rule              -p ipv6-icmp --icmpv6-type 134 -j ACCEPT
+ip6tables -A input_wan_rule              -p ipv6-icmp --icmpv6-type 135 -j ACCEPT
+ip6tables -A input_wan_rule              -p ipv6-icmp --icmpv6-type 136 -j ACCEPT
+ip6tables -A input_wan_rule              -p ipv6-icmp --icmpv6-type 137 -j ACCEPT
+ip6tables -A input_wan_rule              -p ipv6-icmp --icmpv6-type 141 -j ACCEPT
+ip6tables -A input_wan_rule              -p ipv6-icmp --icmpv6-type 142 -j ACCEPT
+ip6tables -A input_wan_rule -s fe80::/10 -p ipv6-icmp --icmpv6-type 130 -j ACCEPT
+ip6tables -A input_wan_rule -s fe80::/10 -p ipv6-icmp --icmpv6-type 131 -j ACCEPT
+ip6tables -A input_wan_rule -s fe80::/10 -p ipv6-icmp --icmpv6-type 132 -j ACCEPT
+ip6tables -A input_wan_rule -s fe80::/10 -p ipv6-icmp --icmpv6-type 143 -j ACCEPT
+ip6tables -A input_wan_rule              -p ipv6-icmp --icmpv6-type 148 -j ACCEPT
+ip6tables -A input_wan_rule              -p ipv6-icmp --icmpv6-type 149 -j ACCEPT
+ip6tables -A input_wan_rule -s fe80::/10 -p ipv6-icmp --icmpv6-type 151 -j ACCEPT
+ip6tables -A input_wan_rule -s fe80::/10 -p ipv6-icmp --icmpv6-type 152 -j ACCEPT
+ip6tables -A input_wan_rule -s fe80::/10 -p ipv6-icmp --icmpv6-type 153 -j ACCEPT
+
+#DROP rest of them
+ip6tables -D input_wan_rule -p ipv6-icmp -j DROP
+ip6tables -A input_wan_rule -p ipv6-icmp -j DROP

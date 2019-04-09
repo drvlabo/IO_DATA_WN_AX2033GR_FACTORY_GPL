@@ -1,0 +1,116 @@
+<%+header%>
+
+<script language="JavaScript">
+var currentUrl = "<%=controller%>/content/system_settings/backup"; //current page url
+var url = currentUrl;
+
+function verifySubmitData(submitItem)
+{
+	var f = document.upload;
+
+	if (submitItem == 0) {
+		if(f.filePath.value.length == 0) {
+			alert("<%:Please select a file.%>");
+			return false;
+		}
+	}
+
+	return true;
+}
+
+function btnApply(submitItem)
+{
+	var f = document.upload;
+	var verifyFlag = verifySubmitData(submitItem);
+
+	if(verifyFlag) {
+		f.csrf_token.value = csrf_token;
+		if (submitItem == 0) { 
+			f.filePath.disabled = "";
+			f.applyFlag.value = 1;
+			f.backupFlag.value = 0;
+			f.submit();
+			return true;
+		}
+		else if (submitItem == 1) { 
+			f.filePath.disabled = "";
+			f.applyFlag.value = 0;
+			f.backupFlag.value = 1;
+			f.submit();
+			
+			//MSTC MBA Sean, Check Cookie to find out user has download the file or not.
+			var check_file_timeout = 0;
+			setInterval(function(){
+				if (document.cookie.match(/^(.*;)?file_loading=[^;]+(.*)?$/)) {
+					// clean the cookie for future downoads
+					document.cookie = 'file_loading=; Max-Age=0';
+					//redirect
+					location.href = url;
+				}
+				//wait 2.5 sec, if it can't get cookie, redirect anyway
+				check_file_timeout++;
+				if(check_file_timeout > 5) {
+					location.href = url;
+				}
+			},500);
+			
+			return true;
+		}
+		return false;
+	}
+	else {
+		return false;
+	}
+}
+
+function showInvalidMessage()
+{
+	alert("<%:File is corrupt. Please check the file.%>");
+}
+
+
+<%
+	local lua_updateability = uci.get("system", "firmware", "updateability");
+	if (not lua_updateability) or (tonumber(lua_updateability)>2) or (tonumber(lua_updateability)<0) then
+		lua_updateability = 2;
+	end
+%>
+
+function frmLoad()
+{
+	//MSTC MBA, Sean, if old cookie exist, remove it
+	document.cookie = 'file_loading=; Max-Age=0'
+}
+</script>
+
+<div id="content">
+<blockquote>
+<p class="title"><%:You can save the current settings with the Save button. Select the file to be restored, and restore.%></p>
+<form enctype="multipart/form-data"  id="content_send" name="upload" method="post">
+<input type="hidden" name="backupFlag" value="0" />
+<input type="hidden" name="applyFlag" value="0" />
+<input type="hidden" name="csrf_token" value="0" />
+
+
+<table border=0 width="600" cellspacing=2 cellpadding=5 align=center>
+	<tr>
+		<td width="25%" class="background"><%:Save settings:%></td>
+		<td>
+			<input name="Backup" type="button" value="<%:Save%>" onclick="btnApply(1)" />
+		</td>
+	</tr>
+</table>
+
+<table border=0 width="600" cellspacing=2 cellpadding=5 align=center>
+	<tr>
+		<td width="25%" class="background"><%:Restore settings:%></td>
+		<td valign="top"><input size="25" maxlength="31" name="filePath" type="file"></td>
+		<td valign="top"><input type="button" value="<%:Restore%>" onclick="btnApply(0)" /></td>
+	</tr>
+</table>
+</form>
+</blockquote>
+
+</div>
+
+<%+footer%>

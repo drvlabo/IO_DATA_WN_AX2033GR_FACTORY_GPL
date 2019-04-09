@@ -1,0 +1,29 @@
+<form name="easysetup" method="POST" action="/cgi-bin/sec/easysetup.cgi">
+<table width="100%" height="97%" border="0" cellpadding="1" cellspacing="1">
+<tbody><tr>
+	<td align="center" valign="center">
+<table width="500" border="1" align="center" cellpadding="5" cellspacing="0" >
+<tr>
+<td align="left" >
+<font size="2">
+インターネットポートが未接続か、通信ができない状態になっています。<br>
+以下の手順でインターネットポートの接続を確認してください。(エラー2)<br><br>
+＜手順＞<br>
+・インターネットポートにモデムからのケーブルが接続されていることを確認してください。<br>
+・モデムの電源が入っていることを確認してください。<br>
+<br><br><br><br><br>
+</font>
+</td>
+</tr>
+<tr>
+<td align="right" >
+<input type="hidden" name="ottforcsrf">
+<input type="submit" name="EasySetupErrorFinish" value="　完了　">
+</td>
+</tr>
+</table>
+</td>
+</tr></tbody>
+</table>
+</form>
+

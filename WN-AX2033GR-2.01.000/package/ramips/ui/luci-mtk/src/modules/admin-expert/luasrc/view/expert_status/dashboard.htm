@@ -1,0 +1,694 @@
+﻿<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: header.htm 4891 2009-06-22 10:23:21Z jow $
+
+-%>
+<%
+require("luci.sys")
+uci = require("luci.model.uci").cursor()
+--require("luci.i18n").loadc("default")
+local i18n = require("luci.i18n")
+require("luci.http").prepare_content("text/html")
+local lang = uci:get("luci","main","lang")
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+-%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<title>.::<%:welcome_title_message%>::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="<%=media%>/js/DST.js" ></script>
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script language="JavaScript">
+
+function actionLogout()
+{
+	var flag;
+	flag=confirm("<%:msg_confirm_1%>");
+	if (flag){
+		top.location.href="<%=controller%>/expert/logout";
+	}
+}
+
+function myrefresh()
+{
+	//self.location.reload();
+	window.location.href="<%=controller%>/expert/status";
+}
+
+function pageRefresh()
+{
+	//window.location.reload();
+	window.location.href="<%=controller%>/expert/status";
+}
+
+var aaa;
+function init()
+{
+	var newIndex=document.forms[0].refresh_interval.selectedIndex;
+	if (newIndex==0)
+		{setTimeout('myrefresh();',86400000);}
+	if (newIndex==1)
+		{setTimeout('myrefresh();',5000);}
+	if (newIndex==2)
+		{setTimeout('myrefresh()',10000);}
+	if (newIndex==3)
+		{setTimeout('myrefresh()',15000);}
+	if (newIndex==4)
+		{setTimeout('myrefresh()',20000);}
+	if (newIndex==5)
+		{setTimeout('myrefresh()',25000);}
+	if (newIndex==6)
+		{setTimeout('myrefresh()',30000);}
+}
+function setRefreshInterval()
+{
+	var newIndex=document.forms[0].refresh_interval.selectedIndex;
+	
+	if (newIndex==0)	aaa=0;
+	if (newIndex==1) 	aaa=5;
+	if (newIndex==2)	aaa=10;
+	if (newIndex==3)	aaa=15;
+	if (newIndex==4)	aaa=20;
+	if (newIndex==5)	aaa=25;
+	if (newIndex==6)	aaa=30;
+
+      	document.forms[0].refreshInteval.value=aaa;
+      	document.forms[0].submit();
+}
+</script>
+</head>
+<body onload="init()">
+<form method="post"  action="<%=controller%>/expert/status" >
+<div id="wrapper">
+  <div id="top">
+	<% local logoshow_enable = uci:get("system","main","logoshow") %>
+	<% if logoshow_enable == "1" then %>
+		<div class="logo"><img src="<%=media%>/admin/images/advance_logo.jpg"/></div>
+	<% end %>
+	
+	<% local modelname_show = uci.get_t("runtime", "mrd", "productname")%>
+    <div class="modelname"><% if modelname_show ~= "na" then %><%=modelname_show%><%else%><%end%></div>
+    <div class="quick_link">
+      <ul>
+	  	<%	
+			local tokenArray = {}
+			local sessionpath = luci.config.sauth.sessionpath
+			local token=string.split(tostring(controller),"=")
+			for index,info in pairs(token) do
+				tokenArray[index]=info
+			end
+			local token=tokenArray[2]
+			luci.sys.exec("rm -f /tmp/loginuser")
+			luci.sys.exec("grep -Irn "..token.." "..sessionpath.." | grep token | cut -d '=' -f '4' | cut -d '\"' -f '2' > /tmp/loginuser")
+			local file = io.open("/tmp/loginuser", "r")	
+			if file == nil then
+				 login_user = ""
+			else
+				login_user = file:read("*line")
+				file:close()
+			end
+			luci.sys.exec("rm -f /tmp/loginuser")
+		%>
+        <li class="Logout" ><a href="javascript:actionLogout();" title="Logout">Logout</a></li>
+        <li class="admin"><%:welcome%>: <%=login_user%></li>
+      </ul>
+    </div>
+  </div>
+  <div id="blueline"></div>
+</div>
+<div id="contentframe">
+  <div class="mainconent">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0"><tr>
+      <td ><img src="<%=media%>/admin/images/air.gif" width="1" height="38" /></td>
+        <td width="100%"  valign="top">
+		<div class="contentdata">
+		  <div class="content_title"><%:device_status%></div>
+         <!-- Modify  07/01"-->
+		  <div class="refresh">
+              <ul>
+                <li class="refresh_left"></li>
+                <li class="refresh_center">
+		<%	local f = io.open("/tmp/refresh","r")
+			local sec_interval
+			if f then
+			sec_interval = f:read("*all")
+			f:close()
+			end
+		%>
+                  <table width="280" border="0" cellpadding="0" cellspacing="0">
+                    <tbody>
+                      <tr>
+                        <td width="70%"  height="26"><%:refresh_interval%>:
+                          <select  size="1" name="refresh_interval" onchange="setRefreshInterval()">
+				<option value="00000000" <% if sec_interval == "0" then %>selected="selected"<%end%>><%:interval_select_none%> </option>
+				<option value="00000001" <% if sec_interval == "5" then %>selected="selected"<%end%>>5 <%:seconds%> </option>
+				<option value="00000002" <% if sec_interval == "10" then %>selected="selected"<%end%>>10 <%:seconds%> </option>
+				<option value="00000003" <% if sec_interval == "15" then %>selected="selected"<%end%>>15 <%:seconds%> </option>
+				<option value="00000004" <% if sec_interval == "20" then %>selected="selected"<%end%>>20 <%:seconds%> </option>
+				<option value="00000005" <% if sec_interval == "25" then %>selected="selected"<%end%>>25 <%:seconds%> </option>
+				<option value="00000006" <% if sec_interval == "30" then %>selected="selected"<%end%>>30 <%:seconds%> </option>
+			  </select>
+                        </td>
+                        <td align="center" ><input  value="<%:refresh_now%>" onclick="pageRefresh();" type="submit"/></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </li>
+                <li class="refresh_right"></li>
+              </ul>
+            </div>
+		</div> 
+		<!-- Modify  07/01"-->
+		<br class="clearfloat" />
+        <div class="pannel2">
+            <div class="leftpannel"><br/>
+              <div class="tableframe">
+                <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0" class="table_frame">
+                  <tr>
+                    <td><table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td><table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                              <tr>
+                                <td><table width="100%" cellpadding="0" cellspacing="0" >
+                                    <tr>
+                                      <td height="26" colspan="2"><table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                          <tr>
+                                            <td height="26" class="table_title"><%:device_info%></td>
+                                          </tr>
+                                        </table></td>
+                                    </tr>
+									
+									<%local hostname = uci:get("system","main","hostname")%>
+									<%local model_name = uci.get_t("runtime","mrd","productname")%>
+									<%local hardware_version = uci.get_t("runtime","mrd","hwver")%>
+                                    <%local firmware_version = uci.get_t("runtime","info","fwver")%>
+									<%local lan_ipaddr = uci:get("network","lan","ipaddr")%>
+									<%local lan_netmask = uci:get("network","lan","netmask")%>
+									<%local ssid_24g = uci:get("wireless.wlan0.ssid")%>
+									<%local channel_24g = uci:get("wireless","general","channel")%>
+									<%local ssid_5g = uci:get("wireless5G","general","ssid")%>
+									<%local channel_5g = uci:get("wireless5G","general","channel")%>
+									<%local firewall_enable = uci:get("firewall","general","dos_enable")%>
+									
+                                    <tr class="top_font">
+                                      <td width="60%"><%:dashboard_item%></td>
+                                      <td width="50%"><%:dashboard_data%></td>
+                                    </tr>
+                                    <!--  Modify by YiWei
+									<tr class="table_font">
+                                      <td ><%:device_host_name%>:</td>
+                                      <td  style=" color:#0b70fc;"><%=hostname%></td>
+                                    </tr>
+									-->
+                                    <tr class="table_font">
+                                      <td ><%:device_model_name%>: </td>
+									  <td style=" color:#0b70fc;"><%if model_name == "na" then%>N/A<%else%><%=model_name%><%end%></td>
+                                    </tr>
+				    <%
+					local wanProtocol = uci:get("network","wan","proto")
+					local wanInterface = uci:get("network","wan","ifname")
+					
+					local wanMode = ""
+					local wanInfo_cmd= ""
+					local wan2Mode = ""
+					local wan2Info_cmd= ""
+					
+					if wanInterface == "eth1" then
+						wanInfo_cmd=luci.sys.exec("ifconfig eth1")
+						wanMode = ""
+					elseif wanInterface == "wwan0" then
+						wanInfo_cmd=luci.sys.exec("ifconfig wwan0")
+						wanMode = "(LTE WAN)"
+					elseif wanInterface == "lte0.1" then
+						wanInfo_cmd=luci.sys.exec("ifconfig lte0.1")
+						wanMode = "(LTE WAN)"
+						wan2Info_cmd=luci.sys.exec("ifconfig lte0.2")
+						wan2Mode = "(LTE WAN 2)"
+					end
+					
+					local wan_mac=string.match(wanInfo_cmd,"HWaddr (%x+:%x+:%x+:%x+:%x+:%x+)")
+					local wan_ip = uci.get_t("runtime","internet_info","ipv4_address_preference")
+					local wan_netmask = uci.get_t("runtime","internet_info","ipv4_subnet_mask")					
+					local wan_ipv6_addr = uci.get_t("runtime","ipv6","runtime_ipv6_addr")
+					
+					local wan2_mac=string.match(wan2Info_cmd,"HWaddr (%x+:%x+:%x+:%x+:%x+:%x+)")
+					local wan2_ip=string.match(wan2Info_cmd,"inet addr:(%d+.%d+.%d+.%d+)")
+					local wan2_netmask=string.match(wan2Info_cmd,"Mask:(%d+.%d+.%d+.%d+)")
+					
+					local APN_2_Enable = uci:get("module","lte","cid_2_apn_enable")
+					
+					local wanGW_cmd=luci.sys.exec("route -n")
+
+					if wanInterface == "wwan0" then
+						local wanGW_ethernet=string.match(wanGW_cmd,"0.0.0.0%s+(%d+.%d+.%d+.%d+)%s+0.0.0.0%s+[0-9a-zA-Z.]+%s+%d+%s+%d+%s+%d+%s+wwan0")
+					elseif wanInterface == "lte0.1" then
+						local wanGW_ethernet=string.match(wanGW_cmd,"0.0.0.0%s+(%d+.%d+.%d+.%d+)%s+0.0.0.0%s+[0-9a-zA-Z.]+%s+%d+%s+%d+%s+%d+%s+lte0")
+					end
+
+					local lan_mac = luci.sys.exec("ifconfig br-lan | grep HWaddr | awk '{print $5}'")
+					local wlan_mac_24G = uci:get("wireless.general.macaddr")
+
+					local sn = uci.get_t("runtime","mrd","sn")%>
+					
+                                    <tr class="table_font">
+                                      <td ><%:hw_version%>:</td>
+                                      <td style=" color:#0b70fc;"><%if hardware_version == "na" then%>N/A<%else%><%=hardware_version%><%end%></td>
+                                    </tr> 
+                                    <tr class="table_font">
+                                      <td ><%:fw_version%>:</td>
+                                      <td style=" color:#0b70fc;"><%if firmware_version == "na" then%>N/A<%else%><%=firmware_version%><%end%></td>
+                                    </tr>
+                                    <tr class="table_font">
+                                      <td ><%:serial_number%>:</td>
+                                      <td style=" color:#0b70fc;"><%if sn == "na" then%>N/A<%else%><%=sn%><%end%></td>
+                                    </tr>
+                                    <tr class="table_font">
+                                      <td ><%:mac_addr%>:</td>
+                                      <td  style=" color:#0b70fc;"><%=lan_mac%></td>
+                                    </tr>									
+                                    <tr class="table_font">
+                                      <td ><%:wan_info%></td>
+                                      <td  style=" color:#0b70fc;"><%=wanMode%></td>
+                                    </tr>
+									<!--
+                                    <tr class="table_font">
+                                      <td >&nbsp;&nbsp;- <%:mac_addr%>:</td>
+                                      <td  style=" color:#0b70fc;"><%=wan_mac%></td>
+                                    </tr>
+									-->
+                                    <tr class="table_font">
+                                      <td >&nbsp;&nbsp;- <%:ip_addr%>:</td>
+                                      <td  style=" color:#0b70fc;"><%if wan_ip == "na" then%>N/A<%else%><%=wan_ip%><%end%></td>
+                                    </tr>
+                                    <tr class="table_font">
+                                      <td >&nbsp;&nbsp;- <%:ip_subnet_mask%>:</td>
+                                      <td  style=" color:#0b70fc;"><%if wan_netmask == "na" then%>N/A<%else%><%=wan_netmask%><%end%></td>
+                                    </tr> 
+                                    <tr class="table_font">
+                                      <td >&nbsp;&nbsp;- <%:IPv6_Address%>:</td>
+                                      <td  style=" color:#0b70fc;"><%if wan_ipv6_addr == "na" then%>N/A<%else%><%=wan_ipv6_addr%><%end%></td>
+                                    </tr> 									
+<%if APN_2_Enable == "1" then %>									
+									<tr class="table_font">
+                                      <td ><%:wan2_info%></td>
+                                      <td  style=" color:#0b70fc;"><%=wan2Mode%></td>
+                                    </tr>	
+									<tr class="table_font">
+                                      <td >&nbsp;&nbsp;- <%:mac_addr%>:</td>
+                                      <td  style=" color:#0b70fc;"><%=wan2_mac%></td>
+                                    </tr>                                   		
+                                    <tr class="table_font">
+                                      <td >&nbsp;&nbsp;- <%:ip_addr%>:</td>
+                                      <td  style=" color:#0b70fc;"><%if wan2_ip == "na" then%>N/A<%else%><%=wan2_ip%><%end%></td>
+                                    </tr>
+                                    <tr class="table_font">
+                                      <td >&nbsp;&nbsp;- <%:ip_subnet_mask%>:</td>
+                                      <td  style=" color:#0b70fc;"><%if wan2_netmask == "na" then%>N/A<%else%><%=wan2_netmask%><%end%></td>
+                                    </tr>  
+<%end%>									
+                                    <tr class="table_font">
+                                      <td><%:lan_info%>:</td>
+                                      <td  style=" color:#0b70fc;"></td>
+                                    </tr>
+                                    <tr class="table_font">
+                                      <td>&nbsp;&nbsp;- <%:ip_addr%>: </td>
+                                      <td  style=" color:#0b70fc;"><%if lan_ipaddr == "na" then%>N/A<%else%><%=lan_ipaddr%><%end%></td>
+                                    </tr>
+                                    <tr class="table_font">
+                                      <td>&nbsp;&nbsp;- <%:ip_subnet_mask%>:</td>
+                                      <td  style=" color:#0b70fc;"><%if lan_netmask == "na" then%>N/A<%else%><%=lan_netmask%><%end%></td>
+                                    </tr>
+<!--									
+                                    <tr class="table_font">
+                                      <td><%:wlan24G_info%>:</td>
+                                      <td  style=" color:#0b70fc;"></td>
+                                    </tr>
+                                    <tr class="table_font">
+                                      <td >&nbsp;&nbsp;- <%:mac_addr%>:</td>
+                                      <td  style=" color:#0b70fc;"><%=wlan_mac_24G%></td>
+                                    </tr>
+                                    <tr class="table_font">
+                                      <td>&nbsp;&nbsp;- SSID:</td>
+                                      <td  style=" color:#0b70fc;"><%if ssid_24g == "na" then%>N/A<%else%><%=ssid_24g%><%end%></td>
+                                    </tr>
+                                    <tr class="table_font">
+                                      <td >&nbsp;&nbsp;- <%:channel%>:</td>
+                                      <td  style=" color:#0b70fc;"><%if channel_24g == "na" then%>N/A<%else%><%=channel_24g%><%end%></td>
+                                    </tr>
+-->									
+                       
+                                    <tr class="table_font">
+                                      <td>&nbsp;&nbsp;</td>
+                                      <td  style=" color:#0b70fc;"></td>
+                                    </tr>
+                                  </table></td>
+                              </tr>
+                            </table></td>
+                        </tr>
+                      </table></td>
+                  </tr>
+                </table>
+              </div>
+              <div class="tableframe">
+                <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0" class="table_frame">
+                  <tr>
+                    <td><table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td><table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                              <tr>
+                                <td><table width="100%" cellpadding="0" cellspacing="0" >
+                                    <tr>
+                                      <td height="26" colspan="3"><table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                          <tr>
+                                            <td height="26" class="table_title"><%:interface_status%></td>
+                                          </tr>
+                                        </table></td>
+                                    </tr>
+                                    <tr class="top_font">
+                                      <td><%:iface%></td>
+                                      <td><%:iface_status%></td>
+                             
+                                    </tr>
+                                    <%
+					local wanSpeed_cmd=luci.sys.exec("sys portspeed 4")
+					local wan_rate=string.match(wanSpeed_cmd,"Port 4: (%d+M)")
+					
+					local lan1Speed_cmd=luci.sys.exec("sys portspeed 0")
+					local lan1_rate=string.match(lan1Speed_cmd,"Port 0: (%d+M)")
+					local lan_status=luci.sys.exec("cat /sys/class/net/rndis0/carrier")
+					local lan_speed=luci.sys.exec("dmesg | grep -i duplex | tail -n 1 | sed 's/^.*(//g' | sed 's/).*$//g'")
+					
+					local lan2Speed_cmd=luci.sys.exec("sys portspeed 1")
+					local lan2_rate=string.match(lan2Speed_cmd,"Port 1: (%d+M)")
+					
+					local lan3Speed_cmd=luci.sys.exec("sys portspeed 2")
+					local lan3_rate=string.match(lan3Speed_cmd,"Port 2: (%d+M)")
+					
+					local lan4Speed_cmd=luci.sys.exec("sys portspeed 3")
+					local lan4_rate=string.match(lan4Speed_cmd,"Port 3: (%d+M)")
+				    %>
+					<%
+					local lteStatus = uci.get_t("runtime", "wan_status", "status")
+					local lteSignalStrength = uci.get_t("runtime", "signal_info", "signal_strength")
+					local lteServiceProvider = uci.get_t("runtime", "wan_status", "service_provider")
+					local lteFrequencyBand = uci.get_t("runtime", "cell_status", "frequency_band")
+					local lteDeviceFirmwareVersion = uci.get_t("runtime", "device_status", "fw_version")
+					local lteRoamingStatus = uci.get_t("runtime", "internet_info", "roam_status")
+					local lteDeviceIMEI = uci.get_t("runtime", "device_status", "imei")
+					local lteSIMCardIMSI = uci.get_t("runtime", "device_status", "imsi")	
+					local lteConnectionUpTime = uci.get_t("runtime", "device_status", "connection_time")			
+					%>
+                                    <tr class="table_font">
+                                      <td><%:iface_wan%></td>
+                                      <td ><%if lteStatus == "Connected" then%><%:iface_up%><%else%><%:iface_down%><%end%></td>
+                     
+                                    </tr>
+                                    <tr class="table_font">
+                                      <td ><%:iface_lan%></td>
+                                      <td ><%if tonumber(lan_status) == 1 then%><%:iface_up%><%else%><%:iface_down%><%end%></td>
+					
+                                      <td ></td>
+                                    </tr>                                                                                         
+				    <%local wirelessSt_24g = uci:get("wireless","general","disabled")%>
+                                    <tr class="table_font">
+                                      <td ><%:iface_wlan%></td>
+                                      <td ><%if wirelessSt_24g == "0" then%><%:iface_up%><%else%><%:iface_down%><%end%></td>
+
+                                    </tr>             
+                                    <tr class="table_font">
+                                      <td >&nbsp;</td>
+                                      <td >&nbsp;</td>
+
+                                    </tr>
+                                  </table></td>
+                              </tr>
+                            </table></td>
+                        </tr>
+                      </table></td>
+                  </tr>
+                </table>
+              </div>
+			  <br />			  
+            </div>
+
+            <div class="rightpannel">
+			 <div class="tableframe">
+                <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0" class="table_frame">
+                  <tr>
+                    <td><table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td><table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                              <tr>
+                                <td><table width="100%" cellpadding="0" cellspacing="0" >
+                                  <tr>
+                                    <td height="26" colspan="3"><table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                          <td height="26"  class="table_title"><%:WAN_Status%></td>
+                                        </tr>
+                                    </table></td>
+                                  </tr>
+                                  <tr class="top_font">
+                                    <td width="54%" ><%:dashboard_item%></td>
+                                    <td colspan="2" ><%:dashboard_data%></td>
+                                  </tr>
+								  <% 
+									if lteStatus == nil or lteStatus == "" then
+										lteStatus = "ERROR"
+									elseif lteStatus ~= "UP" then
+										local SIMCARD = luci.sys.exec("/usr/sbin/lte_StatusUpdate SIMCARD")
+										if SIMCARD == "CELL_DEVST_SIM_PIN" then
+											lteStatus = "PIN REQUIRED"
+										elseif SIMCARD == "CELL_DEVST_SIM_PUK" then
+											lteStatus = "PIN LOCKED"
+										elseif SIMCARD == "CELL_DEVST_SIM_RDY" or SIMCARD == "SIM_PIN_DISABLE" then
+											lteStatus = "DOWN"
+										elseif SIMCARD == "CELL_DEVST_SIM_ERR" or SIMCARD == "CELL_DEVST_DEV_ERR" then
+											lteStatus = "SIM ERROR"
+										end
+									end
+								  %>
+                                  <tr class="table_font">
+                                    <td ><%:LTE_Status%>:</td>
+                                    <td colspan="2" style=" color:#0b70fc;"><%=lteStatus%></td>
+                                  </tr>
+								  
+									<% local sim_status_Value = uci.get_t("runtime","device_status","sim_status")
+									   local pin_state_Value = uci.get_t("runtime","device_status","pin_state")
+									   local show_SIMCard_Status = 0
+										
+										if sim_status_Value == "Present" then
+											if pin_state_Value == "Disabled" then
+												show_SIMCard_Status = i18n.translate("MLG_PIN_DISABLE")  
+											elseif pin_state_Value == "Enabled and not verified" then
+												show_SIMCard_Status = i18n.translate("MLG_PIN_REQUIRED")  
+											elseif pin_state_Value == "Enabled and verified" then
+												show_SIMCard_Status = i18n.translate("MLG_PIN_VERIFIED")  
+											elseif pin_state_Value == "Blocked" then
+												show_SIMCard_Status = i18n.translate("MLG_PIN_LOCKED")  
+											else 
+												show_SIMCard_Status = i18n.translate("Error")  
+											end
+										else
+											show_SIMCard_Status = i18n.translate("MLG_NOT_PRESENT")  
+										end
+									%>								  
+																		
+                                  <tr class="table_font">
+                                    <td ><%:MLG_SIMCard_Status_LTEWan%>:</td>
+                                    <td colspan="2" style=" color:#0b70fc;"><%=show_SIMCard_Status%></td>
+                                  </tr>								  
+                                  <tr class="table_font">
+                                    <td ><%:LTE_SignalStrength%>:</td>
+                                    <td colspan="2" style=" color:#0b70fc;"><%if lteSignalStrength == "na" or lteSignalStrength == "" then%>N/A<%else%><%=lteSignalStrength%> dBm<%end%></td>
+                                  </tr>
+                                  <tr class="table_font">
+                                    <td><%:LTE_ServiceProvider%>:</td>
+									<td colspan="2" style=" color:#0b70fc;"><%if lteStatus == "DOWN" or lteServiceProvider == "na" or lteServiceProvider == "" then%>N/A<%else%><%=lteServiceProvider%><%end%></td>
+                                  </tr>
+								  <tr class="table_font">
+                                    <td><%:LTE_FrequencyBand%>:</td>
+									<td colspan="2" style=" color:#0b70fc;"><%if lteFrequencyBand == "na" or lteFrequencyBand == "" then%>N/A<%else%><%=lteFrequencyBand%><%end%></td>
+                                  </tr>
+								  <tr class="table_font">
+                                    <td><%:LTE_ConnectionUpTime%>:</td>
+									<td colspan="2" style=" color:#0b70fc;"><%=lteConnectionUpTime%></td>
+                                  </tr>
+								  <tr class="table_font">
+                                    <td><%:LTE_FWVersion%>:</td>
+									<td colspan="2" style=" color:#0b70fc;"><%if lteDeviceFirmwareVersion == "na" or lteDeviceFirmwareVersion == "" then%>N/A<%else%><%=lteDeviceFirmwareVersion%><%end%></td>
+                                  </tr> 
+								  <tr class="table_font">
+                                    <td><%:LTE_RoamingStatus%>:</td>
+									<td colspan="2" style=" color:#0b70fc;"><%if lteRoamingStatus == "0" then%>Off<%else%>On<%end%></td>
+                                  </tr> 								  
+								  <tr class="table_font">
+                                    <td><%:LTE_IMEI%>:</td>
+									<td colspan="2" style=" color:#0b70fc;"><%if lteDeviceIMEI == "na" or lteDeviceIMEI == "" then%>N/A<%else%><%=lteDeviceIMEI%><%end%></td>
+                                  </tr> 
+								  <tr class="table_font">
+                                    <td><%:LTE_IMSI%>:</td>
+									<td colspan="2" style=" color:#0b70fc;"><%if lteSIMCardIMSI == "na" or lteSIMCardIMSI == "" then%>N/A<%else%><%=lteSIMCardIMSI%><%end%></td>
+                                  </tr>  								  
+                                  <tr  class="table_font">
+                                    <td colspan="3">&nbsp;</td>
+                                  </tr>
+                                </table></td>
+                              </tr>
+                            </table></td>
+                        </tr>
+                      </table></td>
+                  </tr>
+                </table>
+              </div>
+              <div class="tableframe">
+                <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0" class="table_frame">
+                  <tr>
+                    <td><table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td><table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                              <tr>
+                                <td><table width="100%" cellpadding="0" cellspacing="0" >
+                                  <tr>
+                                    <td height="26" colspan="3"><table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                          <td height="26"  class="table_title"><%:system_status%></td>
+                                        </tr>
+                                    </table></td>
+                                  </tr>
+                                  <tr class="top_font">
+                                    <td width="54%" ><%:dashboard_item%></td>
+                                    <td colspan="2" ><%:dashboard_data%></td>
+                                  </tr>
+                                  <%
+					local up_time=luci.sys.uptime()
+					local ca_date=up_time/86400
+					local ca_hour=(up_time/3600)%24
+					local ca_minute=(up_time/60)%60
+					local ca_second=up_time%60
+				  %>
+                                  <tr class="table_font">
+                                    <td ><%:system_up_time%>:</td>
+                                    <td colspan="2" style=" color:#0b70fc;"><%=math.floor(ca_date)%><%:day%> <%=math.floor(ca_hour)%><%:hr%> <%=math.floor(ca_minute)%><%:min%> <%=ca_second%><%:sec%></td>
+                                  </tr>
+                                  <tr class="table_font">
+                                    <td ><%:current_date_time%>:</td>
+                                    <td colspan="2" style=" color:#0b70fc;"><label id="mtenCurrent_Date"></label>/<label id="mtenCurrent_Time"></label></td>
+                                  </tr>
+								  <%local batteryStatus = uci.get_t("runtime", "oled", "charge")%>	
+								  <tr class="table_font">
+                                    <td><%:battery_status%>:</td>
+									<td colspan="2" style=" color:#0b70fc;"><%if batteryStatus == "1" then%><%:battery_charging%><%else%>N/A<%end%></td>
+                                  </tr> 							  
+                                  <tr class="table_font">
+                                    <td><%:system_resource%>:</td>
+                                    <td colspan="2"></td>
+                                  </tr>
+<%
+local cpuUsage_cmd=luci.sys.exec("cat /proc/stat")
+local cpu_user,cpu_nice,cpu_system,cpu_idle=string.match(cpuUsage_cmd,"cpu%s+(%d+)%s+(%d+)%s+(%d+)%s+(%d+)%s+%d+%s+%d+%s+%d+%s+%d+%s+%d+")
+local cpu_total=cpu_user+cpu_nice+cpu_system+cpu_idle
+local cpu_usage=cpu_user+cpu_nice+cpu_system
+local cpu_percent=cpu_usage/cpu_total*100
+local memUsage_cmd=luci.sys.exec("cat /proc/meminfo")
+local mem_total=string.match(memUsage_cmd,"MemTotal:%s+(%d+) kB")
+local mem_free=string.match(memUsage_cmd,"MemFree:%s+(%d+) kB")
+local mem_percent=(mem_total-mem_free)/mem_total*100
+%>
+				  <tr class="percentage ">
+                                    <td class="percentage">&nbsp;&nbsp;- <%:cpu_usage%>:</td>
+                                    <td width="37%" valign="middle" class="percentage"><table width="100%" height="18" border="1" cellpadding="0" cellspacing="0" style=" border:1px #7895c8 solid; margin-bottom:3px;"  >
+                                        <tr>
+                                          <td background="<%=media%>/admin/images/i_percentage_center.gif"><table width="<%=cpu_percent%>%" border="0" cellspacing="0" cellpadding="0">
+                                              <tr>
+                                                <td height="18" background="<%=media%>/admin/images/i_percentage_blue.gif">&nbsp;</td>
+                                              </tr>
+                                          </table></td>
+                                        </tr>
+                                    </table></td>
+                                    <td width="9%" valign="middle" style="color:#0b70fc;" class="percentage"><%=math.floor(cpu_percent)%>%</td>
+                                  </tr>
+                                  
+                                  <tr class="percentage">
+                                    <td class="percentage">&nbsp;&nbsp;- <%:memory_usage%>:</td>
+                                    <td valign="middle" class="percentage"><table width="100%" height="18" border="1" cellpadding="0" cellspacing="0" style=" border:1px #7895c8 solid; margin-bottom:3px;">
+                                        <tr>
+                                          <td background="<%=media%>/admin/images/i_percentage_center.gif"><table width="<%=mem_percent%>%" border="0" cellspacing="0" cellpadding="0">
+                                              <tr>
+                                                <td height="18" background="<%=media%>/admin/images/i_percentage_blue.gif">&nbsp;</td>
+                                              </tr>
+                                          </table></td>
+                                        </tr>
+                                    </table></td>
+                                    <td valign="middle" style="color:#0b70fc;"  class="percentage"><%=math.floor(mem_percent)%>%</td>
+                                  </tr>
+                                  <tr  class="table_font">
+                                    <td colspan="3">&nbsp;</td>
+                                  </tr>
+                                </table></td>
+                              </tr>
+                            </table></td>
+                        </tr>
+                      </table></td>
+                  </tr>
+                </table>
+              </div>
+
+              <br />
+            </div>
+          </div>
+            <br class="clearfloat" />
+            <br />
+          <br />        </td>
+        <td ><img src="<%=media%>/admin/images/air.gif" width="1" height="38" /></td>
+      </tr>
+    </table>
+  </div>
+  <br /> 
+<div class="submenu2"><ul><li class="i_dashboard" title="<%:Dashboard%>"></li> 
+      <li class="i_monitor" title="<%:Monitor%>"><a href="<%=controller%>/expert/monitor" title="<%:Monitor%>" target="_parent"></a></li>
+      <li class="i_config"><a href="<%=controller%>/expert/configuration" title="<%:Configuration%>" target="_parent"></a></li>
+      <li class="i_maintenance"><a href="<%=controller%>/expert/maintenance" title="<%:Maintenance%>" target="_parent"></a></li>
+</ul>  
+<br class="clearfloat" /></div>
+</div>
+<input type="hidden" name="refreshInteval" value="100">
+</form>
+</body>
+
+<form method="post" name="NTP">
+<input type="hidden" name="mtenCurrent_Hour" value='<%=string.match(luci.sys.exec("date +%H"),"(%d+)")%>' />
+<input type="hidden" name="mtenCurrent_Min" value='<%=string.match(luci.sys.exec("date +%M"),"(%d+)")%>' />
+<input type="hidden" name="mtenCurrent_Sec" value='<%=string.match(luci.sys.exec("date +%S"),"(%d+)")%>' />
+<input type="hidden" name="mtenCurrent_Year" value='<%=string.match(luci.sys.exec("date +%Y"),"(%d+)")%>' />
+<input type="hidden" name="mtenCurrent_Mon" value='<%=string.match(luci.sys.exec("date +%m"),"(%d+)")%>' />
+<input type="hidden" name="mtenCurrent_Day" value='<%=string.match(luci.sys.exec("date +%d"),"(%d+)")%>' />
+</form>
+<script language="JavaScript">
+	start_Mon='<%=uci:get("time", "DST", "start_month")%>';
+	start_Day='<%=uci:get("time", "DST", "start_day")%>';
+	start_Hour='<%=uci:get("time", "DST", "start_clock")%>'; 
+	end_Mon='<%=uci:get("time", "DST", "end_month")%>';
+	end_Day='<%=uci:get("time", "DST", "end_day")%>';
+	end_Hour='<%=uci:get("time", "DST", "end_clock")%>';
+	enable_dst = '<%=uci:get("time", "DST", "enable")%>';
+
+	if(enable_dst=='1'){
+		daylightsaving();
+	}
+	initDateAndTime();
+	IncreaseSec();	
+</script>
+</html>

@@ -1,0 +1,21 @@
+
+<!-- MSTC MBA SW2 Sean, add csrf token in the page, each page will generate csrf token when loaded -->
+<script type="text/javascript">
+
+<%local csrf = require("luci.csrf")%>
+var csrf_token = "<%=csrf.create_token()%>";
+$.ajaxPrefilter(function(options, originalOptions, jqXHR){
+    if (options.type.toLowerCase() === "post") {
+		
+		// initialize `data` to empty string if it does not exist
+        options.data = options.data || "";
+
+        // add leading ampersand if `data` is non-empty
+        options.data += options.data?"&":"";
+
+        // add _token entry
+        options.data += "csrf_token=" + csrf_token;
+    }
+});
+
+</script>

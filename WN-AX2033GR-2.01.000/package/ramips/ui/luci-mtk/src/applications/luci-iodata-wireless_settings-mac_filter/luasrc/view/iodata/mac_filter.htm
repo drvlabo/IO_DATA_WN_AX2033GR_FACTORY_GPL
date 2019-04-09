@@ -1,0 +1,619 @@
+<%+header%>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Cache-Control" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
+<script type="text/javascript">
+var url ="<%=controller%>/content/wireless_settings/mac_filter"; //current page url
+var validIndex = -1;
+
+var aclList = [
+	{enable:"0",index:"1",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"2",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"3",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"4",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"5",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"6",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"7",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"8",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"9",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"10",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"11",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"12",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"13",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"14",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"15",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"16",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"17",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"18",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"19",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"20",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"21",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"22",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"23",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"24",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"25",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"26",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"27",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"28",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"29",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"30",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"31",mac:"00:00:00:00:00:00",comment:""},
+	{enable:"0",index:"32",mac:"00:00:00:00:00:00",comment:""}
+];
+
+
+<%
+-- search wifi SSID and device
+local ifce={}
+local device_2g = "";
+local device_5g = "";
+uci.foreach("wireless", "wifi-iface", 
+function(s)
+	if s.mode == "ap" then
+		ifce[#ifce+1] = s[".name"]
+		if s.device == "mt7620" or s.device == "mt7602e" or s.device == "mt7603e" or s.device == "mt7628" or s.device == "mt7688" or s.device == "mt7615e2" then 
+			device_2g = s.device
+		end
+		if s.device == "mt7610e"  or s.device == "mt7612e" or s.device == "mt7615e5" then 
+			device_5g = s.device
+		end
+	end
+end)
+
+local lua_accesspolicy = uci.get("wireless", ifce[1], "accesspolicy");
+if (not lua_accesspolicy) then
+	lua_accesspolicy = 0;
+end
+
+local lua_aclMac = uci.get("wireless", ifce[1], "acl_mac");
+if (not lua_aclMac) then
+	lua_aclMac = "";
+end
+
+local lua_aclDesc = uci.get("wireless", ifce[1], "acl_description");
+if (not lua_aclDesc) then
+	lua_aclDesc = "";
+end
+
+local lua_wpsEnable;
+if device_2g then
+	lua_wpsEnable = uci.get("wireless", device_2g, "wsc_confmode");
+end
+if (not lua_wpsEnable) then
+	lua_wpsEnable = 0;
+end
+
+-- read wifi client list
+local client_list_2g
+local client_list_5g
+
+local file = io.popen("luci-stainfo ra0", 'r')
+if file then
+	client_list_2g = file:read('*all')
+	io.close(file)
+end
+
+local file = io.popen("luci-stainfo rai0", 'r')
+if file then
+	client_list_5g = file:read('*all')
+	io.close(file)
+end
+%>
+
+var accesspolicy=<%=lua_accesspolicy%>;
+var wpsEnable=<%=lua_wpsEnable%>;
+
+function checkMACRule(mac)
+{
+	var str = mac.value;
+	var retVal = true;
+
+	if ( str.length < 12) {
+		retVal = false;
+	}
+	else {
+		for (var i=0; i<str.length; i++) {
+			if ( (str.charAt(i) >= '0' && str.charAt(i) <= '9') ||
+				(str.charAt(i) >= 'a' && str.charAt(i) <= 'f') ||
+				(str.charAt(i) >= 'A' && str.charAt(i) <= 'F') )
+			{
+				continue;
+			}
+			retVal = false;
+		}
+	}
+
+	if(retVal==false) {
+		alert("<%:Please enter a 12-digit hexadecimal number as MAC address.%>");
+		mac.focus();
+	}
+	
+	return retVal;
+}
+
+function setFocus(field) {
+	field.value = field.defaultValue;
+	field.focus();
+	return;
+}
+
+
+<%
+	--MBA Sean, get the waiting time, default is 30 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+	local waiting_time_uci = uci_t.get("web", "gui_config", "network_apply_waiting_time")
+	local waiting_time = 30;
+	
+	if waiting_time_uci then
+		waiting_time = waiting_time_uci
+	end
+	
+	uci_t.set_confdir(original_confdir)
+%>
+
+var seconds=<%=waiting_time%>;
+
+function waiting()
+{
+	(seconds<=0)?seconds=0:seconds-=1;
+	document.getElementById("wait_time").value=seconds;
+	if(seconds==0)
+	{
+		location.href=url;
+		return true;
+	};
+	setTimeout('waiting()',1000);
+} 
+
+function sendPost(doCountDown)
+{
+	if (doCountDown) {
+		//MBA Sean, show the waiting page & hide the original content
+		document.getElementById("top_menu").style.display = 'none';
+		document.getElementById("content").style.display = 'none';
+		document.getElementById("waiting").style.display = 'block';
+		//MBA Sean, start to countdown.
+		waiting();
+			
+		//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+		$.ajax({
+		type:"POST",
+		url: url,
+		data: $("#content_send").serialize(),// serializes the form's elements.
+		});
+	}
+	else {
+		//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+		$.ajax({
+		type:"POST",
+		url: url,
+		data: $("#content_send").serialize(),// serializes the form's elements.
+		success: function(){
+			location.href=url;
+		}
+		});
+	}
+}
+
+function ruleDataChange(){
+	var obj = document.getElementsByName("select");
+	var len = obj.length;
+	if ( len == 0 ) {
+		$("input[name='deleteSelFilterMac']").prop( "disabled", true );
+		$("input[name='deleteAllFilterMac']").prop( "disabled", true );
+	}
+	else {
+		$("input[name='deleteSelFilterMac']").prop( "disabled", false );
+		$("input[name='deleteAllFilterMac']").prop( "disabled", false );
+	}
+
+	if ( len >= 32 ) {
+		$("input[name='addFilterMac']").prop( "disabled", true );
+		$("input[name='reset']").prop( "disabled", true );
+	}
+	else {
+		$("input[name='addFilterMac']").prop( "disabled", false );
+		$("input[name='reset']").prop( "disabled", false );
+	}
+}
+
+function stripMACColon(mac)
+{
+	var str = mac;
+	return str.substring(0,2) + str.substring(3,5) + str.substring(6,8) 
+		+ str.substring(9,11) + str.substring(12,14) + str.substring(15,17);
+}
+
+function copyClientList()
+{
+	var f = document.formACL;
+	
+	if (f.clientList.value != 0) {
+		f.mac.value = f.clientList.value;
+	}
+	ruleDataChange();
+}
+
+function addClick()
+{
+	var f = document.formACL;
+	
+	if (!checkMACRule(f.mac))
+		return false;
+
+	if(f.comment.value == "") {
+		alert("<%:Description can not be empty.%>");
+		setFocus(f.comment);
+		return false;
+	}
+	else if (!f.comment.value.match(available_char_16)) {
+		alert("<%:Description contains characters which cannot be input.%>");
+		setFocus(f.comment);
+		return false;
+	}
+
+	if (wpsEnable == "7" && accesspolicy == 0 && f.AclEnabled.checked == true) {
+		alert("<%:To use the MAC address filter, you may need to disable the WPS.%>");
+		f.AclEnabled.checked = false;
+	}
+
+	try {
+		if (parseInt(validIndex) == -1) {
+			alert("<%:It cant be registered any more.%>");
+			return false;
+		}
+		
+		/* check if MAC address is a duplicate */
+		var tmpMac = f.mac.value.toUpperCase();
+		var tmpMac1 = tmpMac.substring(0,2) + ":" + tmpMac.substring(2,4) + ":" + tmpMac.substring(4,6) + ":" +
+			tmpMac.substring(6,8)+":" + tmpMac.substring(8,10)+":" + tmpMac.substring(10,12);
+		var conflict = false;
+		$("#maclist tr[name='ruleData']").each(function(){
+			dataMACAddr = $(this).find("td:eq(2) font").html();
+			if ( dataMACAddr ==  tmpMac1 ) {
+				conflict = true;
+			}
+		});
+		if ( conflict ) {
+			alert("<%:This MAC address is a duplicate.%>");
+			return false;
+		}
+	} catch(e){}
+	
+	var newMac = f.mac.value.replace(/ /g, "");
+	var newComment = f.comment.value.replace(/ /g, "");
+	
+	if (newMac != "") {
+		var mac_with_semicolon = newMac.substring(0, 2) + ":" + newMac.substring(2, 4) + ":" + newMac.substring(4, 6) + ":" + 
+								newMac.substring(6, 8) + ":" + newMac.substring(8, 10) + ":" + newMac.substring(10, 12);
+		var DataNum = parseInt($("#listDataNum").val(),10) + 1;
+		document.getElementById("listDataNum").value = DataNum;
+		var table = document.getElementById("maclist");
+		var row = table.insertRow(-1); 
+		var cell = row.insertCell(-1);
+		row.setAttribute("name", "ruleData", 0);
+		cell.align = "center";
+		cell.className ="table2";
+		cell.innerHTML = "<font size=2>" + DataNum;
+
+		cell = row.insertCell(-1);
+		cell.align = "center";
+		cell.className ="table2";
+		cell.innerHTML = "<font size=2>" + newComment;
+
+		cell = row.insertCell(-1);
+		cell.align = "center";
+		cell.className ="table2";
+		cell.innerHTML = "<font size=2>" + mac_with_semicolon.toUpperCase();
+
+		cell = row.insertCell(-1);
+		cell.align = "center";
+		cell.className ="table2";
+		cell.innerHTML = "<input type=\"checkbox\" name=\"select\" value=\"" + DataNum + "\">";
+	}
+	
+	f.mac.value = "";
+	f.comment.value = "";
+	f.submitFormNum.value = 1; // 1: add
+	if (f.AclEnabled.checked) {
+		f.enableACL.value = 1;
+	}
+	else {
+		f.enableACL.value = 0;
+	}
+	ruleDataChange();
+	return false;
+}
+
+function doApply()
+{
+	var f = document.formACL;
+<% local wan_mode = uci.get("network", "wan", "mode")
+if wan_mode ~= "repeater" then %>	
+	if (wpsEnable == "7" && accesspolicy == 0 && f.AclEnabled.checked == true){
+		if (!confirm("<%:If enable MAC address filter, WPS will be disabled. Do you want to apply setting?%>")) {
+			return false;
+		}
+	}
+<% end %>
+	
+	var dataCnt = 0;
+	var dataDesc = "";
+	var dataMac = "";
+	var dataStr = "";
+	
+	$("#maclist tr[name='ruleData']").each(function(){
+		 dataDesc = $(this).find("td:eq(1) font").html().replace(/ /g, "");
+		 dataMac = $(this).find("td:eq(2) font").html().replace(/ /g, "");
+		 
+		 if ( dataStr != "" )
+			dataStr += ">";
+			
+		dataStr += dataDesc + "," + dataMac;
+		dataCnt++;
+	});
+
+	if ( dataCnt > 32 ) {
+		alert("<%:The maximum number of port forwarding entries is limited to 32.%>");
+		return false;
+	}
+
+	$("#RuleDataStr").val(dataStr);
+	
+	document.formACL.submitFormNum.value = 2; // 2: apply
+	if (f.AclEnabled.checked) {
+		f.enableACL.value = 1;
+	}
+	else {
+		f.enableACL.value = 0;
+	}
+	
+	sendPost(1);
+	return false;
+}
+
+
+function deleteSelClick()
+{
+	if (!confirm("<%:Are you sure you want to delete the selected item?%>")) {
+			return false;
+	}else{
+		var i = 0;
+		$("#maclist tr[name='ruleData']").each(function(){
+			if ( $(this).find("input[name='select']").prop("checked") == true ) {
+				$(this).remove();
+			}
+		});
+
+		$("#maclist tr[name='ruleData']").each(function(){
+			i++;
+			$(this).find("td:first font").html(i);
+		});
+		$("#listDataNum").val(i);
+	}
+
+	ruleDataChange();
+	document.formACL.delAll.value = 0;
+	document.formACL.submitFormNum.value = 0; // 0: delete
+	return false;
+}
+
+function deleteAllClick()
+{
+	if ( !confirm("<%:Are you sure you want to delete all of the items that you entered?%>") ) {
+		return false;
+	}else{
+		$("#maclist tr[name='ruleData']").each(function(){
+			$(this).remove();
+		});
+		$("#listDataNum").val("0");
+	}
+	ruleDataChange();
+	document.formACL.delAll.value = 1;
+	document.formACL.submitFormNum.value = 0; // 0: delete
+	//sendPost(0); // no count down
+	return false;
+}
+
+function clearTextbox()
+{
+	var f = document.formACL;
+	f.comment.value = "";
+	f.mac.value = "";
+}
+
+function clearSelect()
+{
+	var f = document.formACL;
+	var count = 0;
+	
+	for(var j = 0; j < aclList.length; j++) {
+		if(aclList[j].enable == "1") { count++;}
+	}
+	
+	if(count == 0) {return;}
+	else if(count == 1) { f.select.checked = false;}
+	else {
+		for (var i = 0; i < f.select.length; i++) {
+			f.select[i].checked = false;
+		}
+	}
+}
+
+function frmLoad()
+{
+	var f = document.formACL;
+
+	/* convert ACL to array */
+	aclMac="<%=lua_aclMac%>";
+	if (aclMac != "") {
+		list = aclMac.split(";");
+		for (var i=0; i<list.length; i++) {
+			aclList[i].mac = list[i];
+			aclList[i].enable = "1";
+		}
+	}
+	
+	/* convert ACL description to array */
+	aclDesc = "<%=lua_aclDesc%>";
+	if (aclDesc != "") {
+		list = aclDesc.split(",");
+		for (var i=0; i<list.length; i++) {
+			aclList[i].comment = list[i];
+		}
+	}
+	
+	/* add ACL to HTML table */
+	var table = document.getElementById("maclist");
+	for (var i=0, j=1; i<aclList.length; ++i) 
+	{
+		if(aclList[i].enable == "1"){
+			var row = table.insertRow(-1);
+			var cell = row.insertCell(-1);
+			row.setAttribute("name", "ruleData", 0);
+			cell.align = "center";
+			cell.className ="table2";
+			cell.innerHTML = "<font size=2>" + j;
+			
+			cell = row.insertCell(-1);
+			cell.align = "center";
+			cell.className ="table2";
+			cell.innerHTML = "<font size=2>" + aclList[i].comment;
+			
+			cell = row.insertCell(-1);
+			cell.align = "center";
+			cell.className ="table2";
+			cell.innerHTML = "<font size=2>" + aclList[i].mac.toUpperCase();
+			
+			cell = row.insertCell(-1);
+			cell.align = "center";
+			cell.className ="table2";
+			cell.innerHTML = "<input type=\"checkbox\" name=\"select\" value=\"" + j + "\">";
+
+			j++;
+		}
+	}
+	if (j==1){
+		document.getElementById("listDataNum").value = 0;
+	}else{
+		document.getElementById("listDataNum").value = j-1;
+	}
+	
+	ruleDataChange();
+	//get validIndex
+	var x = 0;
+	for(x = 0; x < aclList.length; x++) {
+		if(aclList[x].enable == "0") {
+			validIndex = aclList[x].index;
+			break;
+		}
+	}
+	
+	if(accesspolicy == 1) {
+		f.AclEnabled.value = 1;
+		f.AclEnabled.checked = true;
+	}
+	else {
+		f.AclEnabled.value = 0;
+		f.AclEnabled.checked = false;
+	}
+}
+</script>
+
+<div id="content">
+<blockquote>
+	<p><%:Only clients with the MAC address in the MAC address filtering table can be connected to the access point.%></p>
+	<form  name="formACL" id ="content_send" method="post">
+	<input type="hidden" name="delFilterMacIdx">
+	<input type="hidden" name="delAll" value=0>
+	<input type="hidden" name="submitFormNum">
+	<input type="hidden" name="enableACL">
+
+	<tbody id="aclAdd">
+		<table border=0 width="500" cellspacing="2" cellpadding="5">
+			<tr><td><font size=2 class="textcolor"><b>
+				<input type="checkbox" name="AclEnabled">&nbsp;&nbsp;<%:Enable MAC address filter%>
+			</b></font></td></tr>
+		</table>
+		<table border=0 width="500" cellspacing="2" cellpadding="5">
+			<tr align=center>
+				<td width="60%" class="background"><font size=2><b><%:Description%></b></td>
+				<td width="40%" class="background"><font size=2><b><%:MAC Address%></b></td>
+				<td></td>
+			</tr>
+			<tr align="center">
+				<td  class="table2"><input type="text" name="comment" size="17" maxlength="16"></td>
+				<td  class="table2"><input type="text" name="mac" size="13" maxlength="12"></td>
+				<td nowrap>
+					<input type="button" value="<" onclick="copyClientList()">&nbsp;
+					<select name="clientList">
+						<script language="JavaScript">
+						document.write('<option value="0"><%:The selection of PC%></option>');
+						/* add wifi client list to drop-down menu */
+						<%=client_list_2g%>
+						<%=client_list_5g%>
+						if (typeof client_list_2g !== "undefined" && client_list_2g !== null) {
+							for(var i = 0; i < client_list_2g.length; i++) {
+								document.write('<option value="' + stripMACColon(client_list_2g[i].mac) + '">' + client_list_2g[i].mac + '</option>');
+							}
+						}
+						if (typeof client_list_5g !== "undefined" && client_list_5g !== null) {
+							for(var i = 0; i < client_list_5g.length; i++) {
+								document.write('<option value="' + stripMACColon(client_list_5g[i].mac) + '">' + client_list_5g[i].mac + '</option>');
+							}
+						}
+						</script>
+					</select>
+				</td>
+			</tr>
+		</table>
+		<tr>
+			<td colspan="2">
+				<input type="submit" value="<%:Add%>" name="addFilterMac" onClick="return addClick()">&nbsp;&nbsp;
+				<input type="button" value="<%:Reset%>" name="reset" onclick="return clearTextbox();">
+			</td>
+		</tr>
+	</tbody>
+
+	<br><br>
+	<tbody id="aclDel">
+	<table id="maclist" border=0 width="500" cellspacing="2" cellpadding="5">
+		<tr>
+			<td colspan="3" style="font-weight:bold;"><%:MAC address filtering table:%></td>
+		</tr>
+		<tr class="background" align=center> 
+			<td width="10%" class="background"><font size=2><b>NO.</b></td>
+			<td width="50%" class="background"><font size=2><b><%:Description%></b></td>
+			<td width="30%" class="background"><font size=2><b><%:MAC Address%></b></td>
+			<td width="10%" class="background"><font size=2><b><%:Select%></b></td>
+		</tr>
+	</table>
+	<br>
+	<input type="hidden" id="listDataNum">
+	<input type="button" value="<%:Delete the selected items%>" name="deleteSelFilterMac" onClick="deleteSelClick()">&nbsp;&nbsp;
+	<input type="button" value="<%:Delete all%>" name="deleteAllFilterMac" onClick="deleteAllClick()">&nbsp;&nbsp;&nbsp;
+	<input type="button" value="<%:Reset%>" name="reset" onclick="return clearSelect();">
+	<input type="hidden" value="" id="RuleDataStr" name="RuleDataStr"/>
+	</tbody>
+	
+	</br>
+	<p>
+
+	<table width="300" border="0" cellspacing="0" cellpadding="0" align="right">
+	<tbody>
+		<tr><td align="right">
+			<input type="button" value="<%:Apply%>" onClick="return doApply();" width="105" height="30" border="0">
+			<input type="reset" value="<%:Cancel%>" onclick="window.location.reload()">
+		</td></tr>
+	</tbody>
+	</table>
+</blockquote>
+</body>
+</form>
+</div>
+<%+footer%>

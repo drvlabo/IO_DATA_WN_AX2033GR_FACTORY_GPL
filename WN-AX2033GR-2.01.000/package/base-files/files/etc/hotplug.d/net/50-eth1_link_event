@@ -1,0 +1,85 @@
+#!/bin/sh
+. /lib/functions.sh
+
+config_load network
+config_get wan_proto wan proto
+config_get wan_mode wan mode
+config_get lan_proto lan proto
+spi_enable=$(uci get firewall.@defaults[0].spi_rule_enable)
+BOOTSTAGE_UPDATE_CHECK_FLAG="/tmp/bootstage_update_check"
+delay=45;
+
+if [ "$ACTION" == "offline" ] && [ "$DEVICENAME" == "eth1" ]; then
+	if [ "$wan_mode" == "router" ];then
+		if [ "$wan_proto" == "dhcp" ]; then
+			killall -SIGUSR2 udhcpc
+			killall -SIGUSR1 udhcpc
+		fi
+		if [ "$wan_proto" == "pppoe" ]; then
+			killall pppd
+		fi
+		if [ "$wan_proto" == "static" ]; then
+			httpredirect.sh
+		fi
+	fi
+	if [ "$wan_mode" == "ap" ]; then
+		if [ "$lan_proto" == "dhcp" ]; then
+			killall -SIGUSR2 udhcpc
+			killall -SIGUSR1 udhcpc
+		fi
+	fi
+	# MSTC,Olivia while the status of WAN port has been changed, such as link status or acquisition status of IP address, stop the v6 process.
+	if [ "$wan_mode" == "v6plus" ] || [ "$wan_mode" == "transix" ]; then
+		ip4ov6jp_stop
+	fi #end
+	#remove cnt_status_chk file
+	if [ -f /tmp/cnt_status_chk ]; then
+		rm /tmp/cnt_status_chk
+		rm /tmp/chk.lock
+	fi
+fi
+
+if [ "$ACTION" == "online" ] && [ "$DEVICENAME" == "eth1" ]; then
+	if [ "$wan_mode" == "router" ];then
+		if [ "$wan_proto" == "static" ]; then
+			/usr/bin/status_cnt_chk &
+			httpredirect.sh
+		fi
+	fi
+	
+	if [ "$wan_mode" == "v6plus" ];then
+		if [ "$spi_enable" == "1" ];then
+			ip4ov6jp_start -m v6plus
+		else #spi is disabled
+			ip4ov6jp_start -m v6plus -n
+		fi
+	fi 
+	
+	if [ "$wan_mode" == "transix" ];then 
+		if [ "$spi_enable" == "1" ];then 
+			ip4ov6jp_start -m transix -a gw.transix.jp
+		else #spi is disabled
+			ip4ov6jp_start -m transix -a gw.transix.jp -n
+		fi
+	fi
+fi
+	if [ "$wan_mode" == "transix" ] || [ "$wan_mode" == "v6plus" ];then
+	if [ "$ACTION" == "add" ] && [ "$DEVICENAME" == "ip4ov6jp0" ]; then
+		sleep 4
+		#echo "[SeanDebug] run eth1 hot plug firewall restart!!!" > /dev/console
+		/etc/init.d/firewall restart
+		#echo "[MSTC Sean Debug]call from 50eth1 link!!" > /dev/console
+		/usr/bin/status_cnt_chk&
+		
+		if [ ! -f $BOOTSTAGE_UPDATE_CHECK_FLAG ]; then
+			touch $BOOTSTAGE_UPDATE_CHECK_FLAG
+				
+			updateability=`/sbin/uci get system.firmware.updateability`
+			if [ "A$updateability" != "A0" ]; then
+				logger -t auto_fwupdate "delay $delay seconds to check"
+				/sbin/start-stop-daemon -S -x /usr/sbin/auto_fwupdate -- -b -d $delay &
+			fi
+		fi
+		
+	fi
+fi

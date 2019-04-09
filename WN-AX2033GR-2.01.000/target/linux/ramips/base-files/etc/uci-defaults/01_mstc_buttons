@@ -1,0 +1,53 @@
+#!/bin/sh
+
+. /lib/functions/uci-defaults.sh
+. /lib/ramips.sh
+
+BUTTONS_DIR="/etc/buttons.d"
+
+board=$(ramips_board_name)
+
+ucidef_set_mstc_button_default() {
+	local cfg="$1"
+	local button="$2"
+	local gpio_num="$3"
+	local action="$4"
+	local handler="$5"
+	local min="$6"
+	local max="$7"
+	local handler2="$8"
+	local min2="$9"
+	local max2="$10"
+	
+	uci -c $BUTTONS_DIR batch <<EOF
+set buttons.$cfg='button'
+set buttons.$cfg.button='$button'
+set buttons.$cfg.gpio_num='$gpio_num'
+set buttons.$cfg.action='$action'
+set buttons.$cfg.handler='$handler'
+set buttons.$cfg.min='$min'
+set buttons.$cfg.max='$max'
+set buttons.$cfg.handler2='$handler2'
+set buttons.$cfg.min2='$min2'
+set buttons.$cfg.max2='$max2'
+EOF
+}
+
+[ ! -d $BUTTONS_DIR ] && {
+	mkdir $BUTTONS_DIR
+	touch $BUTTONS_DIR/buttons
+}
+
+case $board in
+	*)
+	ucidef_set_mstc_button_default "reset" \
+                              "reset" \
+                              "-1" \
+                              "released" \
+                              "sh /etc/btnd/reset_hold.sh" \
+                              "3000" \
+                              "4294967295"
+                             
+esac
+
+exit 0

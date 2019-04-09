@@ -1,0 +1,78 @@
+#!/bin/sh /etc/rc.common
+
+START=99
+QUIET=""
+USE_PROCD=1
+ifname=""
+
+
+#get_wireless_ifname(){
+
+#	local config="$1"
+#	local option="$2"
+#	local option_if="$3"
+
+#        config_get tmp "$config" "$option"
+#        if [ $tmp = "lan" ]; then
+#               config_get tmp "$config" "$option_if"
+#                ifname="$ifname"\""$tmp"\",
+#        fi
+#}
+
+get_lan_ifname(){
+	ifname_lan=`uci get network.lan.ifname`
+	ifname=$ifname_lan
+}
+
+get_wan_ifname(){
+	ifname_wan=`uci get network.wan.ifname`
+        ifname="$ifname,""$ifname_wan"
+}
+
+
+
+
+restart() {
+	stop "$@"
+	start "$@"
+	
+}
+
+start_service() {
+	
+	ipv6pass=`uci get network.wan.ipv6passthrough`
+	
+	case $ipv6pass in
+	"0")
+	rmmod mstcIpv6Pass.ko
+		
+	;;
+	"1")
+#	config_load wireless
+#	config_foreach get_wireless_ifname wifi-iface network ifname
+	get_lan_ifname	
+	get_wan_ifname $ifname
+	insmod mstcIpv6Pass.ko brIfArray=$ifname
+				
+	;;
+	*)
+        	echo "wrong value in network.wan.ipv6passthrough"
+	;;
+	esac
+	
+}
+
+stop_service() {
+	rmmod mstcIpv6Pass.ko
+}
+
+reload_service() {
+	restart
+}
+
+boot() {
+	# Be silent on boot, firewall might be started by hotplug already,
+	# so don't complain in syslog.
+	QUIET=-q
+	start
+}

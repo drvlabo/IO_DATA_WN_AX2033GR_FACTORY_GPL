@@ -1,0 +1,146 @@
+#!/bin/sh /etc/rc.common
+
+START=19
+
+FIREWALL_RULE_DIR=/etc/parentalcontrol
+FIREWALL_RULE_FILE=${FIREWALL_RULE_DIR}/firewall.include
+
+router_mode_handle_time_limit(){
+	local cfg="$1"
+
+	config_get r_desc "$cfg" desc
+	config_get r_mac "$cfg" mac
+	config_get r_start_time "$cfg" start_time
+	config_get r_end_time "$cfg" end_time
+
+	if [ "${r_end_time}" = "24:00" ]; then
+		cat << EOF >> ${FIREWALL_RULE_FILE}
+iptables -t filter -A TIMEACCESS -m mac --mac-source ${r_mac} -j TIMEACCESS_LIMIT -m comment --comment "${r_desc}"
+iptables -t filter -A TIMEACCESS_LIMIT -m mac --mac-source ${r_mac} -m time --timestart ${r_start_time} --timestop 23:59:59 --kerneltz -j RETURN
+ip6tables -t filter -A TIMEACCESS -m mac --mac-source ${r_mac} -j TIMEACCESS_LIMIT -m comment --comment "${r_desc}"
+ip6tables -t filter -A TIMEACCESS_LIMIT -m mac --mac-source ${r_mac} -m time --timestart ${r_start_time} --timestop 23:59:59 --kerneltz -j RETURN
+EOF
+	else
+		cat << EOF >> ${FIREWALL_RULE_FILE}
+iptables -t filter -A TIMEACCESS -m mac --mac-source ${r_mac} -j TIMEACCESS_LIMIT -m comment --comment "${r_desc}"
+iptables -t filter -A TIMEACCESS_LIMIT -m mac --mac-source ${r_mac} -m time --timestart ${r_start_time} --timestop ${r_end_time} --kerneltz -j RETURN
+ip6tables -t filter -A TIMEACCESS -m mac --mac-source ${r_mac} -j TIMEACCESS_LIMIT -m comment --comment "${r_desc}"
+ip6tables -t filter -A TIMEACCESS_LIMIT -m mac --mac-source ${r_mac} -m time --timestart ${r_start_time} --timestop ${r_end_time} --kerneltz -j RETURN
+EOF
+	fi
+
+}
+
+router_mode_handler(){
+	cat << EOF >> ${FIREWALL_RULE_FILE}
+iptables -t filter -X TIMEACCESS > /dev/null 2>&1
+iptables -t filter -N TIMEACCESS > /dev/null 2>&1
+iptables -t filter -F TIMEACCESS > /dev/null 2>&1
+iptables -t filter -X TIMEACCESS_LIMIT > /dev/null 2>&1
+iptables -t filter -N TIMEACCESS_LIMIT > /dev/null 2>&1
+iptables -t filter -F TIMEACCESS_LIMIT > /dev/null 2>&1
+iptables -t filter -I zone_lan_forward 2 -j TIMEACCESS -m comment --comment "parental control time limit"
+
+ip6tables -t filter -X TIMEACCESS > /dev/null 2>&1
+ip6tables -t filter -N TIMEACCESS > /dev/null 2>&1
+ip6tables -t filter -F TIMEACCESS > /dev/null 2>&1
+ip6tables -t filter -X TIMEACCESS_LIMIT > /dev/null 2>&1
+ip6tables -t filter -N TIMEACCESS_LIMIT > /dev/null 2>&1
+ip6tables -t filter -F TIMEACCESS_LIMIT > /dev/null 2>&1
+ip6tables -t filter -I zone_lan_forward 2 -j TIMEACCESS -m comment --comment "parental control time limit"
+EOF
+
+	#append time limit rule
+	config_load parentalcontrol
+	config_foreach router_mode_handle_time_limit time_limit
+
+	#append default target reject for TIMEACCESS_LIMIT
+	cat << EOF >> ${FIREWALL_RULE_FILE}
+iptables -t filter -A TIMEACCESS_LIMIT -j reject
+ip6tables -t filter -A TIMEACCESS_LIMIT -j reject
+EOF
+}
+
+ap_mode_handle_time_limit(){
+	local cfg="$1"
+
+	config_get r_desc "$cfg" desc
+	config_get r_mac "$cfg" mac
+	config_get r_start_time "$cfg" start_time
+	config_get r_end_time "$cfg" end_time
+
+	if [ "${r_end_time}" = "24:00" ]; then
+		cat << EOF >> ${FIREWALL_RULE_FILE}
+ebtables -t filter -A TIMEACCESS -s ${r_mac} -j TIMEACCESS_LIMIT
+ebtables -t filter -A TIMEACCESS_LIMIT -s ${r_mac} --timestart ${r_start_time} --timestop 23:59:59 --kerneltz -j RETURN
+EOF
+	else
+		cat << EOF >> ${FIREWALL_RULE_FILE}
+ebtables -t filter -A TIMEACCESS -s ${r_mac} -j TIMEACCESS_LIMIT 
+ebtables -t filter -A TIMEACCESS_LIMIT -s ${r_mac} --timestart ${r_start_time} --timestop ${r_end_time} --kerneltz -j RETURN
+EOF
+	fi
+
+}
+
+ap_mode_handler(){
+	cat << EOF >> ${FIREWALL_RULE_FILE}
+ebtables -t filter -X TIMEACCESS > /dev/null 2>&1
+ebtables -t filter -N TIMEACCESS > /dev/null 2>&1
+ebtables -t filter -F TIMEACCESS > /dev/null 2>&1
+ebtables -t filter -X TIMEACCESS_LIMIT > /dev/null 2>&1
+ebtables -t filter -N TIMEACCESS_LIMIT > /dev/null 2>&1
+ebtables -t filter -F TIMEACCESS_LIMIT > /dev/null 2>&1
+ebtables -t filter -A FORWARD -o eth1 -j TIMEACCESS
+EOF
+
+	#append time limit rule
+	config_load parentalcontrol
+	config_foreach ap_mode_handle_time_limit time_limit
+
+	#append default target reject for TIMEACCESS_LIMIT
+	cat << EOF >> ${FIREWALL_RULE_FILE}
+ebtables -t filter -P TIMEACCESS_LIMIT DROP
+EOF
+}
+
+start() {
+	[ ! -d ${FIREWALL_RULE_DIR} ] && {
+			mkdir ${FIREWALL_RULE_DIR}
+	}
+
+	[ ! -f ${FIREWALL_RULE_FILE} ] && {
+			touch ${FIREWALL_RULE_FILE}
+	}
+
+	config_load parentalcontrol
+	config_get enable_time_lmit config enable_time_limit
+
+	[ "${enable_time_lmit}" == "1" -o "${enable_time_lmit}" == "yes" ] && {
+		config_load network
+		config_get wan_mode wan mode
+
+		case ${wan_mode} in
+			"v6plus")
+				router_mode_handler
+				;;		
+			"transix")
+				router_mode_handler
+				;;		
+			"router")
+				router_mode_handler
+				;;
+			"ap")
+				ap_mode_handler
+				;;
+			*)
+				;;
+		esac
+	}
+}
+
+stop() {
+        [ -f ${FIREWALL_RULE_FILE} ] && {
+                rm -f ${FIREWALL_RULE_FILE}
+	}
+}

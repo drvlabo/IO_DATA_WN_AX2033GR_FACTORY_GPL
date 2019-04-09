@@ -1,0 +1,1003 @@
+Index: linux-3.10.14/drivers/char/Kconfig
+===================================================================
+--- linux-3.10.14.orig/drivers/char/Kconfig	2016-10-11 17:06:19.304122516 +0800
++++ linux-3.10.14/drivers/char/Kconfig	2016-10-11 17:07:11.242653000 +0800
+@@ -864,6 +864,10 @@
+ 	  in /dev/srom/.  The Tilera hypervisor makes the flash
+ 	  device appear much like a simple EEPROM, and knows
+ 	  how to partition a single ROM for multiple purposes.
++	
++config SBDEV
++	tristate "MSTC siteblock device driver Support"
++	default n
+ 
+ endmenu
+ 
+Index: linux-3.10.14/drivers/char/Makefile
+===================================================================
+--- linux-3.10.14.orig/drivers/char/Makefile	2016-10-11 17:06:19.367583549 +0800
++++ linux-3.10.14/drivers/char/Makefile	2016-10-11 17:07:22.155539000 +0800
+@@ -58,6 +58,7 @@
+ 
+ obj-$(CONFIG_PS3_FLASH)		+= ps3flash.o
+ obj-$(CONFIG_RALINK_GPIO)	+= ralink_gpio.o
++obj-$(CONFIG_SBDEV)	+= sbdev.o
+ obj-$(CONFIG_RALINK_HSDMA)	+= hs_dma.o
+ obj-$(CONFIG_RALINK_HSDMA)	+= hs_dma_test.o
+ #obj-$(CONFIG_RALINK_HSDMA)	+= mem_test.o
+Index: linux-3.10.14/drivers/char/sbdev.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-3.10.14/drivers/char/sbdev.c	2016-10-11 17:10:09.627528934 +0800
+@@ -0,0 +1,289 @@
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/fs.h>
++#include <linux/cdev.h>
++#include <linux/device.h>
++#include <linux/slab.h>
++#include <linux/poll.h>
++#include <linux/sched.h>
++#include <asm/uaccess.h>
++#include <linux/skbuff.h>
++#include <linux/sbdev/sbdev.h>
++
++#define DRIVER_NAME "sbdev"
++
++int SBDEV_ATTACH_USER_FLAG = 0;	// 0 : not attach and can't send skb to user space, 1 : attached and can send skb to user space
++EXPORT_SYMBOL(SBDEV_ATTACH_USER_FLAG);
++
++static unsigned int sbdev_major = 0;
++static unsigned int num_of_dev = 1;
++static struct cdev sbdev_cdev;
++static struct sbdev_data *gdata;
++
++struct sbdev_data {
++	spinlock_t lock;
++	wait_queue_head_t read_wait;
++	struct sk_buff_head sk_queue;
++	struct semaphore sem;
++};
++
++int (*sbdev_rcv_user)(struct sbdev_reply_s *resp) = NULL;
++
++int register_sbdev_rcv_user(
++	int (*callback)(struct sbdev_reply_s *resp)
++){
++	sbdev_rcv_user = callback;
++	return 0;
++}
++EXPORT_SYMBOL(register_sbdev_rcv_user);
++
++int unregister_sbdev_rcv_user(void){
++	sbdev_rcv_user = NULL;
++	return 0;
++}
++EXPORT_SYMBOL(unregister_sbdev_rcv_user);
++
++unsigned int sbdev_poll(struct file *filp, poll_table *wait)
++{
++	struct sbdev_data *data = filp->private_data;
++	unsigned int mask = POLLOUT|POLLWRNORM;
++	//printk(KERN_ALERT "Call sbdev_poll.\n");
++
++	if (data == NULL)
++		return -EBADFD;
++
++	poll_wait(filp, &data->read_wait, wait);
++	
++	down(&data->sem);
++	if (skb_queue_len(&data->sk_queue) > 0) {    /* readable */
++		mask |= POLLIN|POLLRDNORM;
++	}
++	up(&data->sem);
++	//printk(KERN_ALERT "%s returned (mask 0x%x)\n", __func__,  mask);
++	return mask;
++}
++
++ssize_t sbdev_write (struct file *filp, const char __user *buf, size_t count, loff_t *pos)
++{
++	//struct sbdev_data *data = filp->private_data;
++	struct sbdev_reply_s resp;
++	int resp_len = sizeof(resp);
++	int copy_len = count;
++
++	if ( resp_len < copy_len ) {
++		copy_len = resp_len;
++	}
++
++	if (copy_from_user((void *)&resp, buf, copy_len)) {
++		return -EFAULT;
++	}
++
++	if ( sbdev_rcv_user != NULL ) {
++		sbdev_rcv_user(&resp);
++	}
++	return copy_len;
++}
++
++int sbdev_snd_user(struct sk_buff *skb)
++{
++	unsigned long flags;
++
++	if ( gdata ) {
++		spin_lock_irqsave(&gdata->lock, flags);
++
++		skb_queue_tail(&gdata->sk_queue, skb);
++		wake_up_interruptible(&gdata->read_wait);
++
++		spin_unlock_irqrestore(&gdata->lock, flags);
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL(sbdev_snd_user);
++
++ssize_t sbdev_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
++{
++	struct sbdev_data *data = filp->private_data;
++	struct sk_buff *skb;
++	int retval;
++	int copy_len = count;
++
++	if (down_interruptible(&data->sem))
++		return -ERESTARTSYS;
++
++	if (skb_queue_len(&data->sk_queue) <= 0) {    /* no read */
++		up(&data->sem);
++		if (filp->f_flags & O_NONBLOCK)    /* non-blocking mode */
++			return -EAGAIN;
++		do {
++			retval = wait_event_interruptible_timeout(
++			   data->read_wait,
++			   skb_queue_len(&data->sk_queue) > 0,
++			   1*HZ);
++			if (retval == -ERESTARTSYS)
++				return -ERESTARTSYS;
++		} while (retval == 0);    /* timeout elapsed */
++
++		if (down_interruptible(&data->sem))
++			return -ERESTARTSYS;
++	}
++
++	skb = skb_dequeue(&data->sk_queue);
++
++	up(&data->sem);
++
++	if ( skb->len < count ) {
++		copy_len = skb->len;
++	}
++
++	if ( copy_to_user(buf, (char *)skb->data, copy_len) ) {
++		kfree_skb(skb);
++		return -EFAULT;
++	}
++
++	kfree_skb(skb);
++	retval = copy_len;
++
++	return retval;
++}
++
++int sbdev_clean_queue(void) {
++	struct sk_buff *skb = NULL;
++	struct sbdev_request_s *req;
++	struct sbdev_reply_s resp;
++	//printk(KERN_ALERT "Call sbdev_clean_queue.\n");
++
++	while(1) {
++		if ( !gdata ) {
++			break;
++		}
++
++		down_interruptible(&gdata->sem);
++		skb = skb_dequeue(&gdata->sk_queue);
++		up(&gdata->sem);
++
++		if ( !skb ) {
++			break;
++		}
++
++		memset(&resp, 0, sizeof(resp));
++		req = (struct sbdev_request_s *)skb->data;
++
++		resp.status = SBDEV_REPLY_STATUS_DENY;
++		resp.sb_queue_p = req->sb_queue_p;
++
++		if ( sbdev_rcv_user != NULL ) {
++			sbdev_rcv_user(&resp);
++		}
++		kfree_skb(skb);
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL(sbdev_clean_queue);
++
++static int sbdev_close(struct inode *inode, struct file *filp)
++{
++	struct sbdev_data *data = filp->private_data;
++	struct sk_buff *skb = NULL;
++	struct sbdev_request_s *req;
++	struct sbdev_reply_s resp;
++	//printk(KERN_ALERT "Call sbdev_close.\n");
++	SBDEV_ATTACH_USER_FLAG = 0;
++
++	if (data) {
++		while( (skb = skb_dequeue(&data->sk_queue)) != NULL ) {
++			memset(&resp, 0, sizeof(resp));
++			req = (struct sbdev_request_s *)skb->data;
++
++			resp.status = SBDEV_REPLY_STATUS_DENY;
++			resp.sb_queue_p = req->sb_queue_p;
++
++			if ( sbdev_rcv_user != NULL ) {
++				sbdev_rcv_user(&resp);
++			}
++			kfree_skb(skb);
++		}
++		kfree(data);
++		gdata = NULL;
++	}
++
++	return 0;
++}
++
++static int sbdev_open(struct inode *inode, struct file *filp)
++{
++	struct sbdev_data *data;
++	//printk(KERN_ALERT "Call sbdev_open.\n");
++
++	data = kmalloc(sizeof(struct sbdev_data), GFP_ATOMIC);
++	if (data == NULL)
++		return -ENOMEM;
++
++	/* initialize members */
++	spin_lock_init(&data->lock);
++	init_waitqueue_head(&data->read_wait);
++	sema_init(&data->sem, 1);
++
++	skb_queue_head_init(&data->sk_queue);
++
++	filp->private_data = data;
++	gdata = data;
++
++	SBDEV_ATTACH_USER_FLAG = 1;
++
++	return 0;
++}
++
++struct file_operations fops = {
++	.owner = THIS_MODULE,
++	.open = sbdev_open,
++	.release = sbdev_close,
++	.read = sbdev_read,
++	.write = sbdev_write,
++	.poll = sbdev_poll,
++};
++
++static int sbdev_init(void)
++{
++	dev_t dev = MKDEV(sbdev_major, 0);
++	int alloc_ret = 0;
++	int cdev_ret = 0;
++
++	alloc_ret = alloc_chrdev_region(&dev, 0, num_of_dev, DRIVER_NAME);
++	if (alloc_ret)
++		goto error;
++
++	sbdev_major = MAJOR(dev);
++	cdev_init(&sbdev_cdev, &fops);
++	cdev_ret = cdev_add(&sbdev_cdev, dev, num_of_dev);
++	if (cdev_ret)
++		goto error;
++
++	printk(KERN_ALERT "%s driver(major: %d) installed.\n", DRIVER_NAME, sbdev_major);
++	return 0;
++error:
++	if (cdev_ret == 0)
++		cdev_del(&sbdev_cdev);
++	if (alloc_ret == 0)
++		unregister_chrdev_region(dev, num_of_dev);
++
++	return -1;
++}
++
++static void sbdev_exit(void)
++{
++	dev_t dev = MKDEV(sbdev_major, 0);
++
++	cdev_del(&sbdev_cdev);
++	unregister_chrdev_region(dev, num_of_dev);
++
++	printk(KERN_ALERT "%s driver removed\n", DRIVER_NAME);
++}
++
++module_init(sbdev_init);
++module_exit(sbdev_exit);
++MODULE_LICENSE("GPL");
++
++
+Index: linux-3.10.14/include/linux/netfilter_bridge/ebt_siteblock.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-3.10.14/include/linux/netfilter_bridge/ebt_siteblock.h	2016-10-11 17:15:23.915385933 +0800
+@@ -0,0 +1,23 @@
++#ifndef __LINUX_BRIDGE_EBT_SITEBLOCK_H
++#define __LINUX_BRIDGE_EBT_SITEBLOCK_H
++
++#define EBT_SITEBLOCK_NAME "SITEBLOCK"
++#define EBT_SITEBLOCK NF_STOLEN
++
++#define EBT_SITEBLOCK_TIMEOUT_MIN 1000
++#define EBT_SITEBLOCK_TIMEOUT_MAX 3000
++
++#define EBT_SITEBLOCK_FLAG_TIMEOUT_HANDLE_DONE 0x00010000
++
++#define EBT_SITEBLOCK_HTTP_REQUEST_PORT 80
++#define EBT_SITEBLOCK_DNS_QUERY_PORT 53
++
++struct ebt_siteblock_info {
++	/* EBT_SITEBLOCK */
++	int target;
++	int timeout;	//msec
++	int flags;
++};
++#endif
++
++
+Index: linux-3.10.14/include/linux/netfilter_ipv4/ipt_SITEBLOCK.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-3.10.14/include/linux/netfilter_ipv4/ipt_SITEBLOCK.h	2016-10-11 17:14:37.283400387 +0800
+@@ -0,0 +1,24 @@
++#ifndef __LINUX_NF_IPV4_IPT_SITEBLOCK_H
++#define __LINUX_NF_IPV4_IPT_SITEBLOCK_H
++
++#define IPT_SITEBLOCK_NAME "SITEBLOCK"
++#define IPT_SITEBLOCK NF_STOLEN
++
++#define IPT_SITEBLOCK_FLAG_INPUT_TRIGGER 0x00000001
++#define IPT_SITEBLOCK_FLAG_FORWARD_TRIGGER 0x00000002
++
++#define IPT_SITEBLOCK_FLAG_TIMEOUT_HANDLE_DONE 0x00010000
++
++#define IPT_SITEBLOCK_HTTP_REQUEST_PORT 80
++#define IPT_SITEBLOCK_DNS_QUERY_PORT 53
++
++struct ipt_siteblock_info {
++	/* IPT_SITEBLOCK */
++	int target;
++	int timeout;	//msec
++	int flags;
++};
++
++#endif /* __LINUX_NF_IPV4_IPT_SITEBLOCK_H */
++
++
+Index: linux-3.10.14/include/linux/sbdev/sbdev.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-3.10.14/include/linux/sbdev/sbdev.h	2016-10-11 17:13:40.699375347 +0800
+@@ -0,0 +1,27 @@
++#ifndef __LINUX_SBDEV_H
++#define __LINUX_SBDEV_H
++
++extern int SBDEV_ATTACH_USER_FLAG;	// 0 : not attach and can't send skb to user space, 1 : attached and can send skb to user space
++
++struct sbdev_request_s {
++	void *sb_queue_p;
++	char skb_data[0];
++};
++
++#define SBDEV_REPLY_STATUS_ACCEPT	0
++#define SBDEV_REPLY_STATUS_DENY		1
++
++struct sbdev_reply_s {
++	int status;
++	void *sb_queue_p;
++};
++
++int sbdev_snd_user(struct sk_buff *skb);
++int register_sbdev_rcv_user(
++	int (*callback)(struct sbdev_reply_s *resp)
++);
++int unregister_sbdev_rcv_user(void);
++int sbdev_clean_queue(void);
++#endif /* __LINUX_SBDEV_H */
++
++
+Index: linux-3.10.14/net/bridge/netfilter/Kconfig
+===================================================================
+--- linux-3.10.14.orig/net/bridge/netfilter/Kconfig	2016-10-11 17:06:19.607356069 +0800
++++ linux-3.10.14/net/bridge/netfilter/Kconfig	2016-10-11 17:09:16.867106000 +0800
+@@ -152,6 +152,15 @@
+ 
+ 	  To compile it as a module, choose M here.  If unsure, say N.
+ 
++config BRIDGE_EBT_SITEBLOCK
++	tristate "ebt: siteblock target support"
++	depends on SBDEV
++	help
++	  This option adds the siteblock target, only support siteblock
++	  Be careful! siteblock doesn't free skb, you must to know what you do.
++
++	  To compile it as a module, choose M here.  If unsure, say N.
++	 
+ config BRIDGE_EBT_MARK_T
+ 	tristate "ebt: mark target support"
+ 	help
+Index: linux-3.10.14/net/bridge/netfilter/Makefile
+===================================================================
+--- linux-3.10.14.orig/net/bridge/netfilter/Makefile	2016-10-11 17:06:22.291357806 +0800
++++ linux-3.10.14/net/bridge/netfilter/Makefile	2016-10-11 17:09:42.545366000 +0800
+@@ -23,6 +23,7 @@
+ 
+ # targets
+ obj-$(CONFIG_BRIDGE_EBT_ARPREPLY) += ebt_arpreply.o
++obj-$(CONFIG_BRIDGE_EBT_SITEBLOCK) += ebt_siteblock.o
+ obj-$(CONFIG_BRIDGE_EBT_MARK_T) += ebt_mark.o
+ obj-$(CONFIG_BRIDGE_EBT_DNAT) += ebt_dnat.o
+ obj-$(CONFIG_BRIDGE_EBT_REDIRECT) += ebt_redirect.o
+Index: linux-3.10.14/net/bridge/netfilter/ebt_siteblock.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-3.10.14/net/bridge/netfilter/ebt_siteblock.c	2016-10-11 17:14:57.347376074 +0800
+@@ -0,0 +1,216 @@
++/* ebtables target: ebt_siteblock
++ *
++ * Authors:
++ * __MSTC__, Terence Yang 2016/09/28 <Terence.Yang@mitrastar.com.tw>
++ *
++ */
++#include <linux/skbuff.h>
++#include <linux/module.h>
++#include <net/sock.h>
++#include <linux/sbdev/sbdev.h>
++#include <linux/netfilter.h>
++#include <linux/netfilter/x_tables.h>
++#include <linux/netfilter_bridge/ebtables.h>
++#include <linux/netfilter_bridge/ebt_siteblock.h>
++
++#include "../br_private.h"
++
++#if 1
++#define DEBUGP printk 
++#else 
++#define DEBUGP(format, args...) 
++#endif 
++
++struct ebt_siteblock_queue_info {
++	int flags;
++	int timeout_val;
++	struct list_head list;          /* Queue list */ 
++	struct timer_list timeout;
++	struct sk_buff *skb;
++};
++
++static DEFINE_SPINLOCK(ebt_siteblock_lock);
++LIST_HEAD(ebt_siteblock_list);
++
++int ebt_siteblock_dequeue_skb(struct sbdev_reply_s *resp){
++	int ret = 0;
++	struct sk_buff *skb;
++	struct ebt_siteblock_queue_info *sb_queue_p = resp->sb_queue_p; 
++
++	/* delete from 'siteblock_list' */ 
++	spin_lock_bh(&ebt_siteblock_lock);
++	list_del(&sb_queue_p->list);
++	spin_unlock_bh(&ebt_siteblock_lock);
++
++	if ( sb_queue_p->flags & EBT_SITEBLOCK_FLAG_TIMEOUT_HANDLE_DONE ) {
++		kfree(sb_queue_p);
++		return 0;
++	}
++
++	if ( sb_queue_p->timeout_val > 0 ) {
++		ret = del_timer(&sb_queue_p->timeout);
++	}
++
++	skb = sb_queue_p->skb;
++	if ( resp->status == SBDEV_REPLY_STATUS_DENY ) {
++		kfree_skb(skb);
++	}
++	else{
++		skb_push(skb, ETH_HLEN);
++		dev_queue_xmit(skb);	//tx
++	}
++
++	sb_queue_p->skb = NULL;
++    kfree(sb_queue_p);
++	return 0;
++}
++
++static void ebt_siteblock_timeout(unsigned long ul_sblock) 
++{ 
++    struct ebt_siteblock_queue_info *sb_queue_p= (void *) ul_sblock; 
++	struct sk_buff *skb;
++
++	skb = sb_queue_p->skb;
++
++	skb_push(skb, ETH_HLEN);
++	dev_queue_xmit(skb);	//tx
++
++	sb_queue_p->skb = NULL;
++	sb_queue_p->flags |= EBT_SITEBLOCK_FLAG_TIMEOUT_HANDLE_DONE;
++}
++
++static unsigned int ebt_siteblock(struct sk_buff *skb, const struct xt_action_param *par)
++{
++	unsigned int newSkb_total_len, newSkb_data_len;
++	struct sk_buff *newSkb;
++	struct ebt_siteblock_info *info = (struct ebt_siteblock_info *)par->targinfo;
++	struct ebt_siteblock_queue_info *new_queue;
++	struct sbdev_request_s *new_query;
++	unsigned char *mac_header;
++	struct iphdr *iph;
++	struct tcphdr *tcph;
++	struct udphdr *udph;
++	char *data = NULL;
++
++	if ( SBDEV_ATTACH_USER_FLAG != 0 ) {
++		iph=ip_hdr(skb);
++		udph=(struct udphdr*)((__u32*)iph+iph->ihl);// udp header
++		tcph=(struct tcphdr*)((__u32*)iph+iph->ihl);// tcp header
++		data=(char*)((__u32*)tcph+tcph->doff);// tcp data payload
++
++		mac_header = skb_mac_header(skb);
++		newSkb_data_len = skb->tail - mac_header;
++		newSkb_total_len = sizeof(struct sbdev_request_s) + newSkb_data_len;
++
++		if (
++			( iph->protocol == IPPROTO_TCP && ntohs(tcph->dest) == EBT_SITEBLOCK_HTTP_REQUEST_PORT && strstr(data, "HTTP") != NULL )
++		 //|| ( iph->protocol == IPPROTO_UDP && ntohs(udph->dest) == EBT_SITEBLOCK_DNS_QUERY_PORT )
++			) {
++			/* store skb to queue list */
++			new_queue = (struct ebt_siteblock_queue_info *) kmalloc(sizeof(struct ebt_siteblock_queue_info), GFP_ATOMIC);
++			if (!new_queue) {
++				DEBUGP("%s: OOM allocating siteblock_queue list\n", __FUNCTION__); 
++				return -ENOMEM;
++			}
++			memset(new_queue, 0, sizeof(struct ebt_siteblock_queue_info));
++			INIT_LIST_HEAD(&new_queue->list);
++
++			new_queue->flags = info->flags;
++			new_queue->skb = skb;
++
++			/* add to global table of queue list */
++			spin_lock_bh(&ebt_siteblock_lock);
++			list_add (&new_queue->list, &ebt_siteblock_list);
++			spin_unlock_bh(&ebt_siteblock_lock);
++
++			if ( info->timeout > 0 ) {
++				new_queue->timeout_val = info->timeout;
++				/* add and start timer if required */
++				init_timer(&new_queue->timeout);
++				new_queue->timeout.data = (unsigned long)new_queue;
++				new_queue->timeout.function = ebt_siteblock_timeout;
++				new_queue->timeout.expires = jiffies + msecs_to_jiffies(info->timeout);
++				add_timer(&new_queue->timeout);
++			}
++
++			/* alert userspace level to query */
++			newSkb = alloc_skb(newSkb_total_len, GFP_ATOMIC);
++			skb_put(newSkb, newSkb_total_len);
++			memset(newSkb->data, 0, newSkb_total_len);
++			new_query = (struct sbdev_request_s *)newSkb->data;
++			new_query->sb_queue_p = new_queue;
++			memcpy(new_query->skb_data, mac_header, newSkb_data_len);
++
++			sbdev_snd_user(newSkb);
++			return info->target;
++		}
++	}
++
++	return EBT_CONTINUE;
++}
++
++static int ebt_siteblock_check(const struct xt_tgchk_param *par)
++{
++	return 0;
++}
++
++static void ebt_siteblock_destroy(const struct xt_tgdtor_param *par) {
++	struct ebt_siteblock_info *info = (struct ebt_siteblock_info *)par->targinfo;
++	struct list_head *cur_item, *tmp_item; 
++	struct ebt_siteblock_queue_info *cur_queue;
++
++	/* clean sbdev queue, and use it to clean list */
++	sbdev_clean_queue();
++
++	/* double check list need to free any data */
++	list_for_each_safe(cur_item, tmp_item, &ebt_siteblock_list) { 
++		cur_queue = (void *)cur_item;
++		if ( cur_queue->flags == info->flags ) {
++			spin_lock_bh(&ebt_siteblock_lock);
++			list_del(&cur_queue->list);
++			spin_unlock_bh(&ebt_siteblock_lock);
++
++			if ( cur_queue->flags & EBT_SITEBLOCK_FLAG_TIMEOUT_HANDLE_DONE ) {
++				kfree(cur_queue);
++			}
++			else {
++				if ( cur_queue->timeout_val > 0 ) {
++					del_timer(&cur_queue->timeout);
++				}
++
++				kfree_skb(cur_queue->skb);
++				kfree(cur_queue);
++			}
++		}
++	}
++}
++
++static struct xt_target ebt_siteblock_target __read_mostly =
++{
++	.name		= EBT_SITEBLOCK_NAME,
++	.revision	= 0,
++	.family		= NFPROTO_BRIDGE,
++	.target		= ebt_siteblock,
++	.checkentry	= ebt_siteblock_check,
++	.destroy	= ebt_siteblock_destroy,
++	.targetsize	= sizeof(struct ebt_siteblock_info),
++	.me			= THIS_MODULE,
++};
++
++static int __init ebt_siteblock_init(void)
++{
++	register_sbdev_rcv_user(ebt_siteblock_dequeue_skb);
++	return xt_register_target(&ebt_siteblock_target);
++}
++
++static void __exit ebt_siteblock_fini(void)
++{
++	unregister_sbdev_rcv_user();
++	xt_unregister_target(&ebt_siteblock_target);
++}
++
++module_init(ebt_siteblock_init);
++module_exit(ebt_siteblock_fini);
++MODULE_LICENSE("GPL");
++
++
+Index: linux-3.10.14/net/bridge/netfilter/ebtables.c
+===================================================================
+--- linux-3.10.14.orig/net/bridge/netfilter/ebtables.c	2016-10-11 17:06:19.563380913 +0800
++++ linux-3.10.14/net/bridge/netfilter/ebtables.c	2016-10-11 17:09:08.732073000 +0800
+@@ -283,6 +283,11 @@
+ 			return NF_DROP;
+ 		}
+ #endif
++		/* __MSTC__, Terence Yang, add NF_STOLEN */
++		if (verdict == NF_STOLEN) {
++			read_unlock_bh(&table->lock);
++			return NF_STOLEN;
++		}
+ 		/* jump to a udc */
+ 		cs[sp].n = i + 1;
+ 		cs[sp].chaininfo = chaininfo;
+Index: linux-3.10.14/net/ipv4/ip_forward.c
+===================================================================
+--- linux-3.10.14.orig/net/ipv4/ip_forward.c	2016-10-11 17:06:19.407458290 +0800
++++ linux-3.10.14/net/ipv4/ip_forward.c	2016-10-11 17:08:08.537429000 +0800
+@@ -52,6 +52,11 @@
+ 	return dst_output(skb);
+ }
+ 
++int direct_ip_forward_finish(struct sk_buff *skb) {
++	return ip_forward_finish(skb);
++}
++EXPORT_SYMBOL(direct_ip_forward_finish);
++
+ int ip_forward(struct sk_buff *skb)
+ {
+ 	struct iphdr *iph;	/* Our header */
+Index: linux-3.10.14/net/ipv4/ip_input.c
+===================================================================
+--- linux-3.10.14.orig/net/ipv4/ip_input.c	2016-10-11 17:06:19.443347677 +0800
++++ linux-3.10.14/net/ipv4/ip_input.c	2016-10-11 17:08:18.281666000 +0800
+@@ -244,6 +244,11 @@
+ 	return 0;
+ }
+ 
++int direct_ip_local_deliver_finish(struct sk_buff *skb) {
++	return ip_local_deliver_finish(skb);
++}
++EXPORT_SYMBOL(direct_ip_local_deliver_finish);
++
+ /*
+  * 	Deliver IP Packets to the higher protocol layers.
+  */
+Index: linux-3.10.14/net/ipv4/netfilter/Kconfig
+===================================================================
+--- linux-3.10.14.orig/net/ipv4/netfilter/Kconfig	2016-10-11 17:06:19.483876277 +0800
++++ linux-3.10.14/net/ipv4/netfilter/Kconfig	2016-10-11 17:08:37.890656000 +0800
+@@ -135,6 +135,17 @@
+ 
+ 	  To compile it as a module, choose M here.  If unsure, say N.
+ 
++config IP_NF_TARGET_SITEBLOCK
++	tristate "siteblock target support"
++	default m if NETFILTER_ADVANCED=n
++	depends on SBDEV
++	---help---
++	  This option adds the siteblock target, only support siteblock
++	  Be careful! siteblock doesn't free skb, you must to know what you do.
++
++	  To compile it as a module, choose M here.  If unsure, say N.
++
++	  
+ # NAT + specific targets: nf_conntrack
+ config NF_NAT_IPV4
+ 	tristate "IPv4 NAT"
+Index: linux-3.10.14/net/ipv4/netfilter/Makefile
+===================================================================
+--- linux-3.10.14.orig/net/ipv4/netfilter/Makefile	2016-10-11 17:06:19.523892043 +0800
++++ linux-3.10.14/net/ipv4/netfilter/Makefile	2016-10-11 17:08:46.268220000 +0800
+@@ -48,6 +48,7 @@
+ obj-$(CONFIG_IP_NF_TARGET_REJECT) += ipt_REJECT.o
+ obj-$(CONFIG_IP_NF_TARGET_ROUTE) += ipt_ROUTE.o
+ obj-$(CONFIG_IP_NF_TARGET_ULOG) += ipt_ULOG.o
++obj-$(CONFIG_IP_NF_TARGET_SITEBLOCK) += ipt_SITEBLOCK.o
+ 
+ # generic ARP tables
+ obj-$(CONFIG_IP_NF_ARPTABLES) += arp_tables.o
+Index: linux-3.10.14/net/ipv4/netfilter/ipt_SITEBLOCK.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-3.10.14/net/ipv4/netfilter/ipt_SITEBLOCK.c	2016-10-11 17:14:16.491384023 +0800
+@@ -0,0 +1,252 @@
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++#include <linux/module.h>
++#include <linux/skbuff.h>
++#include <linux/slab.h>
++#include <linux/ip.h>
++#include <linux/udp.h>
++#include <net/icmp.h>
++#include <net/ip.h>
++#include <net/tcp.h>
++#include <net/route.h>
++#include <net/dst.h>
++#include <linux/sbdev/sbdev.h>
++#include <linux/netfilter/x_tables.h>
++#include <linux/netfilter_ipv4/ip_tables.h>
++#include <linux/netfilter_ipv4/ipt_SITEBLOCK.h>
++
++#if 1
++#define DEBUGP printk 
++#else 
++#define DEBUGP(format, args...) 
++#endif 
++
++MODULE_LICENSE("GPL");
++
++struct ipt_siteblock_queue_info {
++	int flags;
++	int timeout_val;
++	struct list_head list;          /* Queue list */ 
++	struct timer_list timeout;
++	struct sk_buff *skb;
++};
++
++static DEFINE_SPINLOCK(ipt_siteblock_lock);
++LIST_HEAD(ipt_siteblock_list);
++
++int direct_ip_forward_finish(struct sk_buff *skb);
++int direct_ip_local_deliver_finish(struct sk_buff *skb);
++int ipt_siteblock_dequeue_skb(struct sbdev_reply_s *resp){
++	int ret = 0;
++	struct sk_buff *skb;
++	struct ipt_siteblock_queue_info *sb_queue_p = resp->sb_queue_p; 
++
++	/* delete from 'siteblock_list' */ 
++	spin_lock_irq(&ipt_siteblock_lock);
++    list_del(&sb_queue_p->list);
++	spin_unlock_irq(&ipt_siteblock_lock);
++
++	if ( sb_queue_p->flags & IPT_SITEBLOCK_FLAG_TIMEOUT_HANDLE_DONE ) {
++		kfree(sb_queue_p);
++		return 0;
++	}
++
++	if ( sb_queue_p->timeout_val > 0 ) {
++		ret = del_timer(&sb_queue_p->timeout);
++	}
++
++	skb = sb_queue_p->skb;
++	if ( resp->status == SBDEV_REPLY_STATUS_DENY ) {
++		kfree_skb(skb);
++	}
++	else{
++		/* only handle netfilter step INPUT and FORWARD  */
++		if ( sb_queue_p->flags & IPT_SITEBLOCK_FLAG_INPUT_TRIGGER ) {
++			direct_ip_local_deliver_finish(skb);
++		}
++		else if ( sb_queue_p->flags & IPT_SITEBLOCK_FLAG_FORWARD_TRIGGER ) {
++			direct_ip_forward_finish(skb);
++		}
++		else {
++			kfree_skb(skb);
++		}
++	}
++
++	sb_queue_p->skb = NULL;
++    kfree(sb_queue_p);
++	
++	return 0;
++}
++
++static void ipt_siteblock_timeout(unsigned long ul_sblock) 
++{ 
++    struct ipt_siteblock_queue_info *sb_queue_p= (void *) ul_sblock; 
++	struct sk_buff *skb;
++
++	skb = sb_queue_p->skb;
++
++	if ( sb_queue_p->flags & IPT_SITEBLOCK_FLAG_INPUT_TRIGGER ) {
++		direct_ip_local_deliver_finish(skb);
++	}
++	else if ( sb_queue_p->flags & IPT_SITEBLOCK_FLAG_FORWARD_TRIGGER ) {
++		direct_ip_forward_finish(skb);
++	}
++	else {
++		kfree_skb(skb);
++	}
++
++	sb_queue_p->skb = NULL;
++	sb_queue_p->flags |= IPT_SITEBLOCK_FLAG_TIMEOUT_HANDLE_DONE;
++}
++
++static unsigned int
++ipt_siteblock(struct sk_buff *skb, const struct xt_action_param *par)
++{
++	unsigned int newSkb_total_len, newSkb_data_len;
++	struct sk_buff *newSkb;
++	struct ipt_siteblock_info *info = (struct ipt_siteblock_info *)par->targinfo;
++	struct ipt_siteblock_queue_info *new_queue;
++	struct sbdev_request_s *new_query;
++	unsigned char *mac_header;
++	struct iphdr *iph;
++	struct tcphdr *tcph;
++	struct udphdr *udph;
++	char *data = NULL;
++/*
++int i = 0 ;
++printk("\n==============\n");
++printk("skb->head : %p\n", skb->head);
++printk("skb->data : %p\n", skb->data);
++printk("skb->tail : %p\n", skb->tail);
++printk("skb->end : %p\n", skb->end);
++
++printk("skb->mac_header : %p\n", skb_mac_header(skb));
++printk("skb->network_header : %p\n", skb_network_header(skb));
++printk("skb->transport_header : %p\n", skb_transport_header(skb));
++printk("skb->truesize : 0x%x\n", skb->truesize);
++printk("skb->len : 0x%x\n", skb->len);
++printk("skb->data_len : 0x%x\n", skb->data_len);
++
++iph=ip_hdr(skb);
++printk("iph->tot_len : 0x%x\n", ntohs(iph->tot_len));
++printk("\n==============\n");
++*/
++	if ( SBDEV_ATTACH_USER_FLAG != 0 ) {
++		iph=ip_hdr(skb);
++		udph=(struct udphdr*)((__u32*)iph+iph->ihl);// udp header
++		tcph=(struct tcphdr*)((__u32*)iph+iph->ihl);// tcp header
++		data=(char*)((__u32*)tcph+tcph->doff);// tcp data payload
++
++		mac_header = skb_mac_header(skb);
++		newSkb_data_len = skb->tail - mac_header;
++		newSkb_total_len = sizeof(struct sbdev_request_s) + newSkb_data_len;
++
++		if (
++			( (info->flags & IPT_SITEBLOCK_FLAG_FORWARD_TRIGGER) && iph->protocol == IPPROTO_TCP && ntohs(tcph->dest) == IPT_SITEBLOCK_HTTP_REQUEST_PORT && strstr(data, "HTTP") != NULL )
++		 //|| ( (info->flags & IPT_SITEBLOCK_FLAG_INPUT_TRIGGER) && iph->protocol == IPPROTO_UDP && ntohs(udph->dest) == IPT_SITEBLOCK_DNS_QUERY_PORT )
++			) {
++			/* store skb to queue list */
++			new_queue = (struct ipt_siteblock_queue_info *) kmalloc(sizeof(struct ipt_siteblock_queue_info), GFP_ATOMIC);
++			if (!new_queue) {
++				DEBUGP("%s: OOM allocating siteblock_queue list\n", __FUNCTION__); 
++				return -ENOMEM;
++			}
++			memset(new_queue, 0, sizeof(struct ipt_siteblock_queue_info));
++			INIT_LIST_HEAD(&new_queue->list);
++
++			new_queue->flags = info->flags;
++			new_queue->skb = skb;
++
++			/* add to global table of queue list */
++			spin_lock_irq(&ipt_siteblock_lock);
++			list_add (&new_queue->list, &ipt_siteblock_list);
++			spin_unlock_irq(&ipt_siteblock_lock);
++
++			if ( info->timeout > 0 ) {
++				new_queue->timeout_val = info->timeout;
++				/* add and start timer if required */
++				init_timer(&new_queue->timeout); 
++				new_queue->timeout.data = (unsigned long)new_queue;
++				new_queue->timeout.function = ipt_siteblock_timeout;
++				new_queue->timeout.expires = jiffies + msecs_to_jiffies(info->timeout);
++				add_timer(&new_queue->timeout);
++			}
++
++			/* alert userspace level to query */
++			newSkb = alloc_skb(newSkb_total_len, GFP_ATOMIC);
++			skb_put(newSkb, newSkb_total_len);
++			memset(newSkb->data, 0, newSkb_total_len);
++			new_query = (struct sbdev_request_s *)newSkb->data;
++			new_query->sb_queue_p = new_queue;
++			memcpy(new_query->skb_data, mac_header, newSkb_data_len);
++
++			sbdev_snd_user(newSkb);
++			return info->target;
++		}
++	}
++
++	return XT_CONTINUE;
++}
++
++static int ipt_siteblock_check(const struct xt_tgchk_param *par)
++{
++	return 0;
++}
++
++static void ipt_siteblock_destroy(const struct xt_tgdtor_param *par) {
++	struct ipt_siteblock_info *info = (struct ipt_siteblock_info *)par->targinfo;
++	struct list_head *cur_item, *tmp_item; 
++	struct ipt_siteblock_queue_info *cur_queue;
++
++	/* clean sbdev queue, and use it to clean list */
++	sbdev_clean_queue();
++
++	/* double check list need to free any data */
++	list_for_each_safe(cur_item, tmp_item, &ipt_siteblock_list) { 
++		cur_queue = (struct ipt_siteblock_queue_info *)cur_item;
++
++		if ( cur_queue->flags == info->flags ) {
++			spin_lock_irq(&ipt_siteblock_lock);
++			list_del(&cur_queue->list);
++			spin_unlock_irq(&ipt_siteblock_lock);
++
++			if ( cur_queue->flags & IPT_SITEBLOCK_FLAG_TIMEOUT_HANDLE_DONE ) {
++				kfree(cur_queue);
++			}
++			else {
++				if ( cur_queue->timeout_val > 0 ) {
++					del_timer(&cur_queue->timeout);
++				}
++				kfree_skb(cur_queue->skb);
++				kfree(cur_queue);
++			}
++		}
++	}
++}
++
++static struct xt_target ipt_siteblock_target __read_mostly =
++{
++	.name		= IPT_SITEBLOCK_NAME,
++	.revision	= 0,
++	.family		= AF_INET,
++	.target		= ipt_siteblock,
++	.targetsize	= sizeof(struct ipt_siteblock_info),
++	.checkentry	= ipt_siteblock_check,
++	.destroy	= ipt_siteblock_destroy,
++	.me			= THIS_MODULE,
++};
++
++static int __init ipt_siteblock_init(void)
++{
++	register_sbdev_rcv_user(ipt_siteblock_dequeue_skb);
++	return xt_register_target(&ipt_siteblock_target);
++}
++
++static void __exit ipt_siteblock_fini(void)
++{
++	unregister_sbdev_rcv_user();
++	xt_unregister_target(&ipt_siteblock_target);
++}
++
++module_init(ipt_siteblock_init);
++module_exit(ipt_siteblock_fini);
++

@@ -1,0 +1,50 @@
+msgid "AUTO_NETWORK_SELECTION"
+msgstr ""
+
+msgid "LTE"
+msgstr ""
+
+msgid "L_CIMResult_info1"
+msgstr ""
+
+msgid "L_CIMResult_info2"
+msgstr ""
+
+msgid "L_CIMValidateNW_SELWarn"
+msgstr ""
+
+msgid "MANUAL_SELECTION"
+msgstr ""
+
+msgid "MLG_PleaseWait"
+msgstr ""
+
+msgid "MTU"
+msgstr ""
+
+msgid "MTU_SIZE"
+msgstr ""
+
+msgid "NETWORK_MODE"
+msgstr ""
+
+msgid "NETWORK_MODE_PREFERENCE"
+msgstr ""
+
+msgid "NETWORK_SELECT"
+msgstr ""
+
+msgid "NETWORK_SETTINGS"
+msgstr ""
+
+msgid "Network Select"
+msgstr ""
+
+msgid "Network Settings"
+msgstr ""
+
+msgid "WAN_Error_20"
+msgstr ""
+
+msgid "msg_config"
+msgstr ""

@@ -1,0 +1,12 @@
+#!/bin/sh
+
+rm /etc/resolv.conf
+#if [ ! -z $new_domain_name ]; then
+#	echo search $new_domain_name >> /etc/resolv.conf
+#fi
+for nameserver in $new_domain_name_servers; do
+	echo nameserver $nameserver >> /etc/resolv.conf
+done
+
+/usr/sbin/ioragwset -s
+

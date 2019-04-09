@@ -1,0 +1,48 @@
+#!/bin/sh /etc/rc.common
+
+BIN=avahi-autoipd
+OPTIONS="-D"
+DISPATCH_DIR=/var/lib
+
+start() {
+	config_load network
+	config_get wan_type wan type
+	config_get lan_type lan type
+	
+	#check lan autoip
+	if [ "$lan_type" == "bridge" ]; then
+		lan_ifname="br-lan";
+	else
+		config_get lan_ifname lan ifname
+	fi
+
+	if [ "$INTERFACE" == "${lan_ifname}" ]; then
+		config_get lan_autoip lan autoip
+		if [ "$lan_autoip" == "yes" ]; then
+			# create avahi state directory
+			[ ! -d ${DISPATCH_DIR} ] & mkdir -p ${DISPATCH_DIR}
+			${BIN} ${OPTIONS} ${lan_ifname}
+		fi
+	fi
+	
+	#check wan autoip
+	if [ "$wan_type" == "bridge" ]; then
+		wan_ifname="br-wan";
+	else
+		config_get wan_ifname wan ifname
+	fi
+
+	if [ "$INTERFACE" == "${wan_ifname}" ]; then
+		config_get wan_autoip wan autoip
+		if [ "$wan_autoip" == "yes" ]; then
+			# create avahi state directory
+			[ ! -d ${DISPATCH_DIR} ] & mkdir -p ${DISPATCH_DIR}
+			${BIN} ${OPTIONS} ${wan_ifname}
+		fi
+	fi
+}
+
+stop() {
+  killall ${BIN}
+}
+

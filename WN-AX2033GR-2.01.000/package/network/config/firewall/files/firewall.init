@@ -1,0 +1,138 @@
+#!/bin/sh /etc/rc.common
+
+START=19
+USE_PROCD=1
+QUIET=""
+wan_mode=$(uci get network.wan.mode)
+
+change_lanwan_rule_as_default()
+{
+	#MBA Andy added to make sure the firewall default config be changed,status same as the pptp be turn off
+	src=`uci show firewall.pptp_rule_name.src | awk -F '=' '{print $2}'`
+	dest=`uci show firewall.pptp_rule_name.dest | awk -F '=' '{print $2}'`
+
+	if [ "$src" != "*" ]; then
+			uci set firewall.pptp_rule_name.src=*
+	fi
+
+	if [ "$dest" != "*" ]; then
+			uci set firewall.pptp_rule_name.dest=*
+	fi
+
+	uci commit
+
+}
+
+validate_firewall_redirect()
+{
+	uci_validate_section firewall redirect "${1}" \
+		'proto:or(uinteger, string)' \
+		'src:string' \
+		'src_ip:cidr' \
+		'src_dport:or(port, portrange)' \
+		'dest:string' \
+		'dest_ip:cidr' \
+		'dest_port:or(port, portrange)' \
+		'target:or("SNAT", "DNAT")'
+}
+
+validate_firewall_rule()
+{
+	uci_validate_section firewall rule "${1}" \
+		'proto:or(uinteger, string)' \
+		'src:string' \
+		'dest:string' \
+		'src_port:or(port, portrange)' \
+		'dest_port:or(port, portrange)' \
+		'target:string'
+}
+
+service_triggers() {
+	procd_add_reload_trigger firewall	
+
+	procd_open_validate
+	validate_firewall_redirect
+	validate_firewall_rule
+	procd_close_validate
+}
+
+restart() {
+	# MSTC, Terence, 20160525 append simple log
+	[ -f /sbin/simple_logrec.sh ] && {
+		simple_logrec.sh -w "NET, stop Firewall"
+		simple_logrec.sh -w "NET, start Firewall"
+	}
+	[ "$wan_mode" == "v6plus" -o "$wan_mode" == "transix" ] && {
+		[ -f /var/run/fw3.state ] && {
+			rm /var/run/fw3.state
+			#flush particular chain first, then run start to rebuild rules.
+			iptables -F zone_lan_forward
+			iptables -F delegate_forward
+			iptables -F zone_lan_input
+			iptables -F zone_wan_input
+			iptables -F delegate_input
+			iptables -F zone_lan_output
+			iptables -F zone_wan_output
+			iptables -F delegate_output
+			iptables -F input_lan_rule
+			iptables -F reject
+			iptables -F syn_flood
+			iptables -F zone_lan_dest_ACCEPT
+			iptables -F zone_lan_src_ACCEPT
+			iptables -F zone_wan_dest_ACCEPT
+			iptables -F zone_wan_dest_DROP
+			iptables -F zone_wan_dest_REJECT
+			iptables -F zone_wan_forward
+			iptables -F zone_wan_src_REJECT
+			iptables -F MINIUPNPD
+			iptables -F forwarding_lan_rule
+			iptables -F forwarding_rule
+			iptables -F output_wan_rule
+			iptables -F output_rule
+			iptables -F output_lan_rule
+			iptables -F input_wan_rule
+			iptables -F input_rule
+			iptables -F forwarding_wan_rule	
+		}
+	
+		#rebild rules
+		change_lanwan_rule_as_default
+		fw3 start
+	} || {
+		change_lanwan_rule_as_default
+		fw3 restart
+	}
+}
+
+start_service() {
+	# MSTC, Terence, 20160525 append simple log
+	[ -f /sbin/simple_logrec.sh ] && {
+		simple_logrec.sh -w "NET, start Firewall"
+	}
+	change_lanwan_rule_as_default
+	fw3 ${QUIET} start
+}
+
+stop_service() {
+	# MSTC, Terence, 20160525 append simple log
+	[ -f /sbin/simple_logrec.sh ] && {
+		simple_logrec.sh -w "NET, stop Firewall"
+	}
+	fw3 flush
+}
+
+reload_service() {
+	# MSTC, Terence, 20160525 append simple log
+	[ -f /sbin/simple_logrec.sh ] && {
+		simple_logrec.sh -w "NET, stop Firewall"
+		simple_logrec.sh -w "NET, start Firewall"
+	}
+	fw3 reload
+}
+
+boot() {
+	# Be silent on boot, firewall might be started by hotplug already,
+	# so don't complain in syslog.
+	QUIET=-q
+	start
+}

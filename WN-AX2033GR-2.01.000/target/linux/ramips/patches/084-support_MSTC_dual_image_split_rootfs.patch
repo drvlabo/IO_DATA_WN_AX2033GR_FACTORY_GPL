@@ -1,0 +1,128 @@
+Index: linux-3.10.14/drivers/mtd/mtdpart.c
+===================================================================
+--- linux-3.10.14.orig/drivers/mtd/mtdpart.c	2016-03-11 11:54:40.236510465 +0800
++++ linux-3.10.14/drivers/mtd/mtdpart.c	2016-03-11 11:47:51.932495000 +0800
+@@ -40,8 +40,9 @@
+ #define MTD_ERASE_PARTIAL	0x8000 /* partition only covers parts of an erase block */
+ #endif
+ 
+-
+-
++#ifdef CONFIG_MSTC_DUAL_IMAGE_SUPPORT
++extern unsigned int boot_image;
++#endif
+ 
+ /* Our partition linked list */
+ static LIST_HEAD(mtd_partitions);
+@@ -1010,6 +1011,14 @@
+ #define SPLIT_FIRMWARE_NAME	"unused"
+ #endif
+ 
++#ifdef CONFIG_MSTC_DUAL_IMAGE_SUPPORT
++#ifdef CONFIG_MTD_SPLIT_FIRMWARE2_NAME
++#define SPLIT_FIRMWARE2_NAME CONFIG_MTD_SPLIT_FIRMWARE2_NAME
++#else
++#define SPLIT_FIRMWARE2_NAME "unused"
++#endif
++#endif //CONFIG_MSTC_DUAL_IMAGE_SUPPORT
++
+ static void split_firmware(struct mtd_info *master, struct mtd_part *part)
+ {
+ 	int ret;
+@@ -1035,7 +1044,9 @@
+ 	unsigned int split_offset = 0;
+ 	size_t squashfs_len = 0;
+ #endif
+-
++#ifdef CONFIG_MSTC_DUAL_IMAGE_SUPPORT
++	char splitFirmwareName[16] = {0};
++#endif
+ 	if (rootfs_found)
+ 		return;
+ 
+@@ -1055,8 +1066,26 @@
+ #endif
+ 	}
+ 
+-	if (!strcmp(part->mtd.name, SPLIT_FIRMWARE_NAME) &&
++#ifdef CONFIG_MSTC_DUAL_IMAGE_SUPPORT
++	switch (boot_image){
++		case 2:
++		snprintf(splitFirmwareName, sizeof(splitFirmwareName), "%s", SPLIT_FIRMWARE2_NAME);
++		break;
++		
++		case 1:
++		default:
++		snprintf(splitFirmwareName, sizeof(splitFirmwareName), "%s", SPLIT_FIRMWARE_NAME);
++		break;
++	}
++#endif
++
++#ifdef CONFIG_MSTC_DUAL_IMAGE_SUPPORT
++	if (!strcmp(part->mtd.name, splitFirmwareName) &&
+ 	    config_enabled(CONFIG_MTD_SPLIT_FIRMWARE))
++#else
++	if (!strcmp(part->mtd.name, SPLIT_FIRMWARE_NAME) &&
++		config_enabled(CONFIG_MTD_SPLIT_FIRMWARE))
++#endif
+ 		split_firmware(master, part);
+ 
+ 	arch_split_mtd_part(master, part->mtd.name, part->offset,
+Index: linux-3.10.14/init/do_mounts.c
+===================================================================
+--- linux-3.10.14.orig/init/do_mounts.c	2016-03-11 11:54:40.200845161 +0800
++++ linux-3.10.14/init/do_mounts.c	2016-03-11 11:44:07.688571000 +0800
+@@ -313,7 +313,16 @@
+ 	root_fs_names = str;
+ 	return 1;
+ }
++#ifdef CONFIG_MSTC_DUAL_IMAGE_SUPPORT
++unsigned int __initdata boot_image;
++static int __init boot_image_setup(char *str)
++{
++	boot_image = simple_strtoul(str, NULL, 0);
++	return 1;
++}
+ 
++__setup("BootImage=", boot_image_setup);
++#endif
+ static unsigned int __initdata root_delay;
+ static int __init root_delay_setup(char *str)
+ {
+Index: linux-3.10.14/arch/mips/ralink/Kconfig
+===================================================================
+--- linux-3.10.14.orig/arch/mips/ralink/Kconfig	2016-03-11 11:54:40.337506721 +0800
++++ linux-3.10.14/arch/mips/ralink/Kconfig	2016-03-11 11:30:06.951562000 +0800
+@@ -427,3 +427,7 @@
+ 	select GENERIC_CLOCKEVENTS_BROADCAST if RALINK_MT7621
+ 	default n
+ 
++config UBOOT_CMDLINE
++	bool "Uboot Command Line"
++	default n
++
+Index: linux-3.10.14/drivers/mtd/Kconfig
+===================================================================
+--- linux-3.10.14.orig/drivers/mtd/Kconfig	2016-03-11 11:54:40.296491094 +0800
++++ linux-3.10.14/drivers/mtd/Kconfig	2016-03-11 11:48:34.332281000 +0800
+@@ -39,6 +39,20 @@
+         depends on MTD_SPLIT_FIRMWARE
+         default y
+ 
++config MSTC_DUAL_IMAGE_SUPPORT
++        bool "MSTC Dual Image Support"
++		depends on MTD_SPLIT_FIRMWARE
++		select MTD_SPLIT_FIRMWARE2_NAME
++        default n
++		help
++			Automatically split firmware or firmware_2 partition for kernel+rootfs
++			according to image 1 or image 2.
++
++config MTD_SPLIT_FIRMWARE2_NAME
++		string "Firmware 2 partition name"
++		depends on MSTC_DUAL_IMAGE_SUPPORT
++		default "firmware_2"		
++		
+ comment "Rootfs partition parsers"
+ 
+ config MTD_SPLIT_SQUASHFS_ROOT

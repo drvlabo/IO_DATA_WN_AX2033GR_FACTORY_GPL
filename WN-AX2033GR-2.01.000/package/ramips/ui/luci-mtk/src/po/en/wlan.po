@@ -1,0 +1,164 @@
+msgid "128bits"
+msgstr ""
+
+msgid "64bits"
+msgstr ""
+
+msgid "Network"
+msgstr ""
+
+msgid "SSID_Select"
+msgstr ""
+
+msgid "_encryption"
+msgstr "Encryption"
+
+msgid "aes"
+msgstr ""
+
+msgid "aes_tkip"
+msgstr ""
+
+msgid "allow"
+msgstr ""
+
+msgid "auth_method"
+msgstr ""
+
+msgid "auto_channel_select"
+msgstr ""
+
+msgid "channel"
+msgstr ""
+
+msgid "channel_mode"
+msgstr ""
+
+msgid "channel_select"
+msgstr ""
+
+msgid "channel_width"
+msgstr ""
+
+msgid "deny"
+msgstr ""
+
+msgid "encryption_method"
+msgstr ""
+
+msgid "filter_action"
+msgstr ""
+
+msgid "hide_ssid"
+msgstr ""
+
+msgid "idle_mode"
+msgstr ""
+
+msgid "key"
+msgstr ""
+
+msgid "mac_addr"
+msgstr ""
+
+msgid "mac_addr_filter"
+msgstr ""
+
+msgid "mac_filter"
+msgstr ""
+
+msgid "mac_filter_summary"
+msgstr ""
+
+msgid "more_ap"
+msgstr ""
+
+msgid "msg_config"
+msgstr ""
+
+msgid "no_security"
+msgstr ""
+
+msgid "note"
+msgstr ""
+
+msgid "operate_channel"
+msgstr ""
+
+msgid "psk"
+msgstr ""
+
+msgid "scheduling"
+msgstr ""
+
+msgid "security"
+msgstr ""
+
+msgid "security_mode"
+msgstr ""
+
+msgid "set"
+msgstr ""
+
+msgid "shared_key"
+msgstr ""
+
+msgid "ssid_name"
+msgstr ""
+
+msgid "static_wep"
+msgstr ""
+
+msgid "tkip"
+msgstr ""
+
+msgid "tx_power"
+msgstr ""
+
+msgid "wep_open"
+msgstr ""
+
+msgid "wireless_advance"
+msgstr "Advanced"
+
+msgid "wireless_lan"
+msgstr "Wireless LAN"
+
+msgid "wireless_qos"
+msgstr "QoS"
+
+msgid "wireless_setup"
+msgstr "Wireless Setup"
+
+msgid "wlan_invalid"
+msgstr "is invalid!"
+
+msgid "wlan_mac"
+msgstr "Mac Address"
+
+msgid "wlan_macfilter_alert_1"
+msgstr "You must specify at least one mac address when filter function is enabled!"
+
+msgid "wlan_note1"
+msgstr "64-bit WEP: Enter 5 ASCII characters or 10 hexadecimal characters (\"0-9\", \"A-F\") for each Key (1-4)."
+
+msgid "wlan_note2"
+msgstr "128-bit WEP: Enter 13 ASCII characters or 26 hexadecimal characters (\"0-9\", \"A-F\") for each Key (1-4)."
+
+msgid "wlan_note3"
+msgstr "Select one WEP key as an active key to encrypt wireless data transmission."
+
+msgid "wpa2_psk"
+msgstr "WPA2-PSK"
+
+msgid "wpa2_wpa_psk"
+msgstr "WPA2-PSK/WPA-PSK"
+
+msgid "wpa_psk"
+msgstr "WPA-PSK"
+
+msgid "wps"
+msgstr "WPS"
+
+msgid "wps_station"
+msgstr "WPS Station"

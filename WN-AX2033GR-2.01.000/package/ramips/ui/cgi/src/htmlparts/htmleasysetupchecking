@@ -1,0 +1,24 @@
+﻿<form name="easysetup" method="POST" action="/cgi-bin/sec/easysetup.cgi">
+<table width="100%" height="97%" border="0" cellpadding="1" cellspacing="1">
+<tbody><tr>
+	<td align="center" valign="center">
+	<table width="500" border="1" align="center" cellpadding="5" cellspacing="0" >
+	<tr>
+	<td align="left" >
+	<font size="2">
+	インターネット接続を判別しています。<br>しばらくお待ちください。
+	<br><br><br><br><br><br>
+	</font>
+	</td>
+	</tr>
+	<tr>
+	
+	<input type="hidden" name="ottforcsrf">
+	
+	</tr>
+	</table>
+	</td>
+</tr></tbody>
+</table>
+<input type="hidden" name="ottforcsrf">
+</form>

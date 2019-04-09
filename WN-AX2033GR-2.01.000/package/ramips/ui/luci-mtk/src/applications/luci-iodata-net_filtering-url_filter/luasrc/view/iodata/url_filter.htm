@@ -1,0 +1,335 @@
+<%+header%>
+
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+<script type="text/javascript">
+var url ="<%=controller%>/content/net_filtering/url_filter"; //current page url
+var validIndex = '5';
+var COMMONSTR_1_32_REGX =new RegExp("^[\\(\\)\\[\\]\\{\\}!#$%&\\*~@\\.\\?\\-\\w]{1,32}$");
+
+
+<%
+	--MBA Sean, get the waiting time, default is 30 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+	local waiting_time_uci = uci_t.get("web", "gui_config", "network_apply_waiting_time")
+	local waiting_time = 30;
+	
+	if waiting_time_uci then
+		waiting_time = waiting_time_uci
+	end
+	
+	uci_t.set_confdir(original_confdir)
+%>
+
+var seconds=<%=waiting_time%>;
+
+function waiting()
+{
+	(seconds<=0)?seconds=0:seconds-=1;
+	document.getElementById("wait_time").value=seconds;
+	if(seconds==0)
+	{
+		location.href=url;
+		return true;
+	};
+	setTimeout('waiting()',1000);
+} 
+
+function checkUrlFilterString(str){
+	var strLen=str.length;
+	var checkStr;
+	var checkStrArr=new Array("http://","https://");
+	for(j=0;j<checkStrArr.length;j++){
+		checkStr=checkStrArr[j];
+		for(i=0;i<checkStr.length-strLen+1;i++){
+			if(checkStr.substr(i,strLen)==str)
+			return false;
+		}
+	}
+	return true;
+}
+
+function ruleDataChange(){
+	if ( $("input[name='select']").length == 0 ) {
+		$("input[name='deleteSelURLB']").prop( "disabled", true );
+		$("input[name='deleteAllURLB']").prop( "disabled", true );
+	}
+	else {
+		$("input[name='deleteSelURLB']").prop( "disabled", false );
+		$("input[name='deleteAllURLB']").prop( "disabled", false );
+	}
+
+	if ( $("input[name='select']").length >= 20 ) {
+		$("input[name='addURLB']").prop( "disabled", true );
+		$("input[name='reset']").prop( "disabled", false );
+	}
+	else {
+		$("input[name='addURLB']").prop( "disabled", false );
+		$("input[name='reset']").prop( "disabled", false );
+	}
+}
+
+function deleteSelClick(){
+	var i = 0;
+	$("#ruleTable tr[name='ruleData']").each(function(){
+		if ( $(this).find("input[name='select']").prop("checked") == true ) {
+			$(this).remove();
+		}
+	});
+	
+	$("#ruleTable tr[name='ruleData']").each(function(){
+		i++;
+		$(this).find("td:first font").html(i);
+	});
+	$("#listDataNum").val(i);
+	ruleDataChange();
+}
+
+function deleteAllClick(){
+	$("#ruleTable tr[name='ruleData']").each(function(){
+		$(this).remove();
+	});
+	$("#listDataNum").val("0");
+	ruleDataChange();
+}
+
+
+function addClick() {
+	var f=document.formBSURLBEnabled;
+	var dataNum = parseInt($("#listDataNum").val(),10) + 1;
+	
+	if (f.URLB.value==""){
+		alert("<%:URL is incorrect.%>");
+		f.URLB.focus();
+		return false;
+	}
+	if(f.URLB.value.length <= 2 || !checkUrlFilterString(f.URLB.value)){
+		alert("<%:URL is incorrect. URL Please enter 3 or more characters.%>");
+		f.URLB.focus();
+		return false;
+	}
+	//if (f.enable_url_filter = "checked"){
+		
+	//}
+	if(!(COMMONSTR_1_32_REGX.test(f.URLB.value))){
+		alert("<%:URL is incorrect.%>");
+		f.URLB.focus();
+		return false;
+	}
+	//if(!f.URLB.value.match(available_char_16)){
+	//	alert(showText(168));
+	//	f.URLB.focus();
+	//	return false;
+	//}
+	//f.hSubmitFormNum.value=SUBMIT_ADD;
+	//f.hFirstAvailIdx.value=validIndex;
+	//f.submit();
+	//}else{	//>=20 
+	//	alert("<%:You can not add.%>");
+		//document.getElementById("addURLB").disabled = true;
+	//	return false;
+	//}
+	
+	try {
+		var conflict = false;
+		$("#ruleTable tr[name='ruleData']").each(function(){
+			dataURL = $(this).find("td:eq(1) font").html();
+			if ( dataURL == f.URLB.value ) {
+				conflict = true;
+				return false;
+			}
+		});
+		if ( conflict ) {
+			alert("<%:URL address is duplicated.%>");
+			return false;
+		}
+	} catch(e){}
+	
+	var newURL = f.URLB.value.replace(/ /g, "");
+	var showStr=newURL;
+	var checkStr=newURL;
+	if(showStr.length>=8){
+		if(newURL.substr(0,7)=="http://")
+			showStr=newURL.substr(7,checkStr.length-7);
+		if(newURL.substr(0,8)=="https://")
+			showStr=newURL.substr(8,checkStr.length-8);
+	}
+	
+	var isAllow = f.URLAllow.value;
+	if (isAllow == 1){
+		allow_deny = "<%:Allow%>"
+	}else{
+		allow_deny = "<%:Denial%>"
+	}
+	var newRow = "<tr name=\"ruleData\">";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"2\">" + dataNum + "</td>";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"2\">" + showStr + "</td>";
+	newRow += "<td class=\"table2\" align=\"center\"><font size=\"2\">" + allow_deny + "</td>";
+	newRow += "<td align=\"center\" class=\"table2\"><input type=\"checkbox\" name=\"select\" value=\"" + dataNum + "\"/></td>";
+	newRow += "<td style=\"display:none\">" + isAllow + "</td>";
+	newRow += "</tr>";
+	$("#ruleTable tr:last").after(newRow)
+	$("#listDataNum").val(dataNum);
+
+	f.URLB.value = "";
+	ruleDataChange();
+	return true;
+}
+
+function goToApply() {
+	var f = document.formBSURLBEnabled;
+	var dataCnt = 0;
+	var url_str = "";
+	var url_acpt ="";
+	var dataStr = "";
+	
+	$("#ruleTable tr[name='ruleData']").each(function(){
+		url_str = $(this).find("td:eq(1) font").html().replace(/ /g, "");
+		url_acpt = $(this).find("td:eq(4)").html().replace(/ /g, "");
+		if ( dataStr != "" )
+			dataStr += ">";
+			
+		dataStr += url_str + "," + url_acpt;
+		dataCnt++;
+	});
+
+	if ( dataCnt > 20 ) {
+		alert("<%:You can not add.%>");
+		return false;
+	}
+
+	$("#urlfilter_RuleDataStr").val(dataStr);
+	if (f.enable_url_filter.checked) {
+		f.enableURLfilter.value = 1;
+	} else {
+		f.enableURLfilter.value = 0;
+	}
+	//MBA Sean, show the waiting page & hide the original content
+	document.getElementById("top_menu").style.display = 'none';
+	document.getElementById("content").style.display = 'none';
+	document.getElementById("waiting").style.display = 'block';
+	//MBA Sean, start to countdown.
+	waiting();
+
+	//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+	$.ajax({
+		type:"POST",
+		url: url,
+		data: $("#content_send").serialize(),// serializes the form's elements.
+	});
+	
+	return false;
+}
+
+function clearTextbox(){
+	var f = document.formBSURLBEnabled;
+	f.URLB.value="";
+}
+
+function clearSelect(){
+	$("input[name='select']").prop("checked", false);
+}
+
+function frmLoad(){
+	var f = document.formBSURLBEnabled;
+	ruleDataChange();
+	<% local enableURLfilter = uci.get("siteblock", "urlfilter", "enabled")
+		if(enableURLfilter == "1") then%>
+		f.enableURLfilter.value = 1;
+		f.enable_url_filter.checked = true;
+	<%else%>
+		f.enableURLfilter.value = 0;
+		f.enable_url_filter.checked = false;
+	<%end%>
+}
+
+</script>
+
+<div id="content">
+<form id="content_send" name="formBSURLBEnabled">
+<input type="hidden" name="enableURLfilter">
+<blockquote>
+<table border="0" width="90%">
+	<tbody>
+		<tr>
+			<input type="checkbox" name="enable_url_filter">&nbsp;&nbsp;<%:Use the URL filter%></b><br>
+		</tr>
+		<tr>
+			<td width="15%" class="background" style="text-align:left"><%:URL%>:</td>
+			<td width="85%">&nbsp;
+				<input type="text" name="URLB" size="32" maxlength="32">
+				<select name="URLAllow" id="URLAllow">
+					<option value="1" selected="selected"><%:Allow%></option>
+					<option value="0"><%:Denial%></option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<p>
+					<input type="button" value="<%:Add%>" name="addURLB" onClick="return addClick()"/>&nbsp;&nbsp;
+					<input type="button" value="<%:Reset%>" name="reset" onClick="return clearTextbox();"/>
+				</p>
+			</td>
+		</tr>
+	</tbody>
+</table>
+<br>
+<table border="0" width="500" id="ruleTable">
+	<tbody>
+		<tr>
+			<td colspan="4"><b><%:Filter List%>:</b></td>
+		</tr>
+		<tr>
+			<td width="10%" class="background" style="text-align:center"><%:NO.%></td>
+			<td width="60%" class="background" style="text-align:center"><%:URL%></td>
+			<td width="15%" class="background" style="text-align:center"><%:URL Status%></td>
+			<td width="15%" class="background" style="text-align:center"><%:URL Select%></td>
+		</tr>
+			<%
+				local cnt = 0
+				uci.foreach("siteblock", "urlfilter_rule",
+				function(s)
+						cnt = cnt + 1
+						print("<tr name=\"ruleData\">");
+						print("<td class=\"table2\" align=\"center\"><font size=\"2\">" .. cnt .. "</td>")
+						print("<td class=\"table2\" align=\"center\"><font size=\"2\">" .. s.url .. "</td>")
+						if (s.accept == "1") then
+							print("<td class=\"table2\" align=\"center\"><font size=\"2\"><span name=\"allow_content\"></span></td>")
+						else
+							print("<td class=\"table2\" align=\"center\"><font size=\"2\"><span name=\"deny_content\"></span></td>")
+						end
+						print("<td align=\"center\" class=\"table2\"><input type=\"checkbox\" name=\"select\" value=\"" .. cnt .. "\"/></td>")
+						print("<td style=\"display:none\">" .. s.accept .. "</td>")
+						print("</tr>")
+				end)
+			%>
+				<script type="text/javascript">
+					$("span[name='allow_content']").html("<%:Allow%>");
+					$("span[name='deny_content']").html("<%:Denial%>");
+				</script>
+	</tbody>
+</table>
+<br/>
+<input type="hidden" id="listDataNum" value="<%=cnt%>">
+<input type="button" value="<%:Delete selected%>" name="deleteSelURLB" onClick="deleteSelClick()" />&nbsp;&nbsp;
+<input type="button" value="<%:Delete all%>" name="deleteAllURLB" onClick="deleteAllClick()" />&nbsp;&nbsp;&nbsp;
+<input type="button" value="<%:Reset%>" name="reset" onclick="return clearSelect();" />
+<table width="300" border="0" cellspacing="0" cellpadding="0" align="right">
+	<tr>
+		<td align="right">
+			<input type="submit" value="<%:Apply%>" onClick="return goToApply()" width="105" height="30" border="0"/>
+			<input type="reset" value="<%:Cancel%>" onclick="window.location.reload()"/>
+			<input type="hidden" value="" id="urlfilter_RuleDataStr" name="urlfilter_RuleDataStr"/>
+			<input type="hidden" value="" id="acpt" name="acpt" value=""/>
+			<input type="hidden" value="1" name="isApply"/>
+		</td>
+	</tr>
+	
+</table>
+</blockquote>
+</form> 
+</div>
+
+<%+footer%>

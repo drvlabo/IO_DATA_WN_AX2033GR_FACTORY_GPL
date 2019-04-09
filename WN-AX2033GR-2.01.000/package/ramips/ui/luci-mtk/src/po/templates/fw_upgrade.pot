@@ -1,0 +1,41 @@
+msgid "Firmware_Upgrade"
+msgstr ""
+
+msgid "do_fw_upgrade"
+msgstr ""
+
+msgid "file_path"
+msgstr ""
+
+msgid "file_upload"
+msgstr ""
+
+msgid "fw_file_check"
+msgstr ""
+
+msgid "fw_remind1"
+msgstr ""
+
+msgid "fw_remind2"
+msgstr ""
+
+msgid "fw_remind3"
+msgstr ""
+
+msgid "fw_remind4"
+msgstr ""
+
+msgid "fw_remind5"
+msgstr ""
+
+msgid "fw_upgrade"
+msgstr ""
+
+msgid "fw_upgrading"
+msgstr ""
+
+msgid "fw_upgrading_message"
+msgstr ""
+
+msgid "seconds"
+msgstr ""

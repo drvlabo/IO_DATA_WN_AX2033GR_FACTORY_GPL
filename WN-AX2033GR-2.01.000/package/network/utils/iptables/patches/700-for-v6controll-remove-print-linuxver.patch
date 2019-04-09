@@ -1,0 +1,18 @@
+Index: iptables-1.4.21/extensions/libipt_SNAT.c
+===================================================================
+--- iptables-1.4.21.org/extensions/libipt_SNAT.c	2013-11-22 19:18:13.000000000 +0800
++++ iptables-1.4.21/extensions/libipt_SNAT.c	2017-07-24 18:00:09.777297600 +0800
+@@ -169,9 +169,13 @@
+ 		if (cb->xflags & F_X_TO_SRC) {
+ 			if (!kernel_version)
+ 				get_kernel_version();
++//Remove for support customized IPv4 over IPv6
++/*
+ 			if (kernel_version > LINUX_VERSION(2, 6, 10))
+ 				xtables_error(PARAMETER_PROBLEM,
+ 					   "SNAT: Multiple --to-source not supported");
++*/
++//End remove
+ 		}
+ 		*cb->target = parse_to(cb->arg, portok, info);
+ 		cb->xflags |= F_X_TO_SRC;

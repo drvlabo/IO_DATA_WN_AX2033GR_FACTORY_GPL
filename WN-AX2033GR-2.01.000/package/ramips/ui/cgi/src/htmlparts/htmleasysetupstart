@@ -1,0 +1,22 @@
+<form name="easysetup" method="POST" action="/cgi-bin/sec/easysetup.cgi">
+<table width="100%" height="97%" border="0" cellpadding="1" cellspacing="1">
+<tbody><tr>
+	<td align="center" valign="center">
+		<table width="500" border="1" align="center" cellpadding="5" cellspacing="0">
+		<tbody><tr>
+		<td align="left">
+		インターネット接続を自動的に判定します。<br>[かんたん接続]ボタンをクリックしてください。
+		<br><br><br><br><br><br>
+		</td>
+		</tr>
+		<tr>
+		<td align="center">
+		<input type="hidden" name="ottforcsrf">
+		<input type="submit" name="EasySetupStart" value="かんたん接続"">
+		</td>
+		</tr></tbody>
+		</table>
+	</td>
+</tr></tbody>
+</table>
+</form>

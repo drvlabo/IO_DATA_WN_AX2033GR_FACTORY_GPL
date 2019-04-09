@@ -1,0 +1,209 @@
+<%+header%>
+
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+
+<script type="text/javascript">
+var url ="<%=controller%>/content/net_filtering/block_log"; //current page url
+
+var categoryMap = {
+	"101"	: "<%:Acts that seems to be illegal%>",
+	"102"	: "<%:Infringement of copyright and trademark rights%>",
+	"201"	: "<%:Drug that seems to be illegal%>",
+	"202"	: "<%:Inappropriate drug use%>",
+	"313"	: "<%:Suicide attractant%>",
+	"601"	: "<%:Encounter%>",
+	"602"	: "<%:Encounter%>",
+	"301"	: "<%:Violence organizations and cult%>",
+	"302"	: "<%:Violence organizations and cult%>",
+	"314"	: "<%:Violence organizations and cult%>",
+	"1801"	: "<%:Grotesque Shocking%>",
+	"401"	: "<%:sexual act%>",
+	"402"	: "<%:Nude semi-nude%>",
+	"403"	: "<%:Sexual mores%>",
+	"404"	: "<%:Adult Search and Links%>",
+	"405"	: "<%:Fetishism%>",
+	"406"	: "<%:Sexual expression by sentence%>",
+	"315"	: "<%:Back information%>",
+	"501"	: "<%:Cracking%>",
+	"502"	: "<%:Malicious code distribution%>",
+	"503"	: "<%:Phishing, one-click fraud%>",
+	"1103"	: "<%:Web translation%>",
+	"1102"	: "<%:Searching cache%>",
+	"1101"	: "<%:Proxy%>",
+	"1201"	: "<%:Lack of consideration for the use of children, adult subject%>",
+	"1202"	: "<%:Lack of consideration for the use of children, adult subject%>",
+	"1301"	: "<%:Lack of consideration for the use of children, adult subject%>",
+	"1302"	: "<%:Lack of consideration for the use of children, adult subject%>",
+	"1303"	: "<%:Lack of consideration for the use of children, adult subject%>",
+	"1501"	: "<%:Lack of consideration for the use of children, adult subject%>",
+	"1601"	: "<%:Lack of consideration for the use of children, adult subject%>",
+	"1211"	: "<%:Consideration level 1 to the use of children%>",
+	"1212"	: "<%:Consideration level 1 to the use of children%>",
+	"1311"	: "<%:Consideration level 1 to the use of children%>",
+	"1312"	: "<%:Consideration level 1 to the use of children%>",
+	"1313"	: "<%:Consideration level 1 to the use of children%>",
+	"1511"	: "<%:Consideration level 1 to the use of children%>",
+	"1611"	: "<%:Consideration level 1 to the use of children%>",
+	"1221"	: "<%:Consideration level 2 to the use of children%>",
+	"1222"	: "<%:Consideration level 2 to the use of children%>",
+	"1321"	: "<%:Consideration level 2 to the use of children%>",
+	"1322"	: "<%:Consideration level 2 to the use of children%>",
+	"1323"	: "<%:Consideration level 2 to the use of children%>",
+	"1521"	: "<%:Consideration level 2 to the use of children%>",
+	"1621"	: "<%:Consideration level 2 to the use of children%>",
+	"1231"	: "<%:Consideration level 3 to the use of children%>",
+	"1232"	: "<%:Consideration level 3 to the use of children%>",
+	"1331"	: "<%:Consideration level 3 to the use of children%>",
+	"1332"	: "<%:Consideration level 3 to the use of children%>",
+	"1333"	: "<%:Consideration level 3 to the use of children%>",
+	"1531"	: "<%:Consideration level 3 to the use of children%>",
+	"1631"	: "<%:Consideration level 3 to the use of children%>",
+	"801"	: "<%:Gamble lottery%>",
+	"802"	: "<%:Gamble lottery%>",
+	"2003"	: "<%:Drinking%>",
+	"2002"	: "<%:Smoking%>",
+	"2004"	: "<%:Alcohol product%>",
+	"2001"	: "<%:Adult entertainment%>",
+	"2005"	: "<%:Adult entertainment%>",
+	"2101"	: "<%:Adult entertainment%>",
+	"303"	: "<%:Extreme claims%>",
+	"305"	: "<%:Extreme claims%>",
+	"1001"	: "<%:Auction Online Shopping%>",
+	"1002"	: "<%:Auction Online Shopping%>",
+	"1005"	: "<%:Auction Online Shopping%>",
+	"1703"	: "<%:Sweepstakes Vice revenue%>",
+	"1901"	: "<%:Sweepstakes Vice revenue%>",
+	"901"	: "<%:Game%>",
+	"902"	: "<%:Game%>",
+	"1404"	: "<%:Animation%>",
+	"2501"	: "<%:musics%>",
+	"2502"	: "<%:Fortune-telling%>",
+	"2503"	: "<%:Talent entertainer%>",
+	"2505"	: "<%:General entertainment%>",
+	"2301"	: "<%:Professional sports%>",
+	"0" 	: ""
+};
+
+function btnClean()
+{
+	/*MSTC MBA Sean, put csrf token in the input field*/
+	var f = document.sysLog;
+
+	if( f.csrf_token == undefined ) {
+		var input = document.createElement('input');
+		input.type = 'hidden';
+		input.name = 'csrf_token';
+		input.id = 'csrf_token'
+		input.value = csrf_token;
+		f.appendChild(input);
+	} else {
+		f.csrf_token.value = csrf_token;
+	}
+
+	$("input[name='isClean']").val(1);
+
+    $("#content_send").submit();
+
+	setTimeout( function () {
+		location.href = url;
+	}, 1000);
+
+	return false;
+}
+
+function categoryTransfer(){
+	$("#logList td[name='categoryId']").each(function(){
+		var i = $(this).html();
+		if ( parseInt(i, 10) == -1 ) {
+			$(this).html("<%:URL filter%>");
+		}
+		else {
+			if ( categoryMap[i] ) {
+				$(this).html(categoryMap[i]);
+			}
+		}
+	});
+}
+
+function frmLoad(){
+	//MSTC MBA, Sean, if old cookie exist, remove it
+	document.cookie = 'file_loading=; Max-Age=0';
+	categoryTransfer();
+}
+
+</script>
+<div id="content">
+<form id="content_send" name="sysLog" method="POST">
+<blockquote>
+<table border="0" width="90%">
+	<tbody>
+		<tr align="left">
+			<td width="100%">
+				<%:Display the log.%>
+			</td>
+		</tr>
+		<tr align="left">
+			<td width="100%">
+				<table border="1" cellpadding="0" cellspacing="0" width="630">
+					<tr>
+						<td>
+							<div style="overflow: auto; width: 100%; height: 250px">
+								<table id="logList" border="0" width="600" cellspacing="4" cellpadding="0" style="table-layout:fixed;word-break:break-all;word-wrap:break-word;">
+									<tr>
+										<td width="25%" style="word-wrap:break-word;">
+											<%:date%>
+										</td>
+										<td width="40%" style="word-wrap:break-word;">
+											<%:URL%>
+										</td>
+										<td width="15%" style="word-wrap:break-word;">
+											<%:IP Address%>
+										</td>
+										<td style="word-wrap:break-word;" >
+											<%:category%>
+										</td>
+									</tr>
+									<%
+										local sys  = require "luci.sys"
+
+										local rfile=io.open("/tmp/siteblock/blocklog.log", "r")
+										if rfile~=nil then
+											for str in rfile:lines() do
+												if string.len(str) ~= 0 then
+													for iDate, iUrl, iAddr, iCate in string.gmatch(str, "(.+)#(.+)#(%d+.%d+.%d+.%d+)#(.+)") do
+														print("<tr>")
+														print("<td>" .. iDate .. "</td>")
+														print("<td>" .. iUrl .. "</td>")
+														print("<td>" .. iAddr .. "</td>")
+														print("<td name=\"categoryId\">" .. iCate .. "</td>")
+														print("</tr>")
+													end
+												end
+											end
+											rfile:close()
+										end
+									%>
+								</table>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		<tr align="right">
+			<td width="100%">
+				&nbsp;
+			</td>
+		</tr>
+		<tr align="right">
+			<td width="100%">
+				<input type="button" value="<%:Clean%>" onClick="return btnClean()"/>
+				<input type="hidden" value="0" name="isClean"/>
+			</td>
+		</tr>
+	</tbody>
+</table>
+</blockquote>
+</form>
+</div>
+<%+footer%>

@@ -1,0 +1,520 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: header.htm 4891 2009-06-22 10:23:21Z jow $
+
+-%>
+<%
+require "luci.sys"
+require("luci.i18n").loadc("default")
+local i18n = require("luci.i18n")
+require("luci.http").prepare_content("text/html")
+local uci = require("luci.model.uci").cursor()
+local sys = require("luci.sys")
+local lang = uci:get("luci","main","lang")
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+-%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"  />
+<title>.::Welcome to the Web-Based Configurator::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<style>
+.on {display:on}
+.off {display:none}
+</style>
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script type="text/javascript" src="<%=media%>/js/jquery-1.6.2.min.js" ></script>
+<script type="text/javascript" src="<%=media%>/js/jquery.blockUI.js" ></script>
+<script language="javascript">
+
+var CardStatus = '<%=--MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+					 --uci.get_t("runtime","device_status","sim_status")
+				  %>';
+var PINState = '<%=--MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+                   --uci.get_t("runtime","device_status","pin_state")
+				%>';
+var SIMCardStatus = 'N/A';
+var PINreaminAttempts = '<%=--MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+                            --uci.get_t("runtime","device_status","pin_retries")
+						%>';
+var PUKreaminAttempts = '<%=--MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+                            --uci.get_t("runtime","device_status","puk_retries")
+						%>';
+SIMStatusMap();
+
+$(function(){
+	if( SIMCardStatus == "SIM_PIN_DISABLE" ){ /*PIN disabled*/
+		showEnableDisable(1); showInputPIN(0);
+		showModifyPIN(0);
+		showPUK(0);
+		showNewPIN(0);
+		showPINRemaining(0);
+		showPUKRemaining(0);	
+	}
+	else if( SIMCardStatus == "CELL_DEVST_SIM_PIN" ){ /*PIN required*/
+		showEnableDisable(0); showInputPIN(1);
+		showModifyPIN(0);
+		showPUK(0);
+		showNewPIN(0);
+		showPINRemaining(1);
+		showPUKRemaining(0);	
+	}
+	else if( SIMCardStatus == "CELL_DEVST_SIM_RDY" ) { /*PIN verified*/
+		showEnableDisable(1);	enableClick();
+		showModifyPIN(1);
+		showPUK(0);
+		showNewPIN(1);
+		showPINRemaining(1);
+		showPUKRemaining(0);
+		enableModificationClick();
+	}
+	else if( SIMCardStatus == "CELL_DEVST_SIM_PUK" ) { /*PIN locked*/
+		showEnableDisable(0);	showInputPIN(0);
+		showModifyPIN(0);
+		showPUK(1);
+		showNewPIN(1);
+		showPINRemaining(0);
+		showPUKRemaining(1);	
+	}
+	else{ /* No SIM Card or SIM Locked or Unknown state */
+		$('#hideAll').hide();
+		showButton(0);
+	}
+	document.getElementById("sim_status").value = SIMCardStatus;	
+});
+
+function SIMStatusMap()
+{
+	if(CardStatus == "Present"){
+		if(PINState == "Disabled"){
+			SIMCardStatus = "SIM_PIN_DISABLE";
+		}else if(PINState == "Enabled and not verified"){
+			SIMCardStatus = "CELL_DEVST_SIM_PIN";
+		}else if(PINState == "Enabled and verified"){
+			SIMCardStatus = "CELL_DEVST_SIM_RDY";
+		}else if(PINState == "Blocked"){
+			SIMCardStatus = "CELL_DEVST_SIM_PUK";
+		}else{
+			SIMCardStatus = "ERROR";
+		}
+	}else{
+		SIMCardStatus = "SIM_NOT_PRESENT"
+	}
+}
+
+function IsNumeric(sText)
+{
+   var ValidChars = "0123456789";
+   var IsNumber=true;
+   var Char;
+
+   for (i = 0; i < sText.length && IsNumber == true; i++)
+      {
+      Char = sText.charAt(i);
+      if (ValidChars.indexOf(Char) == -1)
+         {
+                IsNumber = false;
+         }
+      }
+   return IsNumber;
+}
+
+function chkLength(sText, type) {
+	if (type == "PUK" && sText.length != 8){
+		alert("<%:LengthErrMsgPUK%>");
+		return false;
+	}else if (type != "PUK" && ( sText.length < 4 || sText.length > 8 )){
+		alert("<%:LengthErrMsgPIN%>");
+		return false;
+	}
+	return true;
+}
+
+function chkNumeric(text, type) {
+	if(IsNumeric(text.value) == false) {
+		alert("<%:MLG_ThePINIsInvalidErrMsg_LTEWan%>");
+		text.value = "";
+		return false;
+	}
+
+	if (chkLength(text.value, type) == false) {
+		text.value = "";
+		return false;
+	}
+}
+
+
+function chkNumeric2(text) {
+	if(IsNumeric(text.value) == false) {
+		alert("<%:MLG_ThePINIsInvalidErrMsg_LTEWan%>");
+		text.value = "";
+		return;
+	}
+	
+	if (document.lteSIMForm.lteConfirmNewPin.value != document.lteSIMForm.lteNewPin.value){
+		alert("<%:MLG_MLG_YouCanTryOnMoreTimeNewPINConfirmErrMsg_LTEWan%>");
+		document.lteSIMForm.lteOldPin.value="";
+		document.lteSIMForm.lteConfirmNewPin.value="";
+		document.lteSIMForm.lteNewPin.value="";
+	}
+}
+
+
+function submit_apply() {
+	if (SIMCardStatus == "SIM_PIN_DISABLE"){
+		if (document.getElementById("enablePIN").checked == true){
+			if (document.getElementById("ltePin").value == ""){
+				alert("<%:MLG_ThePINIsEmptyErrMsg_LTEWan%>");
+				return false;
+			}
+		}
+	}else if (SIMCardStatus == "CELL_DEVST_SIM_PIN"){
+		if (document.getElementById("ltePin").value == ""){
+			alert("<%:MLG_ThePINIsEmptyErrMsg_LTEWan%>");
+			return false;
+		}
+	}else if (SIMCardStatus == "CELL_DEVST_SIM_RDY"){
+		if (document.getElementById("disablePIN").checked == true){
+			if (document.getElementById("ltePin").value == ""){
+				alert("<%:MLG_ThePINIsEmptyErrMsg_LTEWan%>");
+				return false;
+			}
+		}else{
+			if (document.getElementById("lteModification").checked == true){
+				if (document.getElementById("lteOldPin").value == "" || document.getElementById("lteNewPin").value == ""){
+					alert("<%:MLG_ThePINIsEmptyErrMsg_LTEWan%>");
+					return false;
+				}
+			}
+		}
+	}else if (SIMCardStatus =="CELL_DEVST_SIM_PUK"){
+		if (document.getElementById("ltePuk").value == "" || document.getElementById("lteNewPin").value == ""){
+			alert("<%:MLG_ThePINIsEmptyErrMsg_LTEWan%>");
+			return false;
+		}
+	}
+
+	with ( document.lteSIMForm ) {
+
+		if( PINreaminAttempts == 1) {
+			if(false == confirm("<%:MLG_YouCanTryOnMoreTimePINErrMsg_LTEWan%>"))	return false;	
+		}
+
+		if( PUKreaminAttempts == 1 ) {
+			if(false == confirm("<%:MLG_YouCanTryOnMoreTimePUKErrMsg_LTEWan%>"))	return false;	
+		}
+		
+		var data = {
+			sysSubmit: "Apply",
+			ltePin: ltePin.value,
+			ltePuk: ltePuk.value,
+			lteOldPin: lteOldPin.value,
+			lteNewPin: lteNewPin.value,
+			lteConfirmNewPin: lteConfirmNewPin.value
+		}
+
+		if (document.getElementById("enablePIN").checked == true)
+			data.enablePIN = 1;
+		else
+			data.enablePIN = 0;
+
+		if (document.getElementById("lteModification").checked == true)
+			data.lteModification = 1;
+		else
+			data.lteModification = 0;
+				
+		var callback = function(responseData, textStatus) {
+			$("#contentPanel").html(responseData);
+			$.closeLoadingMask(1);
+		};
+/*		
+		var url = action;
+		$.openLoadingMask(1);
+		$.post(url,data, callback, "htm");	
+*/		
+	}
+	openwaitblock(1);	
+	showWebMessage( 1 , "<%:Message%>" , "<%:msg_config%>" );
+}
+function showEnableDisable(enable) {
+	if(enable == 1)
+		$('#hideSIM').show();
+	else
+		$('#hideSIM').hide();
+}
+function showPINRemaining(enable) {
+	if(enable == 1)
+		$('#hidePINRemaining').show();
+	else
+		$('#hidePINRemaining').hide();
+}
+function showPUKRemaining(enable) {
+	if(enable == 1)
+		$('#hidePUKRemaining').show();
+	else
+		$('#hidePUKRemaining').hide();
+}
+function showModifyPIN(enable) {
+	if(enable == 1){
+		$('#hideModifyPIN').show();
+		$('#hideOldPIN').show();
+	}else{
+		$('#hideModifyPIN').hide();
+		$('#hideOldPIN').hide();
+	}
+}
+function showPUK(enable) {		
+	if(enable == 1)
+		$('#hidePUK').show();
+	else
+		$('#hidePUK').hide();
+}
+function showNewPIN(enable) {
+	if(enable == 1)
+		$('#hideNewPIN').show();
+	else
+		$('#hideNewPIN').hide();
+}
+function showInputPIN(enable) {
+	if(enable == 1)
+		$('#hideInputPIN').show();
+	else
+		$('#hideInputPIN').hide();
+}
+function showButton(enable) {
+	if(enable == 1)
+		$('#hideButton').show();
+	else
+		$('#hideButton').hide();
+}
+function enableClick(enable) {
+
+	if( SIMCardStatus == "SIM_PIN_DISABLE" ){	/* PIN_DISABLE */
+		if(document.getElementById("enablePIN").checked == true) {
+			showInputPIN(1);
+			showPINRemaining(1);
+		}
+		else{
+			showInputPIN(0);
+			showPINRemaining(0);
+		}
+	}
+	else if( SIMCardStatus == "CELL_DEVST_SIM_RDY" ){	/* PIN_VERIFIED */
+		if(document.getElementById("enablePIN").checked == true) {
+			showInputPIN(0);
+			showModifyPIN(1);
+			showNewPIN(1);
+			showPINRemaining(1);
+		}
+		else{
+			showInputPIN(1);
+			showModifyPIN(0);
+			showPUK(0);
+			showNewPIN(0);
+			showPINRemaining(1);
+		}
+	}
+
+}
+
+function enableModificationClick() {
+
+	if(document.getElementById("lteModification").checked == true){
+			document.getElementById("lteOldPin").disabled = false;
+			document.getElementById("lteNewPin").disabled = false;
+			document.getElementById("lteConfirmNewPin").disabled = false;
+	}
+	else{
+			document.getElementById("lteOldPin").disabled = true;
+			document.getElementById("lteNewPin").disabled = true;
+			document.getElementById("lteConfirmNewPin").disabled = true;
+	}
+}
+
+function path_msg_init(){
+	showFullPath(' <%:LTE%> > <%:SIM%>');
+	showWebMessage( 0, "<%:Message%>", "<%:Ready%>");
+}
+</script>
+</head>
+<body onload="path_msg_init();closewaitblock();">
+<form onSubmit="return submit_apply()" method="post" name="lteSIMForm" id="lteSIMForm" action="<%=controller%>/expert/configuration/lte/sim">
+<div id="tabs" style="word-break:break-all;(">
+  <ul>
+    <li class="hightline"><a title="<%:SIM%>"><span><%:SIM%></span></a></li>
+  </ul>
+  <br class="clearfloat" />
+</div>
+
+<div id="table">
+  <ul>
+    <li class="table_top"></li>
+    <li class="table_content">
+      <div class="data">
+        <ul>
+          <div class="w_text">
+            <ul>
+			  <li class="title">
+				<%:MLG_PIN_Management_LTEWan%>
+			  </li>
+			</ul>
+		</div>
+
+<div>
+	<div class="w_text">		
+		<ul>
+			<li class="left_table"><%:MLG_SIMCard_Status_LTEWan%></li>
+			<% --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+			   --local sim_status_Value = uci.get_t("runtime","device_status","sim_status")
+			   --local pin_state_Value = uci.get_t("runtime","device_status","pin_state")
+			   local show_SIMCard_Status = 0
+				
+				if sim_status_Value == "Present" then
+					if pin_state_Value == "Disabled" then
+						show_SIMCard_Status = i18n.translate("MLG_PIN_DISABLE")  
+					elseif pin_state_Value == "Enabled and not verified" then
+						show_SIMCard_Status = i18n.translate("MLG_PIN_REQUIRED")  
+					elseif pin_state_Value == "Enabled and verified" then
+						show_SIMCard_Status = i18n.translate("MLG_PIN_VERIFIED")  
+					elseif pin_state_Value == "Blocked" then
+						show_SIMCard_Status = i18n.translate("MLG_PIN_LOCKED")  
+					else 
+						show_SIMCard_Status = i18n.translate("Error")  
+					end
+				else
+					show_SIMCard_Status = i18n.translate("MLG_NOT_PRESENT")  
+				end
+			%>
+			<li class="right_table"><%=show_SIMCard_Status%>
+				<input name="sim_status" id="sim_status" maxlength="32" size="32" type="hidden" >
+			</li>
+		</ul>
+	</div>
+	  
+	<div id="hideAll">
+	  <div class="w_text" style="display:none;" id="hideSIM">
+		<ul>
+			<li class="left_table"><%:MLG_PIN_Verification_LTEWan%></li>
+			<% 
+			   local MLG_PIN_EnableText = 0
+
+				if pin_state_Value == "Disabled" then 
+					MLG_PIN_EnableText = "0"
+				elseif pin_state_Value == "Enabled and verified" then
+					MLG_PIN_EnableText = "1"
+				end 
+			%>
+			<li class="right_table"id="pin_switch">
+				<input name="enablePIN" id="enablePIN" type="radio" value="1" <%if MLG_PIN_EnableText == "1" then%> checked = "CHECKED" <%end%> onClick="enableClick();"/>
+				<%:enable%>
+				<input name="enablePIN" id="disablePIN" type="radio" value="0" <%if MLG_PIN_EnableText == "0" then%> checked = "CHECKED" <%end%> onClick="enableClick();"/>
+				<%:disable%>
+            </li>
+	    </ul>
+	  </div>
+
+	  <div class="w_text" style="display:none;" id="hideInputPIN">
+		<ul>
+		  <li class="left_table"><%:MLG_PIN_InputPIN_LTEWan%></li>
+		  <li class="right_table">
+			<input type="password" name="ltePin" id="ltePin" maxlength="16" size="32" onblur="chkNumeric(this)"/>
+		  </li>
+		</ul>
+	  </div>
+
+	  <div class="w_text" style="display:none;" id="hidePUK">
+		<ul>
+		  <li class="left_table"><%:MLG_PUK_LTEWan%></li>
+		  <li class="right_table">
+			<input type="password" name="ltePuk" id="ltePuk" maxlength="16" size="32" onblur="chkNumeric(this,'PUK')"/>
+		  </li>
+		</ul>
+	  </div>
+	  	  
+	  <div class="w_text" style="display:none;" id="hideModifyPIN">
+		<ul>
+		  <li class="left_table"><%:MLG_PIN_Modification_LTEWan%></li>
+		  <li class="right_table">
+			<input type="checkbox" name="lteModification" id="lteModification" value="1" onClick="enableModificationClick();"/> 
+		  </li>
+		</ul>
+	  </div>
+	  
+	  <div class="w_text" style="display:none;" id="hideOldPIN">
+		<ul>
+		  <li class="left_table"><%:MLG_PIN_Old_PIN_LTEWan%></li>
+		  <li class="right_table">
+			<input type="password" name="lteOldPin" id="lteOldPin" maxlength="16" size="32" onblur="chkNumeric(this)"/>
+		  </li>
+		</ul>
+	  </div>
+	  
+	  <div class="w_text" style="display:none;" id="hideNewPIN">
+		<ul>
+		  <li class="left_table"><%:MLG_PIN_New_PIN_LTEWan%></li>
+		  <li class="right_table">
+			<input type="password" name="lteNewPin" id="lteNewPin" maxlength="16" size="32" onblur="chkNumeric(this)"/>
+		  </li>
+		</ul>
+		
+		<ul>
+		  <li class="left_table"><%:MLG_PIN_Confirm_New_PIN_LTEWan%></li>
+		  <li class="right_table">
+			<input type="password" name="lteConfirmNewPin" id="lteConfirmNewPin" maxlength="16" size="32" onblur="chkNumeric2(this)"/>
+		  </li>
+		</ul>
+	  </div>
+	  
+	  <div class="w_text" style="display:none;" id="hidePINRemaining">
+		<ul>
+			<li class="left_table"><%:MLG_PINRemainAttempts_LTEWan%></li>
+			<% --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+			   --local MLG_PINRemaining_Value = uci.get_t("runtime","device_status","pin_retries")
+			%>
+			<% if not MLG_PINRemaining_Value then MLG_PINRemaining_Value="N/A" end %>
+			<li class="right_table"><%=MLG_PINRemaining_Value%></li>
+		</ul>
+	  </div>
+	  
+	  <div class="w_text" style="display:none;" id="hidePUKRemaining">
+		<ul>
+			<li class="left_table"><%:MLG_PUKRemainAttempts_LTEWan%></li>
+			<% --MSTC MBA SW Sean, 20160113, the original openwrt dont have get_t function, we mark it anyway
+			   --local MLG_PUKRemaining_Value = uci.get_t("runtime","device_status","puk_retries")
+			%>
+			<% if not MLG_PUKRemaining_Value then MLG_PUKRemaining_Value="N/A" end %>
+			<li class="right_table"><%=MLG_PUKRemaining_Value%></li>
+		</ul>
+	  </div>
+	</div>
+</div>	  
+
+      <div class="spaceair"></div>    
+	  </ul>				
+     </div>
+    </li>
+    <li class="table_button"> 
+      <div class="button" align="center">
+        <input name="sysSubmit" value="<%:apply%>" type="submit" />
+        &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+        <input name="Cancel" value="<%:cancel%>" type="button" onclick="window.location.href=window.location.href" /> 
+      </div> 
+    </li>
+  </ul>
+</div>	
+
+</form>
+</body>
+</html>

@@ -1,0 +1,53 @@
+msgid "APN"
+msgstr "APN"
+
+msgid "APN_Error_1"
+msgstr "Only contain printable ascii characters except + , # & ? ; \\\" \\\\"
+
+msgid "APN_Error_2"
+msgstr "Only contain printable ascii characters except: space, + , # & ? ; \\\" \\\\"
+
+msgid "Auto_APN_Description"
+msgstr "If APN is blank, Auto APN would be applied."
+
+msgid "Profile"
+msgstr "Profile"
+
+msgid "APN_Name"
+msgstr "APN Name"
+
+msgid "APN_Setup"
+msgstr "APN Setup"
+
+msgid "Auto_APN"
+msgstr "Auto APN"
+
+msgid "Edit"
+msgstr "Edit"
+
+msgid "IPv6_IPv4_Mode"
+msgstr "IPv6/IPv4 Mode"
+
+msgid "LAN"
+msgstr "LAN"
+
+msgid "LTE"
+msgstr "LTE"
+
+msgid "Modify"
+msgstr "Modify"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "Off"
+msgstr "Off"
+
+msgid "On"
+msgstr "On"
+
+msgid "lan_ipv6"
+msgstr "IPv6 LAN"
+
+msgid "msg_config"
+msgstr "Configuration Update is proceeding. Please Wait..."

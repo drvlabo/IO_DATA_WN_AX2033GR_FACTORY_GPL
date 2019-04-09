@@ -1,0 +1,23 @@
+msgid "Time limit"
+msgstr "Time limit"
+
+msgid "Enable Time Limit function."
+msgstr "Enable Time Limit function."
+
+msgid "Description"
+msgstr "Description"
+
+msgid "MAC address of limited device"
+msgstr "MAC address of limited device"
+
+msgid "Time that can be used"
+msgstr "Time that can be used"
+
+msgid "Parental Control List"
+msgstr "Parental Control List"
+
+msgid "Description is empty."
+msgstr "Description is empty."
+
+msgid "The end time is larger than start time."
+msgstr "The end time is larger than start time."

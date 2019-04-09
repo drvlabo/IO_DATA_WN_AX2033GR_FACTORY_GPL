@@ -1,0 +1,562 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: header.htm 4891 2009-06-22 10:23:21Z jow $
+
+-%>
+<%
+require("luci.http").prepare_content("text/html")
+local i18n = require("luci.i18n")
+local uci = require("luci.model.uci").cursor()
+local http = require("luci.http")
+-%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"  />
+<title>.::Welcome to the Web-Based Configurator::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="<%=media%>/js/jquery-1.3.1.min.js"></script>
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script type="text/javascript" src="<%=media%>/js/jquery.blockUI.js" ></script>
+<script type="text/javascript">
+//<![CDATA[
+<%
+	local http_port=uci:get("uhttpd", "main", "listen_http")
+	local config_lan_ip=uci:get("network", "lan", "ipaddr")
+	local config_lan_mask=uci:get("network", "lan", "netmask")
+%>	
+function checkIPFormat( value )
+{
+  return /^([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$/.test( value );
+}
+
+function checkNetmaskFormat( value )
+{
+  return /^255\.255\.255\.(255|252|248|240|224|192|128|0)|255\.255\.(254|252|248|240|224|192|128|0)\.0|255\.(254|252|248|240|224|192|128|0)\.0\.0|(254|252|248|240|224|192|128)\.0\.0\.0$/.test( value );
+}
+
+function FormEnterKey(e) {
+     var key;
+     if(window.event)
+          key = window.event.keyCode;
+     else
+          key = e.which;
+     return (key != 13);
+}
+
+
+function chkIP(address) { 
+        
+		var IP = address;        
+        IP = IP.replace(/ /g, "");
+        //address.value = IP;
+        var IPsplit = IP.split(".");
+        if(IPsplit.length != 4) {
+            alert("<%:LAN_Error_1%>");
+            return false;
+        }
+        //check first,and last byte is zero
+        if((IPsplit[0] == "0") || (IPsplit[3] == "0")){
+            alert("<%:LAN_Error_1%>");
+                return false;
+        }
+        for(i = 0; i < 4; i++)
+            if((isNaN(IPsplit[i])) || (IPsplit[i] == undefined) || (IPsplit[i] == "")) {
+                alert("<%:LAN_Error_1%>");
+                return false;
+        } else
+        if((parseInt(IPsplit[i], 10) > 255) || (parseInt(IPsplit[i], 10) < 0)) {
+                    alert("<%:LAN_Error_1%>");
+                    return false;
+        }
+        return true;
+        
+}
+
+function chkSubnetMask(object) {  //dedy this func is call at line 814,1246
+        var SNMask = object.value;
+        var SNMaskRanhge=[255,254,252,248,240,224,192,182,128];
+        var Valid=0;
+        SNMask = SNMask.replace(/ /g, "");
+        //address.value = SNMask;
+        var SNMaskSplit = SNMask.split(".");
+        if(SNMaskSplit.length != 4) {
+            alert("<%:LAN_Error_2%>");
+            object.value ="255.255.255.0";
+            object.focus();
+            return false;
+        }
+        for(i = 3; i >= 0; i--){
+            if(Valid==0){
+                for(j=0;j<SNMaskRanhge.length;j++){
+                    if(parseInt(SNMaskSplit[i], 10) == SNMaskRanhge[j]) {
+                        Valid=1;
+                    }
+                }
+                if((Valid==0) && (parseInt(SNMaskSplit[i], 10) != 0)) break;
+            }else{
+                if(parseInt(SNMaskSplit[i], 10) != 255)  {
+                        Valid=0;
+                        break;
+                }                
+            }
+            if(isNaN(SNMaskSplit[i])) {
+                Valid=0;
+                break;
+            }
+        }
+        if(Valid==0){
+            alert("<%:LAN_Error_2%>");
+            object.value ="255.255.255.0";
+            object.focus();
+            return false;                    
+        }
+        return true;
+}
+
+function ip2uint(ip)
+{
+	var ip_num = 0;
+	ip = ip.split(".");
+	for (var i = 0; i < 4; i++) {
+		ip_num += parseInt(ip[i]) << ((ip.length - 1 - i) * 8);
+	}
+	if (ip_num < 0) {
+		ip_num += Math.pow(2, 32);
+	}
+	return ip_num;
+}
+
+function uint2ip(ip_num)
+{
+	var ip = '';
+	for (var i = 0; i < 4; i++) {
+		ip_tmp = (ip_num & 0xff);
+		ip_num >>= 8;
+		if(i == 0) {
+			ip = ip_tmp;
+		} else {
+			ip = ip_tmp + "." + ip;
+		}
+	}
+	return ip;
+}
+
+
+function hostIDCheck(ip, lanMask)
+{
+	if ((ip2uint(ip) & (~ip2uint(lanMask))) == 0) {
+		alert("<%:LAN_Error_1%>");
+		return false;
+	}
+	if (~(ip2uint(ip) | ip2uint(lanMask)) == 0) {
+		alert("<%:LAN_Error_1%>");
+		return false;
+	}
+	return true;
+}
+
+function getLanStartIPNum(lanIp, lanMask)
+{
+	var lanStartIP = (ip2uint(lanIp) & ip2uint(lanMask)) + 1;
+	if (lanStartIP < 0) {
+		lanStartIP += Math.pow(2, 32);
+	}
+	return lanStartIP;
+}
+
+function getLanEndIPNum(lanIp, lanMask)
+{
+	var lanEndIP = (ip2uint(lanIp) | (~ip2uint(lanMask))) - 1;
+	if (lanEndIP < 0) {
+		lanEndIP += Math.pow(2, 32);
+	}
+	return lanEndIP;
+}
+
+function getDHCPStartIP(lanip)
+{
+	var IP = lanip;
+	<%local dhcp_start = uci.get("dhcp","lan","start")
+		if dhcp_start== nil then
+			dhcp_start="1"
+		end
+	%>
+    IP = IP.replace(/ /g, "");
+    var IPsplit = IP.split(".");
+	return IPsplit[0]+"."+IPsplit[1]+"."+IPsplit[2]+"."+<%=dhcp_start%>;
+
+}
+
+
+function insideLanCheck(ip, lanIp, lanMask)
+{
+	if ((ip2uint(lanIp) & ip2uint(lanMask)) ^ (ip2uint(ip) & ip2uint(lanMask))) {
+		return false;
+	}
+	return true;
+}
+
+function insideDHCPRangeCheck(ip, dhcpStartIp, dhcpEndIp)
+{
+	ip = ip2uint(ip);
+	dhcpStartIp = ip2uint(dhcpStartIp);
+	dhcpEndIp = ip2uint(dhcpEndIp);
+	if (dhcpStartIp > dhcpEndIp) {
+		var tmpIp = dhcpStartIp;
+		dhcpStartIp = dhcpEndIp;
+		dhcpEndIp = tmpIp;
+	}
+	if ((ip >= dhcpStartIp) && (ip <= dhcpEndIp)) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+function getDHCPEndIP(startip,poolsize)
+{
+		var IP = startip;        
+        IP = IP.replace(/ /g, "");
+        var IPsplit = IP.split(".");
+		ipend = parseInt(IPsplit[3], 10) + parseInt(poolsize,10) -1;
+		if (ipend < 255)
+		{
+			return IPsplit[0]+"."+IPsplit[1]+"."+IPsplit[2]+"."+ipend
+		}
+		else
+		{
+			alert("<%:DHCP_PoolSizes_Error_1%>");
+			return false;
+		}
+			
+}
+
+function chkDHCPformat()
+{
+	var lanIp = document.getElementById("ipaddr").value;
+	var lanMask = document.getElementById("netmask").value;
+	var lanStartIP = uint2ip(getLanStartIPNum(lanIp, lanMask));
+	var lanEndIP = uint2ip(getLanEndIPNum(lanIp, lanMask));
+	
+//	alert("It should be between "+lanStartIP+" and"+lanEndIP +".");
+		
+	with (document.forms[0]){
+	
+	//if (!hostIDCheck(startAdd.value, lanMask)) {
+	//	alert("Start IP Address : "+startAdd.value+" is not a valid IP address." );
+	//	return false;
+	//}
+	//if (!hostIDCheck(getDHCPEndIP(startAdd.value,poolSize.value), lanMask)) {
+	//	alert("End IP Address : "+getDHCPEndIP(startAdd.value,poolSize.value)+" is not a valid IP address." );
+	//	return false;
+	//}
+	if (!insideLanCheck(startAdd.value ,lanIp, lanMask)) {
+		alert("<%:DHCP_Error_4%>"+lanStartIP+"~"+lanEndIP);
+		return false;
+	}		
+	
+	if (!insideLanCheck(getDHCPEndIP(startAdd.value,poolSize.value), lanIp, lanMask)) {
+		alert("<%:DHCP_Error_5%>"+lanStartIP+"~"+lanEndIP);
+		return false;
+	}
+	if (insideDHCPRangeCheck(lanIp,startAdd.value, getDHCPEndIP(startAdd.value,poolSize.value))) {
+		alert("<%:DHCP_Error_6%>");
+		return false;
+	}
+	
+	return true;
+
+	}	
+}
+
+function chkPoolsize(object){
+    if(object.value==""){
+            //ShowError('##MLG_PortFormatError_JS##');
+			alert("<%:DHCP_PoolSizes_Error_2%>");
+            object.focus();
+            return false;
+    }
+    if(isNaN(object.value)){
+            //ShowError('##MLG_PortFormatError_JS##');
+			alert("<%:DHCP_PoolSizes_Error_3%>");
+            object.focus();
+            return false;
+    }
+    if( parseInt(object.value )==0){
+            //ShowError('##MLG_PortFormatError_JS##');
+			alert("<%:DHCP_PoolSizes_Error_4%>");
+            object.focus();
+            return false;
+    }
+        return true;
+}
+
+
+
+
+function DHCP_pool_change()
+{
+	with(document.lanIpCfg){
+ 		var lanStartIP = getLanStartIPNum(ipaddr.value, netmask.value);
+		var lanEndIP = getLanEndIPNum(ipaddr.value, netmask.value);
+		var lanIp = ip2uint(ipaddr.value);
+		//alert("It should be between "+uint2ip(lanStartIP)+" and"+uint2ip(lanEndIP) +".");
+		var dhcpStartIp = ip2uint(getDHCPStartIP(ipaddr.value));
+
+		var dhcpEndIp = ip2uint(getDHCPEndIP(getDHCPStartIP(ipaddr.value),poolSize.value));
+		
+		if (dhcpStartIp < lanStartIP) {
+			dhcpStartIp = lanStartIP;
+		}
+		if (dhcpEndIp < lanStartIP) {
+			dhcpEndIp = lanStartIP;
+		}
+		if (dhcpStartIp > lanEndIP) {
+			dhcpStartIp = lanEndIP;
+		}
+		if (dhcpEndIp > lanEndIP) {
+			dhcpEndIp = lanEndIP;
+		}
+		if (dhcpStartIp == dhcpEndIp) {
+			dhcpStartIp = lanStartIP;
+			dhcpEndIp = lanEndIP;
+		}
+		if ((lanIp >= dhcpStartIp) && (lanIp <= dhcpEndIp)) {
+			if ((lanIp - dhcpStartIp) > (dhcpEndIp - lanIp)) {
+				dhcpEndIp = lanIp - 1;
+			} else {
+				dhcpStartIp = lanIp + 1;
+			}
+		}
+		
+		// marco, split the IP address
+		var ipstart = uint2ip(dhcpStartIp);  
+		var ipend = uint2ip(dhcpEndIp);  
+		
+		ipstart = ipstart.replace(/ /g, "");
+		ipend = ipend.replace(/ /g, "");
+		var IPsplit_I = ipstart.split(".");
+		var IPsplit_II = ipend.split(".");	
+		var pool =(parseInt(IPsplit_II[3], 10) - parseInt(IPsplit_I[3], 10) + 1);
+		
+		document.getElementById("StartAdd").value=uint2ip(dhcpStartIp);
+		document.getElementById("poolSize").value=pool.toString();		
+	
+	}
+}
+
+
+function verifySubmitData()
+{
+	with(document.lanIpCfg){
+		if(chkIP(ipaddr.value) && chkSubnetMask(netmask) && hostIDCheck(ipaddr.value,netmask.value) && chkIP( startAdd.value ) && chkPoolsize(poolSize) && getDHCPEndIP(startAdd.value,poolSize.value)!=false && chkDHCPformat() )
+		{
+			return true;
+		}else{
+			refresh();
+		}
+		
+	}
+  return false;
+}
+function frmLoad()
+{
+	//document.getElementById("popup_wait").style.visibility='hidden';
+}
+function relogin()
+{
+	var submit_url = 'http://' + document.getElementById("ipaddr").value + ':' + '<%=http_port%>';
+	top.window.location.href = submit_url; 
+}
+
+function ValidateLANDHCP(value)
+{
+	if(value == 1)
+	{
+		document.getElementById("StartAdd").disabled = false;
+		document.getElementById("poolSize").disabled = false;
+	}
+	else if(value == 0)
+	{
+		document.getElementById("StartAdd").disabled = true;
+		document.getElementById("poolSize").disabled = true;		
+	}
+}
+
+function refresh()
+{
+		history.go(0);
+}
+
+
+function ValidateIP(address)
+{
+		var IP = address;        
+		IP = IP.replace(/ /g, "");
+		//address.value = IP;
+		var IPsplit = IP.split(".");
+		if(IPsplit.length != 4) {
+			alert("<%:LAN_Error_1%>");
+			refresh();
+			return false;
+		}
+
+		if((IPsplit[0] == "0") || (IPsplit[3] == "0")){
+			alert("<%:LAN_Error_1%>");
+				refresh();
+				return false;
+		}
+		
+		for(i = 0; i < 4; i++){
+			if((isNaN(IPsplit[i])) || (IPsplit[i] == undefined) || (IPsplit[i] == "")) {
+				alert("<%:LAN_Error_1%>");
+				refresh();
+				return false;
+			} else if((parseInt(IPsplit[i], 10) > 255) || (parseInt(IPsplit[i], 10) < 0)) {
+				alert("<%:LAN_Error_1%>");
+				refresh();
+				return false;
+			}
+		}
+		
+		DHCP_pool_change();
+		
+		return true;
+}
+
+function ValidateDHCPConfig(startAdd,poolSize)
+{
+		if(!chkIP( startAdd.value )){
+			refresh();
+			return false;
+		}
+		
+		if(!chkPoolsize(poolSize)){
+			refresh();
+			return false;
+		}
+		
+		if(getDHCPEndIP(startAdd.value,poolSize.value)==false){
+			refresh();
+			return false;
+		}
+		
+		if(!chkDHCPformat()){
+			refresh();
+			return false;
+		}		
+}
+
+	
+function ValidateSubnetMask(address){
+		chkSubnetMask(address);		
+		DHCP_pool_change();
+}	
+	
+function btnApply()
+{
+	var verifyFlag = verifySubmitData();
+	
+	var message="<%:msg_config_2%>";
+	var address=document.getElementById("ipaddr").value;
+	
+	if(verifyFlag){
+		openwaitblock(2,message.concat(address));
+	}
+		
+}
+
+function path_msg_init(){
+   showFullPath(' <%:Network%> > <%:LAN%> ');
+   showWebMessage( 0, '<%:Message%>', '<%:Ready%>' );
+}
+//]]>
+</script>
+</head>
+<body onload="frmLoad();path_msg_init();closewaitblock();">
+<div id="tabs"> 
+  <ul> 
+    <li class="hightline"><a title="<%:LAN%>"><span><%:LAN%></span></a></li>
+	<li><a href="<%=controller%>/expert/configuration/network/lan/ipv6" title="<%:lan_ipv6%>"><span><%:lan_ipv6%></span></a></li> 	
+	<!--
+    <li><a href="<%=controller%>/expert/configuration/network/lan/ipalias" title="<%:IP_Alias%>"><span><%:IP_Alias%></span></a></li> 
+	-->
+  </ul> 
+  <br class="clearfloat" /> 
+</div> 
+<!-- Tab --> 
+<div id="table"> 
+  <form onSubmit="return btnApply()" method="post" name="lanIpCfg" action="<%=controller%>/expert/configuration/network/lan"> 
+    <ul> 
+      <li class="table_top"></li> 
+      <li class="table_content"> 
+          <div class="data"> 
+			  <div class="w_text"> 
+              <ul>
+                <li class="left_table"><%:IP_Address%> :</li> 
+                <li class="right_table"> 
+				<% local ipaddr = uci:get("network", "lan", "ipaddr") %>
+                  <input name="ipaddr" id="ipaddr" maxlength="15" size="15" <%if ipaddr then%> value="<%= ipaddr %>" <%end%> onKeyPress="return FormEnterKey(event)" onchange="ValidateIP(ipaddr.value);" /> 
+                </li> 				
+              </ul> 
+              </div> 
+              <div class="w_text"> 
+                <ul> 
+                  <li class="left_table"><%:IP_Subnet_Mask%> :</li> 
+                  <li class="right_table"> 
+				 <% local netmask = uci:get("network", "lan", "netmask") %>
+                    <input name="netmask" id="netmask" maxlength="15" size="15" <%if netmask then%> value="<%= netmask %>" <%end%> onKeyPress="return FormEnterKey(event)" onchange="ValidateSubnetMask(netmask);" /> 
+					<input name="dhcpstart" id="dhcpstart" type="hidden" /> 
+					<input name="dhcpend" id="dhcpend" type="hidden" /> 
+                  </li> 
+                </ul> 
+              </div> 
+			   <div class="space"></div>
+			   
+			  <div class="w_text">
+				<ul>
+				<%local ignore = uci.get("dhcp","lan","ignore")%>
+				<li class="left_table"><%:DHCP_Server%>   :</li>
+				<li class="right_table">
+				  <input name="ssid_state" id="radio" type="radio" value="0" <%if ignore =="0" then%> checked="checked" <%end%> onclick="ValidateLANDHCP(1)"  />
+				<%:Enable%>
+				<input name="ssid_state" id="radio2" type="radio" value="1"  <%if ignore == "1" then%> checked="checked" <%end%> onclick="ValidateLANDHCP(0)"  />
+				<%:Disable%></li>				
+			  </div>
+			  
+				<%local startIp = uci.get("network","lan","ipaddr")%>
+				<%local start = uci.get("dhcp","lan","start")%>
+				<%local startIp = string.match(startIp,"(%d+.%d+.%d+.)%d+") %>
+				<%startIp = startIp .. start %>
+				<%local poolSize = uci.get("dhcp","lan","limit")%>
+				
+			  <div class="w_text"><ul><li class="left_table"><%:IP_Pool_Starting_Address%> :</li><li class="right_table"><input id="StartAdd" name="startAdd" maxlength="15" size="15" value="<%=startIp%>" onKeyPress="return FormEnterKey(event)" onchange="ValidateDHCPConfig(startAdd,poolSize);" /></li></ul></div>
+			  <div class="w_text"><ul><li class="left_table"><%:Pool_Size%> :</li><li class="right_table"><input id="poolSize" name="poolSize" maxlength="15" size="5" <%if poolSize then%>value="<%=poolSize%>" <%else%>value="32"<%end%> onKeyPress="return FormEnterKey(event)" onchange="ValidateDHCPConfig(startAdd,poolSize);" /></li></ul>
+			  </div>
+			   			   			   
+              <div class="spaceair"></div>				             
+        </div> 
+      </li> 
+        <li class="table_button"> 
+          <div class="button" align="center"> 
+            <input name="apply" value="<%:Apply%>" type="submit"/>    &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;<input name="Cancel" value="<%:Cancel%>" type="reset" /> 
+          </div> 
+        </li> 
+    </ul>
+
+
+  </form> 
+</div>
+</body>
+</html>

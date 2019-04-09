@@ -1,0 +1,20 @@
+		function JSOTTSet()
+		{
+			document.easysetup.ottforcsrf.value = OTTforCSRF;
+		}
+
+		function JSErrorMessageDisplay(status){
+
+		}
+
+		function initEasySetupwindow() {
+			/* OTT Set */
+			JSOTTSet();
+
+			JSErrorMessageDisplay(ErrorStatus);
+		}
+
+		/* When display this window */
+		window.onload = initEasySetupwindow;
+	</script>
+

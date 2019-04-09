@@ -1,0 +1,66 @@
+<%+header%>
+
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+<script type="text/javascript">
+
+var url ="<%=controller%>/content/vpn/vpn_status"; //current page url
+
+</script>
+
+<div id="content">
+<form id="content_send" name="status">
+<blockquote>
+<br>
+<table border="0" id="ruleTable">
+	<tbody>
+		<tr>
+			<td width="5%" class="background" style="text-align:center"><%:Username%></td>
+			<td width="10%" class="background" style="text-align:center"><%:Sent packet%></td>
+			<td width="10%" class="background" style="text-align:center"><%:Received packet%></td>
+		</tr>
+		<%
+			local file1 = assert(io.popen('cat /proc/net/dev | grep pptp | wc -l', 'r'))
+			local number_iface = file1:read('*all')
+			file1:close()
+
+			local file2 = assert(io.popen('cat /proc/net/dev | grep pptp | awk \'{print $1 $2":"$10}\'', 'r'))
+			local pre_output = file2:read('*all')
+			file2:close()
+
+			if tonumber(number_iface) ~= 0 then
+				uci.foreach("pptpd", "login",
+					function(s)
+						uci_username = s.username
+					end)
+
+				for i = 1, number_iface do
+					len = string.len(pre_output)
+					last = string.find(pre_output, "\n")
+
+					if last ~=nil then
+						new_line = string.sub(pre_output, 0, last-1)
+
+						temp = string.sub(pre_output, last+1, len)
+						pre_output,temp = temp,pre_output
+					end
+
+					i, j, k = string.match(new_line, "(%w+)%p(%w+)%p(%w+)")
+
+					print("<tr>")
+					print("<td class=\"table2\" style=\"text-align:center\"><font size=\"2\">" .. uci_username .. "</td>")
+					print("<td class=\"table2\" style=\"text-align:center\"><font size=\"2\">" .. k .. "</td>")
+					print("<td class=\"table2\" style=\"text-align:center\"><font size=\"2\">" .. j .. "</td>")
+					print("</tr>")
+				end
+				
+				print("<meta http-equiv=\"refresh\" content=\"10\" />")
+			end
+		%>
+	</tbody>
+</table>
+<br/>
+</table>
+</blockquote>
+</form> 
+</div>
+<%+footer%>

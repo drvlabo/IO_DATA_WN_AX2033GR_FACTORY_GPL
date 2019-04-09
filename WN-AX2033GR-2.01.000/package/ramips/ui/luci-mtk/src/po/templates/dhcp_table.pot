@@ -1,0 +1,23 @@
+msgid "DHCP_Table"
+msgstr ""
+
+msgid "dhcp_host_name"
+msgstr ""
+
+msgid "dhcp_host_status"
+msgstr ""
+
+msgid "dhcp_host_status_on"
+msgstr ""
+
+msgid "dhcp_reserve"
+msgstr ""
+
+msgid "ip_addr"
+msgstr ""
+
+msgid "mac_addr"
+msgstr ""
+
+msgid "monitor_dhcp_table"
+msgstr ""

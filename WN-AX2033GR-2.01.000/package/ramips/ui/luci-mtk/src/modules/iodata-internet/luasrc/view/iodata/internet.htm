@@ -1,0 +1,825 @@
+<%+header%>
+
+<% 
+	require("luci.sys")
+	local wan_mode = uci.get("network", "wan", "mode")
+	local wan_proto = uci.get("network", "wan", "proto")
+	local eee_enable = uci.get("system", "eee", "enable")
+%>
+
+<script language="JavaScript">
+
+var wan_mode = "<%=wan_mode%>";
+var selected_wan_mode = "router";
+var eee_enable = "<%=eee_enable%>";
+
+function change_wan_mode(x)
+{
+
+	document.getElementById("form_static").style.display = 'none';
+	document.getElementById("form_pppoe").style.display = 'none';
+	document.getElementById("form_dhcp").style.display = 'none';
+	document.getElementById("form_v6plus").style.display = 'none';
+	document.getElementById("form_transix").style.display = 'none';
+<%	local file = io.open("/tmp/etc_tmp/auto_switch_on", "r")
+	if (not file) then %>
+	document.getElementById("form_ap").style.display = 'none';
+	document.getElementById("form_repeater").style.display = 'none';
+	<%else io.close(file)%>
+<% end %>
+	
+	if (x == "static" ) {
+		document.getElementById("form_static").style.display = 'block';
+		selected_wan_mode = "router";
+	}
+	else if (x == "pppoe") {
+		document.getElementById("form_pppoe").style.display = 'block';
+		selected_wan_mode = "router";
+	}
+	else if (x == "v6plus") {
+		document.getElementById("form_v6plus").style.display = 'block';
+		selected_wan_mode = "v6plus";
+	}
+	else if (x == "transix") {
+		document.getElementById("form_transix").style.display = 'block';
+		selected_wan_mode = "transix";
+	}
+<%	local file = io.open("/tmp/etc_tmp/auto_switch_on", "r")
+	if (not file) then %>
+	else if (x == "ap")	{
+		document.getElementById("form_ap").style.display = 'block';
+		selected_wan_mode = "ap";
+	}
+	else if (x == "repeater") {
+		document.getElementById("form_repeater").style.display = 'block';
+		selected_wan_mode = "repeater";
+	}
+	<%else io.close(file)%>
+<% end %>
+	else {
+		document.getElementById("form_dhcp").style.display = 'block';
+		selected_wan_mode = "router";
+	}
+}
+
+function change_pppoe_id_type(x)
+{
+	document.getElementById("pppoe_flets_front").disabled = true;
+	document.getElementById("pppoe_flets_back").disabled = true;
+	document.getElementById("pppoe_userid").disabled = true;
+	if (x =="flets") {
+		document.getElementById("pppoe_flets_front").disabled = false;
+		document.getElementById("pppoe_flets_back").disabled = false;
+	}
+	else {
+		document.getElementById("pppoe_userid").disabled = false;
+	}
+	
+}
+
+function checkIpSameSubnet(ip1, ip2, mask){
+
+	if ( ip1 == "" || ip2 == "" || mask == "" )
+		return false;
+
+	var ip1_1 = atoi(ip1, 1);
+	var ip1_2 = atoi(ip1, 2);
+	var ip1_3 = atoi(ip1, 3);
+	var ip1_4 = atoi(ip1, 4);
+
+	var ip2_1 = atoi(ip2, 1);
+	var ip2_2 = atoi(ip2, 2);
+	var ip2_3 = atoi(ip2, 3);
+	var ip2_4 = atoi(ip2, 4);
+
+	var mask_1 = atoi(mask, 1);
+	var mask_2 = atoi(mask, 2);
+	var mask_3 = atoi(mask, 3);
+	var mask_4 = atoi(mask, 4);
+
+	if ( (ip1_1 & mask_1) != (ip2_1 & mask_1)
+		|| (ip1_2 & mask_2) != (ip2_2 & mask_2)
+		|| (ip1_3 & mask_3) != (ip2_3 & mask_3)
+		|| (ip1_4 & mask_4) != (ip2_4 & mask_4)
+	){
+		return false;
+	}
+
+	return true;
+}
+
+var url ="<%=controller%>/content/internet"; //current page url
+
+//MBA Sean, Cancel Button script
+function btnCancel()
+{
+	location.href=url;
+	return true;
+}
+
+//MBA Sean, Apply Button script
+function btnApply(x)
+{
+
+	var verifyFlag = false;
+	
+	if(x == "static") {
+		var ipaddr = document.getElementById("ipaddr").value;
+		var netmask = document.getElementById("netmask").value;
+		var gateway = document.getElementById("gateway").value;
+		var dns1 = document.getElementById("dns1").value;
+		var dns2 = document.getElementById("dns2").value;
+		
+		if ( ipaddr == "" ) {
+			alert("<%:ip address is empty%>");
+			return false;
+		}
+		if ( ! checkInvalidIP(ipaddr) ) {
+			alert("<%:IP address is not correct%>");
+			return false;
+		}
+		if ( ! chkSubnetMask(netmask) ) {
+			alert("<%:Subnet mask is not correct%>");
+			return false;
+		}
+		if (! checkIpValid(ipaddr, netmask)) {
+			alert("<%:IP address is not correct%>");
+			return false;
+		}
+		if ( ! checkInvalidIP(gateway) ) {
+			alert("<%:Default gateway is not correct%>");
+			return false;
+		}
+		if ( ! checkIpValid(gateway, netmask) ) {
+			alert("<%:Default gateway is not correct%>");
+			return false;
+		}
+		if ( ! checkIpSameSubnet(ipaddr, gateway, netmask) ) {
+			alert("<%:Default gateway is not correct%>");
+			return false;
+		}
+		if ( dns1 == "" ) {
+			alert("<%:DNS Server is empty%>");
+			return false;
+		}
+		if ( (! checkInvalidIP(dns1)) || ( dns2 != "" && ! checkInvalidIP(dns2)) ) {
+			alert("<%:DNS Server is not correct %>");
+			return false;
+		}
+		
+		verifyFlag = true;
+	}
+	else if(x == "dhcp") {
+		//check host name
+		var hostname = document.getElementById("hostname").value;
+		if( hostname == "") {
+			alert("<%:host name is empty%>");
+			return false;
+		}
+		
+		if( ! hostname.match(available_char_64) ) {
+			alert("<%:It contains characters that can not be used in the host name .%>");
+			return false;
+		}
+		
+		verifyFlag = true;
+	}
+	else if(x == "pppoe") {
+		
+		var pppoe_userid = "";
+		if ( document.getElementById("pppoe_flets").checked ) {
+			if ( document.getElementById("pppoe_flets_front").value =="" || document.getElementById("pppoe_flets_back").value == "" ) {
+				alert("<%:pppoe user id is empty%>");
+				return false;
+			}
+			pppoe_userid = document.getElementById("pppoe_flets_front").value + "@" + document.getElementById("pppoe_flets_back").value;
+		}
+		else {
+			pppoe_userid = document.getElementById("pppoe_userid").value;
+		}
+		
+		var pppoe_pass = document.getElementById("pppoe_pass").value;
+		var pppoe_mtu = document.getElementById("pppoe_mtu").value;
+		
+		if ( pppoe_userid == "" ){
+			alert("<%:pppoe user id is empty%>");
+			return false;
+		}
+		if ( ! pppoe_userid.match(available_char_64) ){
+			alert("<%:It contains characters that can not be used in the User ID .%>");
+			return false;
+		}
+		
+		if ( pppoe_pass == "" ){
+			alert("<%:pppoe password is empty%>");
+			return false;
+		}
+		if ( ! pppoe_pass.match(available_char_64) ){
+			alert("<%:It contains characters that can not be used in the Connection Password .%>");
+			return false;
+		}
+		
+		if ( isNaN(pppoe_mtu) || pppoe_mtu < 576 || pppoe_mtu > 1492 ){
+			alert("<%:MTU is Out of range, or it contains characters that can not be used.%>");
+			return false;
+		}
+		
+		verifyFlag = true;
+	}
+	else if(x == "v6plus") {
+		if(x == wan_mode)
+			verifyFlag = false;
+		else
+			verifyFlag = true;
+	}
+	else if(x == "transix") {
+		if(x == wan_mode)
+			verifyFlag = false;
+		else
+			verifyFlag = true;
+	}
+	else if(x == "ap") {
+		if(x == wan_mode)
+			verifyFlag = false;
+		else
+			verifyFlag = true;
+	}
+	else if(x == "repeater") {
+		if(x == wan_mode)
+			verifyFlag = false;
+		else
+			verifyFlag = true;
+	}
+	else {
+		return false;
+	}
+	
+	if(verifyFlag){
+		//MBA Sean, show the waiting page & hide the original content
+		document.getElementById("top_menu").style.display = 'none';
+		document.getElementById("content").style.display = 'none';
+		document.getElementById("waiting").style.display = 'block';
+		
+		//MBA Sean, start to countdown.
+		// reboot and apply use diffecent waiting time
+		if( wan_mode != selected_wan_mode ) {
+			alert("<%:It takes a few minutes to reboot. Please do not turn off the power during the restart%>");
+			if (( selected_wan_mode == "transix" ) || ( selected_wan_mode == "v6plus" ))
+				seconds = reboot_seconds + 20; // v6plus or transix need more time to wait lan up.
+			else
+				seconds = reboot_seconds;
+		} else {
+			if( eee_enable == "1" )
+				seconds = apply_seconds + 5; //EEE enabled need more time to wait switch linkup
+			else
+				seconds = apply_seconds;
+		}
+		waiting();
+
+		//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+        $.ajax({
+        type:"POST",
+        url: url,
+        data: $("#form_"+x).serialize(),// serializes the form's elements.
+        });
+		return false;
+	}
+	else {
+		return false;
+	}
+}
+
+<%
+	--MBA Sean, get the waiting time, default is 30 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+
+	local reboot_waiting_time_uci = uci_t.get("web", "gui_config", "reboot_waiting_time")
+	local network_waiting_time_uci = uci_t.get("web", "gui_config", "network_apply_waiting_time")
+	
+	local network_waiting_time = 30;
+	local reboot_waiting_time = 60;
+	
+	if network_waiting_time_uci then
+		network_waiting_time = network_waiting_time_uci
+	end
+	
+	if reboot_waiting_time_uci then
+		reboot_waiting_time = reboot_waiting_time_uci
+	end
+	
+	uci_t.set_confdir(original_confdir)
+%>
+
+var apply_seconds=<%=network_waiting_time%>;
+var reboot_seconds=<%=reboot_waiting_time%>;
+var seconds = apply_seconds;
+
+function waiting()
+{
+	(seconds<=0)?seconds=0:seconds-=1;
+	document.getElementById("wait_time").value=seconds;
+	if(seconds==0)
+	{
+		location.href=url;
+		return true;
+	};
+	setTimeout('waiting()',1000);
+} 
+
+function frmLoad()
+{
+	<%
+		local pppoe_id_type = uci.get("network", "pppoe", "pppoe_id_type")
+		if not pppoe_id_type then
+			pppoe_id_type = uci.get("network", "wan", "pppoe_id_type")
+		end
+		if pppoe_id_type and pppoe_id_type == "pppoe_flets" then %>
+			document.getElementById("pppoe_flets").checked = true;
+			change_pppoe_id_type("flets");
+	<%  else %>
+			document.getElementById("pppoe_others").checked = true;
+			change_pppoe_id_type("others");
+	<%	end	 %>
+
+	//MBA Sean, show the page according to the config
+	<%	if wan_mode == "ap" then %>
+		document.getElementById("form_ap").style.display = 'block';	
+		document.getElementById("ap_radio").checked = true;
+	<%	elseif wan_mode == "repeater" then	%>
+		document.getElementById("form_repeater").style.display = 'block';	
+		document.getElementById("repeater_radio").checked = true;
+	<%  elseif wan_mode == "v6plus" then %>
+			document.getElementById("form_v6plus").style.display = 'block';
+			document.getElementById("v6plus_radio").checked = true;	
+	<%  elseif wan_mode == "transix" then %>
+			document.getElementById("form_transix").style.display = 'block';
+			document.getElementById("transix_radio").checked = true;
+	<%  else %>
+		<%if wan_proto == "static" then %>
+				document.getElementById("form_static").style.display = 'block';
+				document.getElementById("static_radio").checked = true;
+		<%  elseif wan_proto == "pppoe" then %>
+				document.getElementById("form_pppoe").style.display = 'block';
+				document.getElementById("pppoe_radio").checked = true;				
+		<%  else %>
+				document.getElementById("form_dhcp").style.display = 'block';
+				document.getElementById("dhcp_radio").checked = true;
+		<%  end %>
+	<%	end	%>
+	
+	document.getElementById("dhcp_radio").addEventListener("click", function() {
+		change_wan_mode("dhcp");
+	}, false);
+	document.getElementById("static_radio").addEventListener("click", function() {
+		change_wan_mode("static");
+	}, false);
+	document.getElementById("pppoe_radio").addEventListener("click", function() {
+		change_wan_mode("pppoe");
+	}, false);
+	document.getElementById("v6plus_radio").addEventListener("click", function() {
+		change_wan_mode("v6plus");
+	}, false);
+	document.getElementById("transix_radio").addEventListener("click", function() {
+		change_wan_mode("transix");
+	}, false);
+<%	local file = io.open("/tmp/etc_tmp/auto_switch_on", "r")
+	if (not file) then %>
+	document.getElementById("ap_radio").addEventListener("click", function() {
+		change_wan_mode("ap");
+	}, false);
+	document.getElementById("repeater_radio").addEventListener("click", function() {
+		change_wan_mode("repeater");
+	}, false);
+	<%else io.close(file)%>
+<% end %>
+	document.getElementById("pppoe_flets").addEventListener("click", function() {
+		change_pppoe_id_type("flets");
+	}, false);
+		document.getElementById("pppoe_others").addEventListener("click", function() {
+		change_pppoe_id_type("others");
+	}, false);
+	
+	document.getElementById("apply_static").addEventListener("click", function() {
+		btnApply("static");
+	}, false);
+	document.getElementById("apply_dhcp").addEventListener("click", function() {
+		btnApply("dhcp");
+	}, false);
+	document.getElementById("apply_pppoe").addEventListener("click", function() {
+		btnApply("pppoe");
+	}, false);
+	document.getElementById("apply_v6plus").addEventListener("click", function() {
+		btnApply("v6plus");
+	}, false);
+	document.getElementById("apply_transix").addEventListener("click", function() {
+		btnApply("transix");
+	}, false);
+<%	local file = io.open("/tmp/etc_tmp/auto_switch_on", "r")
+	if (not file) then %>
+	document.getElementById("apply_ap").addEventListener("click", function() {
+		btnApply("ap");
+	}, false);
+	document.getElementById("apply_repeater").addEventListener("click", function() {
+		btnApply("repeater");
+	}, false);
+	<%else io.close(file)%>
+<% end %>
+}
+
+</SCRIPT>
+<div id="content">
+<!--MBA SW Sean, Menu Bar start-->
+<table border="0" bgcolor="white" cellspacing="0" cellpadding="0" width="650px">
+<tbody><tr>
+</tr><tr><td align="center"><%:Set the way to connect internet for this product%></td></tr>
+<tr><td align="center">
+<input type="radio" name="newInternetBtn" id="dhcp_radio" value="0" ><%:Obtain IP Address Automatically%> &nbsp;&nbsp;
+<input type="radio" name="newInternetBtn" id="static_radio" value="1" ><%:Set Static IP Address%> &nbsp;&nbsp;
+<input type="radio" name="newInternetBtn" id="pppoe_radio" value="2" ><%:PPPoE Authentication%> &nbsp;&nbsp;
+</td></tr>
+<tr><td align="center">
+<input type="radio" name="newInternetBtn" id="v6plus_radio" value="3" ><%:V6 Plus, and IPv6 option%> &nbsp;&nbsp;
+<input type="radio" name="newInternetBtn" id="transix_radio" value="4" ><%:transix%> &nbsp;&nbsp;
+
+<%	local file = io.open("/tmp/etc_tmp/auto_switch_on", "r")
+	if (not file) then %>
+
+<input type="radio" name="newInternetBtn" id="ap_radio" value="5" ><%:AP mode%> &nbsp;&nbsp;
+<input type="radio" name="newInternetBtn" id="repeater_radio" value="6" ><%:Repeater mode%> &nbsp;&nbsp;
+
+<%else io.close(file)%>
+
+<% end %>
+</td></tr>
+</tbody></table>
+<!--MBA SW Sean, Menu Bar end-->
+
+<blockquote>
+<p><BR>
+
+<!--################################# MBA SW Sean, DHCP Start ##################################-->
+<form  name="form_dhcp" id="form_dhcp" style="display:none">
+<input type="hidden" name="page" value="wizard_dynamic.htm">
+<input type="hidden" name="macAddrValue">
+<table border="0" cellspacing="4" width="600">
+<tr>
+<td width="35%" class="background"><%:Host Name:%>&nbsp;</td>
+<td width="65%">
+<input type="text" name="hostname" id="hostname" size="20" maxlength="30" value="<%=luci.sys.hostname()%>"></td>
+</tr>
+
+<tr align=left>
+<%
+local enable_ipv6_dhcp_rule = uci.get("network", "dhcp", "ipv6passthrough")
+local enableCheckedStr_ipv6_dhcp = ""
+local disableCheckedStr_ipv6_dhcp = ""
+
+if enable_ipv6_dhcp_rule  == "0" then
+    disableCheckedStr_ipv6_dhcp = "checked"
+else
+    enableCheckedStr_ipv6_dhcp = "checked"
+end
+%>
+<td width='40%' class=background><font><%:IP v6 Passthrough:%></font></td>
+<td><input type="radio" name="ipv6pass" value="1" <%=enableCheckedStr_ipv6_dhcp%>/><%:Enable%>
+<input type="radio" name="ipv6pass" value="0" <%=disableCheckedStr_ipv6_dhcp%>/><%:Disable%></td></tr>
+
+<tr>
+<td></td>
+<td>
+<table width="300" border="0" cellspacing="0" cellpadding="0" align="right">
+<tr><td align="right">
+		<input type="button" value="<%:Apply%>" id="apply_dhcp" width="105">
+		<input type="hidden" name="apply" value="apply">
+		<input type="hidden" name="wan_mode" value="dhcp">
+		<input type="button" value="<%:Cancel%>" onclick="btnCancel()" width="105">
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+</table>
+</form>
+<!--################################# MBA SW Sean, DHCP End ##################################-->
+
+<!--################################# MBA SW Sean, Static IP Start ##################################-->
+<form  name="form_static" id="form_static" style="display:none">
+<table border="0" cellspacing="4" width="600">
+<tr>
+<td width="35%" class="background"><%:IP Address:%>&nbsp;</td>
+<%
+local static_ipaddr = uci.get("network", "static", "ipaddr")
+if not static_ipaddr then
+	static_ipaddr = uci.get("network", "wan", "ipaddr")
+end
+%>
+<td width="65%">&nbsp;<input type="text" name="ipaddr" id="ipaddr" size="20" maxlength="15" value="<%=static_ipaddr%>"></td>
+</tr>
+<tr>
+<td width="35%" class="background"><%:Subnet Mask:%>&nbsp;</td>
+<%
+local static_netmask = uci.get("network", "static", "netmask")
+if not static_netmask then
+	static_netmask = uci.get("network", "wan", "netmask")
+end
+%>
+<td width="65%">&nbsp;<input type="text" name="netmask" id="netmask" size="20" maxlength="15" value="<%=static_netmask%>"></td>
+</tr>
+<tr>
+<td width="35%" class="background"><%:Default Gateway:%>&nbsp;</td>
+<%
+local static_gateway = uci.get("network", "static", "gateway")
+if not static_gateway then
+	static_gateway = uci.get("network", "wan", "gateway")
+end
+%>
+<td width="65%">&nbsp;<input type="text" name="gateway" id="gateway" size="20" maxlength="15" value="<%=static_gateway%>"></td>
+</tr>
+<br>
+<tr>
+<%
+--MBA Sean, get the dns from uci, the dns1 & 2 is connected in teh ucim we need to separate it
+local wan_dns = uci.get("network", "static", "dns")
+if not wan_dns then
+	wan_dns = uci.get("network", "wan", "dns")
+end
+local t = {}
+local i = 0
+
+local wan_dns1 = ""
+local wan_dns2 = ""
+
+if wan_dns then
+
+	for v in string.gmatch(wan_dns, '([^ ]+)') do
+		t[i] = v
+		i = i+1
+	end
+
+	if t[0] then
+		wan_dns1 = t[0]
+	end
+
+	if t[1] then
+		wan_dns2 = t[1]
+	end
+end
+
+%>
+<td width="35%" class="background"><%:DNS Server 1:%>&nbsp;</td>
+<td width="65%">&nbsp;<input type="text" name="dns1" id="dns1" size="20" maxlength="15" value="<%=wan_dns1%>"></td>
+</tr>
+<tr>
+<td width="35%" class="background"><%:DNS Server 2:%>&nbsp;</td>
+<td width="65%">&nbsp;<input type="text" name="dns2" id="dns2" size="20" maxlength="15" value="<%=wan_dns2%>"></td>
+</tr>
+
+<tr align=left>
+<td width='40%' class=background><font><%:IP v6 Passthrough:%></font></td>
+<%
+local enable_ipv6_static_rule = uci.get("network", "static", "ipv6passthrough")
+local enableCheckedStr_ipv6_static = ""
+local disableCheckedStr_ipv6_static = ""
+
+if  enable_ipv6_static_rule  == "0" then
+    disableCheckedStr_ipv6_static = "checked"
+else
+    enableCheckedStr_ipv6_static = "checked"
+end
+%>
+<td><input type="radio" name="ipv6pass" id="ipv6pass" value="1" <%=enableCheckedStr_ipv6_static%>/><%:Enable%>
+<input type="radio" name="ipv6pass" id="ipv6pass" value="0" <%=disableCheckedStr_ipv6_static%>/><%:Disable%></td></tr>
+
+<tr>
+<td></td>
+<td>
+<table width="300" border="0" cellspacing="0" cellpadding="0" align="right">
+<tr><td align="right">
+		<input type="button" value="<%:Apply%>" id="apply_static" width="105">
+		<input type="hidden" name="apply" value="apply">
+		<input type="hidden" name="wan_mode" value="static">
+		<input type="button" value="<%:Cancel%>" onclick="btnCancel()" width="105">
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+</table>
+</form>
+<!--################################# MBA SW Sean, Static IP End ##################################-->
+
+<!--################################# MBA SW Sean, PPPoE Start ##################################-->
+<%
+--MBA Sean, get the flets id if the id type = flets
+local pppoe_user = uci.get("network","pppoe","username")
+if not pppoe_user then
+	pppoe_user = uci.get("network","wan","username")
+end
+local pppoe_flets_front = ""
+local pppoe_flets_back = ""
+
+if pppoe_id_type and pppoe_id_type == "pppoe_flets" then
+	i=0
+    t={}
+	if pppoe_user then
+		for v in string.gmatch(pppoe_user, '([^@]+)') do
+			t[i] = v
+			i = i+1
+		end
+	end
+	pppoe_flets_front = t[0]
+	pppoe_flets_back = t[1]
+	--MBA Sean, do not show the other id type if user id type is flets
+	pppoe_user = ""
+end
+
+%>
+<form  name="form_pppoe" id="form_pppoe" style="display:none"> 
+<!--table1 -->
+<table border="0" cellspacing="4" width="600">
+<tr>
+<td colspan="2" width="100%"><%:Please set the connection password and user ID specified by the provider%></td>
+<td><%%></td>
+</tr>
+
+
+<tr>
+<td colspan="2" width="100%"><%:User ID and password connection, please check the documentation of the provider%></td>
+</tr>
+
+<tr>
+<td colspan="2" width="100%"><%:NTT FLET series Notes%></td>
+</tr>
+
+<tr>
+<td colspan="2" width="100%"><%:If the user ID and the connection password is unknown, please contact your provider%></td>
+</tr>
+
+<tr>
+<td rowspan="3" width="35%" class="background"><%:User ID:%></td>
+<td width="65%"><input type="radio" name="pppoe_id_type" id="pppoe_flets" value="pppoe_flets"><%:Flets%>
+<input type="radio" name="pppoe_id_type" id="pppoe_others" value="pppoe_others"><%:Others%></td>
+</tr>
+<tr>
+<td width="65%">&nbsp;<input type="text" name="pppoe_flets_front" id="pppoe_flets_front" value="<%=pppoe_flets_front%>" style="width:80px" maxlength="32">
+@
+<input type="text" name="pppoe_flets_back" id="pppoe_flets_back" value="<%=pppoe_flets_back%>" style="width:80px" maxlength="31"></td>
+</tr>
+<tr>
+<td width="65%">&nbsp;<input type="text" id="pppoe_userid" name="pppoe_userid" style="width:180px" maxlength="64" value="<%=pppoe_user%>"></td>
+</tr>
+
+<tr>
+<td width="35%" class="background"><%:Connection Password:%></td>
+<%
+local pppoe_password = uci.get("network","pppoe","password")
+if not pppoe_password then
+	pppoe_password = uci.get("network","wan","password")
+end
+%>
+<td>&nbsp;<input type="password" name="pppoe_pass" id="pppoe_pass" style="width:180px" maxlength="64" value="<%=pppoe_password%>"></td>
+</tr>
+<tr>
+<td width="35%" class="background"><%:MTU:%></td>
+<%
+local pppoe_mtu = uci.get("network","pppoe","mtu")
+if not pppoe_mtu then
+	pppoe_mtu = "1454"
+end
+%>
+<td width="65%">&nbsp;<input type="text" name="pppoe_mtu" id="pppoe_mtu" size="10" maxlength="4" value="<%=pppoe_mtu%>">
+<font size=2>byte (576-1492)</font></td>
+</tr>
+
+<tr align=left>
+<%
+local enable_ipv6_pppoe_rule = uci.get("network", "pppoe", "ipv6passthrough")
+local enableCheckedStr_ipv6_pppoe = ""
+local disableCheckedStr_ipv6_pppoe = ""
+
+if  enable_ipv6_pppoe_rule  == "0" then
+    disableCheckedStr_ipv6_pppoe = "checked"
+else
+    enableCheckedStr_ipv6_pppoe = "checked"
+end
+%>
+<td width='40%' class=background><font><%:IP v6 Passthrough:%></font></td>
+<td><input type="radio" name="pppoe_ipv6pass" value="1"<%=enableCheckedStr_ipv6_pppoe%>/><%:Enable%>
+<input type="radio" name="pppoe_ipv6pass" value="0" <%=disableCheckedStr_ipv6_pppoe%>/><%:Disable%></td></tr>
+
+<tr>
+<td></td>
+<td>
+<table width="300" border="0" cellspacing="0" cellpadding="0" align="right">
+<tr><td align="right">
+		<input type="button" value="<%:Apply%>" id="apply_pppoe" width="105">
+		<input type="hidden" name="apply" value="apply">
+		<input type="hidden" name="wan_mode" value="pppoe">
+		<input type="button" value="<%:Cancel%>" onclick="btnCancel()" width="105">
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+</table>
+</form>
+<!--################################# MBA SW Sean, PPPoE End ##################################-->
+<!--################################# MBA SW OLIVIA, V6 PLUS Start ##################################-->
+<form  name="form_v6plus" id="form_v6plus" style="display:none"> 
+<table border="0" cellspacing="4" width="600">
+<tr>
+<td>
+<table width="300" border="0" cellspacing="0" cellpadding="0" align="right">
+<tr><td align="right">
+		<input type="button" value="<%:Apply%>" id="apply_v6plus" width="105">
+		<input type="hidden" name="apply" value="apply">
+		<input type="hidden" name="wan_mode" value="v6plus">
+		<input type="button" value="<%:Cancel%>" onclick="btnCancel()" width="105">
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+</table>
+</form>
+<!--################################# MBA SW OLIVIA, V6 PLUS End ##################################-->
+
+<!--################################# MBA SW OLIVIA, transix Start ##################################-->
+<form  name="form_transix" id="form_transix" style="display:none"> 
+<table border="0" cellspacing="4" width="600">
+<tr>
+<td>
+<table width="300" border="0" cellspacing="0" cellpadding="0" align="right">
+<tr><td align="right">
+		<input type="button" value="<%:Apply%>" id="apply_transix" width="105">
+		<input type="hidden" name="apply" value="apply">
+		<input type="hidden" name="wan_mode" value="transix">
+		<input type="button" value="<%:Cancel%>" onclick="btnCancel()" width="105">
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+</table>
+</form>
+<!--################################# MBA SW OLIVIA, transix End ##################################-->
+
+<!--################################# MBA SW Sean, AP Start ##################################-->
+<%	local file = io.open("/tmp/etc_tmp/auto_switch_on", "r")
+	if (not file) then %>
+<form  name="form_ap" id="form_ap" style="display:none"> 
+<!--table1 -->
+<table border="0" cellspacing="4" width="600">
+<tr>
+<td>
+<table width="300" border="0" cellspacing="0" cellpadding="0" align="right">
+<tr><td align="right">
+		<input type="button" value="<%:Apply%>" id="apply_ap" width="105">
+		<input type="hidden" name="apply" value="apply">
+		<input type="hidden" name="wan_mode" value="ap">
+		<input type="button" value="<%:Cancel%>" onclick="btnCancel()" width="105">
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+</table>
+</form>
+<!--################################# MBA SW Sean, AP End ##################################-->
+
+<!--################################# MBA SW Sean, Repeater Start ##################################-->
+<form  name="form_repeater" id="form_repeater" style="display:none"> 
+<!--table1 -->
+<table border="0" cellspacing="4" width="600">
+<tr>
+<td>
+<table width="300" border="0" cellspacing="0" cellpadding="0" align="right">
+<tr><td align="right">
+		<input type="button" value="<%:Apply%>" id="apply_repeater" width="105">
+		<input type="hidden" name="apply" value="apply">
+		<input type="hidden" name="wan_mode" value="repeater">
+		<input type="button" value="<%:Cancel%>" onclick="btnCancel()" width="105">
+</td>
+</tr>
+</table>
+</td>
+</tr>
+
+</table>
+</form>
+<%else io.close(file)%>
+
+<% end %>
+<!--################################# MBA SW Sean, Repeater End ##################################-->
+
+</blockquote>
+</div>
+<%+footer%>

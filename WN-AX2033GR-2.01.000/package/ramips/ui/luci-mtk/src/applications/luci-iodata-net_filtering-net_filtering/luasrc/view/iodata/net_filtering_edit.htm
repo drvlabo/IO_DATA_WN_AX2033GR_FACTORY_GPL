@@ -1,0 +1,332 @@
+<%+header%>
+
+<!-- MBA SW Sean, put your content here, the header & footer already contain the body xml tag -->
+<script type="text/javascript">
+var url = "<%=controller%>/content/net_filtering/net_filtering/net_filtering_edit";
+var EditList = [
+	{enable:"101",index:"1",value:"101",text:"<%:Acts that seems to be illegal%>"},
+	{enable:"102",index:"2",value:"102",text:"<%:Infringement of copyright and trademark rights%>"},
+	{enable:"201",index:"3",value:"201",text:"<%:Drug that seems to be illegal%>"},
+	{enable:"202",index:"4",value:"202",text:"<%:Inappropriate drug use%>"},
+	{enable:"313",index:"5",value:"313",text:"<%:Suicide attractant%>"},
+	{enable:"601",index:"6",value:"601,602",text:"<%:Encounter%>"},
+	{enable:"301",index:"7",value:"301,302,314",text:"<%:Violence organizations and cult%>"},
+	{enable:"1801",index:"8",value:"1801",text:"<%:Grotesque Shocking%>"},
+	{enable:"401",index:"9",value:"401",text:"<%:sexual act%>"},
+	{enable:"402",index:"10",value:"402",text:"<%:Nude semi-nude%>"},
+	{enable:"403",index:"11",value:"403",text:"<%:Sexual mores%>"},
+	{enable:"404",index:"12",value:"404",text:"<%:Adult Search and Links%>"},
+	{enable:"405",index:"13",value:"405",text:"<%:Fetishism%>"},
+	{enable:"406",index:"14",value:"406",text:"<%:Sexual expression by sentence%>"},
+	{enable:"315",index:"15",value:"315",text:"<%:Back information%>"},
+	{enable:"501",index:"16",value:"501",text:"<%:Cracking%>"},
+	{enable:"502",index:"17",value:"502",text:"<%:Malicious code distribution%>"},
+	{enable:"503",index:"18",value:"503",text:"<%:Phishing, one-click fraud%>"},
+	{enable:"1103",index:"19",value:"1103",text:"<%:Web translation%>"},
+	{enable:"1102",index:"20",value:"1102",text:"<%:Searching cache%>"},
+	{enable:"1101",index:"21",value:"1101",text:"<%:Proxy%>"},
+	{enable:"1201",index:"22",value:"1201,1202,1301,1302,1303,1501,1601",text:"<%:Lack of consideration for the use of children, adult subject%>"},
+	{enable:"1211",index:"23",value:"1211,1212,1311,1312,1313,1511,1611",text:"<%:Consideration level 1 to the use of children%>"},
+	{enable:"1221",index:"24",value:"1221,1222,1321,1322,1323,1521,1621",text:"<%:Consideration level 2 to the use of children%>"},
+	{enable:"1231",index:"25",value:"1231,1232,1331,1332,1333,1531,1631",text:"<%:Consideration level 3 to the use of children%>"},
+	{enable:"801",index:"26",value:"801,802",text:"<%:Gamble lottery%>"},
+	{enable:"2003",index:"27",value:"2003",text:"<%:Drinking%>"},
+	{enable:"2002",index:"28",value:"2002",text:"<%:Smoking%>"},
+	{enable:"2004",index:"29",value:"2004",text:"<%:Alcohol product%>"},
+	{enable:"2001",index:"30",value:"2001,2005,2101",text:"<%:Adult entertainment%>"},
+	{enable:"303",index:"31",value:"303,305",text:"<%:Extreme claims%>"},
+	{enable:"1001",index:"32",value:"1001,1002,1005",text:"<%:Auction Online Shopping%>"},
+	{enable:"1703",index:"33",value:"1703,1901",text:"<%:Sweepstakes Vice revenue%>"},
+	{enable:"901",index:"34",value:"901,902",text:"<%:Game%>"},
+	{enable:"1404",index:"35",value:"1404",text:"<%:Animation%>"},
+	{enable:"2501",index:"36",value:"2501",text:"<%:musics%>"},
+	{enable:"2502",index:"37",value:"2502",text:"<%:Fortune-telling%>"},
+	{enable:"2503",index:"38",value:"2503",text:"<%:Talent entertainer%>"},
+	{enable:"2505",index:"39",value:"2505",text:"<%:General entertainment%>"},
+	{enable:"2301",index:"40",value:"2301",text:"<%:Professional sports%>"}
+];
+
+var bsGrpList = [
+	{enable:"0",index:"1",permission:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+	{enable:"0",index:"2",permission:[0,0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,127]},
+	{enable:"0",index:"3",permission:[0,0,0,0,0,0,0,0,0,12,0,0,0,0,0,0,127]},
+	{enable:"0",index:"4",permission:[0,0,0,0,0,0,0,0,0,14,0,0,1,1,1,0,127]},
+	{enable:"0",index:"5",permission:[0,0,0,0,0,0,0,0,3,15,0,7,1,0,1,0,127]},
+	{enable:"0",index:"6",permission:[3,3,1,1,1,63,1,1,7,15,1,7,1,1,1,1,127]},
+	{enable:"0",index:"7",permission:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+	{enable:"0",index:"8",permission:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+	{enable:"0",index:"9",permission:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]},
+	{enable:"0",index:"10",permission:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}
+];
+<%
+local lua_cuztm_1 = uci.get("siteblock","custom1","cat_id")
+local lua_cuztm_2 = uci.get("siteblock","custom2","cat_id")
+local lua_cuztm_3 = uci.get("siteblock","custom3","cat_id")
+local lua_cuztm_4 = uci.get("siteblock","custom4","cat_id")
+%>
+
+var customTemp = new Array;
+var customTemp_trans = new Array;
+var cuztm_1 = "<%=lua_cuztm_1%>"
+var cuztm_2 = "<%=lua_cuztm_2%>"
+var cuztm_3 = "<%=lua_cuztm_3%>"
+var cuztm_4 = "<%=lua_cuztm_4%>"
+<%
+	--MBA Sean, get the waiting time, default is 30 secs
+	local uci_t = require("luci.model.uci").cursor()
+	local original_confdir = uci_t.get_confdir()
+	uci_t.set_confdir("/etc/tmp_config")
+	local waiting_time_uci = uci_t.get("web", "gui_config", "network_apply_waiting_time")
+	local waiting_time = 30;
+	
+	if waiting_time_uci then
+		waiting_time = waiting_time_uci
+	end
+	
+	uci_t.set_confdir(original_confdir)
+%>
+
+var seconds=<%=waiting_time%>;
+
+function waiting()
+{
+	(seconds<=0)?seconds=0:seconds-=1;
+	document.getElementById("wait_time").value=seconds;
+	if(seconds==0)
+	{
+		location.href=url;
+		return true;
+	};
+	setTimeout('waiting()',1000);
+} 
+
+function copyCustom() {
+	var f=document.formBSCustom;	
+	if(f.sc.value==10){//None Limit
+		bsGrpList[f.dt.value].permission = [3,3,1,1,3,63,1,7,7,15,1,7,1,1,1,1,127];
+	}else if(f.sc.value==0){//All Limit
+		bsGrpList[f.dt.value].permission = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];  
+	}else{
+		for(var p=0;p<17;p++){
+			bsGrpList[f.dt.value].permission[p] = bsGrpList[f.sc.value].permission[p];  
+		}
+	}
+	translate(bsGrpList[f.dt.value].permission,customTemp);
+	for(var q=0; q< EditList.length;q++){
+		if (f.dt.value == 6) {
+			f.a[q].checked = true;//default block
+			if (customTemp[q] == 0){//block
+				f.a[q].checked = true;
+			}else{
+				f.a[q].checked = false;
+			}
+		}
+		if (f.dt.value == 7) {
+			f.b[q].checked = true;//default block
+			if (customTemp[q] == 0){//block
+				f.b[q].checked = true;
+			}else {
+				f.b[q].checked = false;
+			}
+		}
+		if (f.dt.value == 8) {
+			f.c[q].checked = true;//default block
+			if (customTemp[q] == 0){//block
+				f.c[q].checked = true;
+			}else {
+				f.c[q].checked = false;
+			}
+		}
+		if (f.dt.value == 9) {
+			f.d[q].checked = true;//default block
+			if (customTemp[q] == 0){//block
+				f.d[q].checked = true;
+			}else {
+				f.d[q].checked = false;
+			}
+		}
+	}
+}
+
+function goToApply(){
+	var f=document.formBSCustom;
+		
+	var str_1 = ",";
+	$("input[id^='chk_custom_1']").each(function(){
+		if ( $(this).prop("checked") == true) {
+				str_1 += $(this).val() + ",";
+				//alert(str_1);
+		}
+	});
+	
+	var str_2 = ",";
+	$("input[id^='chk_custom_2']").each(function(){
+		if ( $(this).prop("checked") == true) {
+				str_2 += $(this).val() + ",";
+		}
+	});
+	
+	var str_3 = ",";
+	$("input[id^='chk_custom_3']").each(function(){
+		if ( $(this).prop("checked") == true) {
+				str_3 += $(this).val() + ",";
+		}
+	});
+	
+	var str_4 = ",";
+	$("input[id^='chk_custom_4']").each(function(){
+		if ( $(this).prop("checked") == true) {
+				str_4 += $(this).val() + ",";
+		}
+	});
+	
+	$("#CuzDataStr1").val(str_1);
+	$("#CuzDataStr2").val(str_2);
+	$("#CuzDataStr3").val(str_3);
+	$("#CuzDataStr4").val(str_4);
+	
+	//MBA Sean, show the waiting page & hide the original content
+	document.getElementById("top_menu").style.display = 'none';
+	document.getElementById("content").style.display = 'none';
+	document.getElementById("waiting").style.display = 'block';
+	//MBA Sean, start to countdown.
+	waiting();
+
+	//MBA Sean, using ajax to send POST to avoid server redirect the page when countdown is not finish yet
+	$.ajax({
+		type:"POST",
+		url: url,
+		data: $("#content_send").serialize(),// serializes the form's elements.
+	});
+	
+	return false;
+}
+//translate
+function translate(array_17,custom_40){
+	var rule_17 = new Array(2,2,1,1,2,6,1,3,3,4,1,3,1,1,1,1,7);
+	var index=0,power=0,m=0,n=0;
+	var index_start=0,index_end=0,count=0;
+	for(m=0;m<17;m++){
+		for(n=0 ; n<rule_17[m] ; n++) {
+			power = Math.pow(2, (rule_17[m]-n-1));
+			customTemp_trans[index] = ( power & array_17[m])/power;
+			index++;
+		}		
+	}
+	//===new add
+	for(m=0;m<17;m++){
+		index_start = count;
+		count = count + rule_17[m];
+		index_end = index_start + rule_17[m]-1;
+		for(n=0;n<rule_17[m];n++){
+			custom_40[index_start] = customTemp_trans[index_end];
+			index_start++;
+			index_end--;
+		}
+	}
+//===end
+}
+
+function frmLoad(){
+	
+	var t = cuztm_1.split(",");
+	for( var i =0 ; i < t.length; i++ ) {
+		if ( t[i] != "" ) {
+			$("#chk_custom_1_"+t[i]).prop("checked",true);
+		}
+	}
+
+	var t = cuztm_2.split(",");
+	for( var i =0 ; i < t.length; i++ ) {
+		if ( t[i] != "" ) {
+			$("#chk_custom_2_"+t[i]).prop("checked",true);
+		}
+	}
+
+	var t = cuztm_3.split(",");
+	for( var i =0 ; i < t.length; i++ ) {
+		if ( t[i] != "" ) {
+			$("#chk_custom_3_"+t[i]).prop("checked",true);
+		}
+	}
+
+	var t = cuztm_4.split(",");
+	for( var i =0 ; i < t.length; i++ ) {
+		if ( t[i] != "" ) {
+			$("#chk_custom_4_"+t[i]).prop("checked",true);
+		}
+	}
+}
+</script>
+
+<br><br>
+
+<div id="content">
+<form id="content_send" name="formBSCustom" method="post"> 	 
+<blockquote>
+<p><%:Please put a check in the category you want to block.%></p>
+<input type="hidden" name="page" value="bscustom">
+<input type="hidden" name="h1">
+<input type="hidden" name="h2">
+<input type="hidden" name="h3">
+<input type="hidden" name="h4">
+<br>
+<td>
+	<select size="1" name="sc" id="sc">
+		<option value="0" ><%:Elementary school students middle grade%> </option>	
+		<option value="1" ><%:Elementary school upper grades%> </option>
+		<option value="2" ><%:Junior high school%> </option>
+		<option value="3" ><%:High school%> </option>
+		<option value="4" ><%:Safety and security course%></option>
+		<option value="5" ><%:Safety Course%> </option>
+		<option value="10" ><%:Do not limit%></option>
+	</select><%:The information%>
+	<select name="dt">
+		<option value="6" selected="selected"><%:Customized 1%></option>
+		<option value="7"><%:Customized 2%></option>
+		<option value="8"><%:Customized 3%></option>
+		<option value="9"><%:Customized 4%></option>
+	</select>
+	<%:Copy to%>
+	<input type="button" value="<%:Reflect%>" onClick="return copyCustom()" width="105" height="30" border="0"/>
+</td>
+<table id="sb_list" border="0" width=600>
+	<tr>
+			<td width="52%" class="background" style="text-align:center"><%:category%></td>
+			<td width="12%" class="background" style="text-align:center"><%:Customized 1%></td>
+			<td width="12%" class="background" style="text-align:center"><%:Customized 2%></td>
+			<td width="12%" class="background" style="text-align:center"><%:Customized 3%></td>
+			<td width="12%" class="background" style="text-align:center"><%:Customized 4%></td>
+	</tr>
+	<script language="javascript">
+	for (var i = 0; i < EditList.length; i++) {	
+		if(EditList[i].text != "") {
+			document.write("<tr name=\"ruleData\">");
+			document.write("<td class=\"table2\" align=\"left\"><font size=2>" + EditList[i].text + "</td>");
+			document.write("<td align=center class=\"table2\"><input type=\"checkbox\" id=\"chk_custom_1_" + EditList[i].enable +"\" value=\""  + EditList[i].value + "\" name=\"a\"></td>");
+			document.write("<td align=center class=\"table2\"><input type=\"checkbox\" id=\"chk_custom_2_" + EditList[i].enable +"\" value=\""  + EditList[i].value + "\" name=\"b\"></td>");
+			document.write("<td align=center class=\"table2\"><input type=\"checkbox\" id=\"chk_custom_3_" + EditList[i].enable +"\" value=\""  + EditList[i].value + "\" name=\"c\"></td>");
+			document.write("<td align=center class=\"table2\"><input type=\"checkbox\" id=\"chk_custom_4_" + EditList[i].enable +"\" value=\""  + EditList[i].value + "\" name=\"d\"></td>");
+			document.write("</tr>");
+		}
+	}
+	</script>
+</table>
+<br>
+<table width="594" border="0" cellspacing="0" cellpadding="0" align="left">
+<tr><td align="right">
+	<input type="submit" value="<%:Apply%>" onClick="return goToApply()" width="105" height="30" border="0"/>
+	<input type="reset" value="<%:Cancel%>" onclick="window.location.reload()"/>
+	<input type="hidden" value="1" name="doApply"/>
+	<input type="hidden" value="" id="CuzDataStr1" name="CuzDataStr1"/>
+	<input type="hidden" value="" id="CuzDataStr2" name="CuzDataStr2"/>
+	<input type="hidden" value="" id="CuzDataStr3" name="CuzDataStr3"/>
+	<input type="hidden" value="" id="CuzDataStr4" name="CuzDataStr4"/>
+</td></tr>
+</table>
+</blockquote>
+</form>
+</div>
+
+<!-- Mirrored from 192.168.0.1/bscustom.htm by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 24 Feb 2016 01:58:19 GMT -->
+<%+footer%>

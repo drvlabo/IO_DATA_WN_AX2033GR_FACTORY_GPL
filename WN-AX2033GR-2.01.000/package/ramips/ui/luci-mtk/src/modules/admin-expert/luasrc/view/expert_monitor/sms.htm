@@ -1,0 +1,91 @@
+<%
+--require("luci.i18n").loadc("default")
+local i18n = require("luci.i18n")
+require("luci.http").prepare_content("application/xhtml+xml")
+local uci = require("luci.model.uci").cursor()
+local lang = uci:get("luci","main","lang")
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+-%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"  />
+<title>.::<%:welcome_title_message%>::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="<%=media%>/js/jquery-1.3.1.min.js"></script>
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script>
+$(document).ready(function()
+{
+	path_msg_init();
+});
+function path_msg_init(){
+   showFullPath(' <%:monitor%> > <%:sms%> > <%:sms_list%>');
+   showWebMessage( 0, '<%:Message%>', '<%:Ready%>' );
+}
+</script>
+</head>
+<body >
+<div id="tabs">
+<ul>
+    <li class="hightline"><a title="<%:sms_list%>"><span><%:sms_list%></span></a></li>
+    <li><a href="<%=controller%>/expert/monitor/sms/sms_send" title="<%:sms_send%>"><span><%:sms_send%></span></a></li>
+</ul>
+  <br class="clearfloat"/>
+</div>
+<!-- Tab --> 
+<form name="sms_list">
+<div id="table">
+  <ul>
+    <li class="table_top"></li>
+    <li class="table_content">
+      <div class="data">
+        <ul>
+          <div class="tableframe">
+            <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0" class="table_frame">
+              <tr>
+                <td>
+                  <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td>
+                        <table width="100%" border="0" align="center" cellpadding="0" cellspacing="0">
+                          <tr>
+                            <td>
+                              <table width="100%" cellpadding="0" cellspacing="0" >
+                                <tr>
+                                  <td height="26" colspan="6">
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                      <tr>
+                                        <td height="26" class="table_title"><%:sms%></td>
+                                      </tr>
+                                    </table>
+                                  </td>
+                                </tr>
+								<tr align="center"  class="top_font">
+									<td width="35">#</td>
+									<td width="120"><%:sms_sender%></td>
+									<td width="120"><%:sms_date%></td>
+									<td ><%:sms_content%></td>
+									<td width="120"><%:sms_del%></td>
+								</tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div class="spaceair"></div>
+        </ul>
+      </div>
+    </li>
+  </ul>
+</div>
+</form>
+</body>
+</html>

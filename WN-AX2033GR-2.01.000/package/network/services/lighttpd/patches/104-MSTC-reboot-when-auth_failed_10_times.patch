@@ -1,0 +1,105 @@
+Index: lighttpd-1.4.38/src/mod_auth.c
+===================================================================
+--- lighttpd-1.4.38.orig/src/mod_auth.c	2015-11-23 03:03:10.000000000 +0800
++++ lighttpd-1.4.38/src/mod_auth.c	2018-01-30 14:24:00.203657100 +0800
+@@ -14,6 +14,22 @@
+ 
+ handler_t auth_ldap_init(server *srv, mod_auth_plugin_config *s);
+ 
++/* MSTC MBA Sean, add for prevent brute-force attack [START] =====> */
++#if 1
++#define MAX_AUTH_RETRY_TIMES 10
++
++#define LDBG(fmt, ...) do { \
++        FILE *fp = NULL; \
++        fp = fopen("/dev/console", "w"); \
++        if (fp) {\
++                fprintf(fp, "[%s:%d]"fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__); \
++                fclose(fp);\
++        }\
++} while(0)
++
++unsigned int retry_counter = 0;
++#endif
++/* MSTC MBA Sean, add for prevent brute-force attack [END] <===== */
+ 
+ /**
+  * the basic and digest auth framework
+@@ -202,6 +218,8 @@
+ 	auth_required = 0;
+ 	auth_satisfied = 0;
+ 
++	/* LDBG("###Sean Debug### [lighttpd], %d\n", retry_counter); */
++	
+ 	/* search auth-directives for path */
+ 	for (k = 0; k < p->conf.auth_require->used; k++) {
+ 		buffer *require = p->conf.auth_require->data[k]->key;
+@@ -268,14 +286,22 @@
+ 				   (0 == strncasecmp(http_authorization, "Digest", auth_type_len))) {
+ 				auth_type = "Digest";
+ 				if (0 == strcmp(req_method->value->ptr, "digest")) {
+-					if (-1 == (auth_satisfied = http_auth_digest_check(srv, con, p, req, auth_realm+1))) {
+-						con->http_status = 400;
++					/*MSTC MBA Sean, do not verify password if retry_counter > MAX_AUTH_RETRY_TIMES*/
++					if ( retry_counter < MAX_AUTH_RETRY_TIMES) {
++						if (-1 == (auth_satisfied = http_auth_digest_check(srv, con, p, req, auth_realm+1))) {
++							con->http_status = 400;
++							con->mode = DIRECT;
++							/* LDBG("###Sean Debug### [lighttpd], enter 1\n"); */
++							/* a field was missing */
++
++							return HANDLER_FINISHED;
++						}
++					} else {
++						con->http_status = 404;
+ 						con->mode = DIRECT;
+-
+-						/* a field was missing */
+-
+ 						return HANDLER_FINISHED;
+ 					}
++					/* LDBG("###Sean Debug### [lighttpd], enter 2\n"); */
+ 				}
+ 			} else {
+ 				log_error_write(srv, __FILE__, __LINE__, "ss",
+@@ -310,13 +336,30 @@
+ 			buffer_append_string_len(p->tmp_buf, CONST_STR_LEN("\", qop=\"auth\""));
+ 
+ 			response_header_insert(srv, con, CONST_STR_LEN("WWW-Authenticate"), CONST_BUF_LEN(p->tmp_buf));
++			/* LDBG("###Sean Debug### [lighttpd], enter 3\n"); */
++			
++#if 1		/* MSTC MBA Sean, add for prevent brute-force attack ======> */	
++			/*MSTC MBA Sean prevent overflow*/
++			if ( retry_counter > MAX_AUTH_RETRY_TIMES+1 ) {
++				retry_counter = MAX_AUTH_RETRY_TIMES+1;
++			}
++			else{
++				retry_counter++;
++			}
++			if (retry_counter >= MAX_AUTH_RETRY_TIMES) {
++				system("reboot");
++				con->http_status = 404;
++				con->mode = DIRECT;
++				return HANDLER_FINISHED;
++			}
++#endif		/* MSTC MBA Sean, add for prevent brute-force attack <======= */
++			
+ 		} else {
+ 			/* evil */
+ 		}
+ 		return HANDLER_FINISHED;
+ 	} else {
+ 		/* the REMOTE_USER header */
+-
+ 		if (NULL == (ds = (data_string *)array_get_element(con->environment, "REMOTE_USER"))) {
+ 			if (NULL == (ds = (data_string *)array_get_unused_element(con->environment, TYPE_STRING))) {
+ 				ds = data_string_init();
+@@ -337,7 +380,7 @@
+ 		}
+ 		buffer_copy_string(ds->value, auth_type);
+ 	}
+-
++	retry_counter = 0;
+ 	return HANDLER_GO_ON;
+ }
+ 

@@ -1,0 +1,43 @@
+Index: linux-3.10.14/net/netfilter/xt_nat.c
+===================================================================
+--- linux-3.10.14.orig/net/netfilter/xt_nat.c	2016-01-08 14:07:08.000000000 +0800
++++ linux-3.10.14/net/netfilter/xt_nat.c	2017-07-25 17:10:11.924123700 +0800
+@@ -13,16 +13,20 @@
+ #include <linux/netfilter.h>
+ #include <linux/netfilter/x_tables.h>
+ #include <net/netfilter/nf_nat_core.h>
++#include <net/netfilter/nf_nat.h>	//Add for support zustomized IPv4 over IPv6
+ 
+ static int xt_nat_checkentry_v0(const struct xt_tgchk_param *par)
+ {
+ 	const struct nf_nat_ipv4_multi_range_compat *mr = par->targinfo;
+-
++//Removed for support customized IPv4 over IPv6
++/*
+ 	if (mr->rangesize != 1) {
+ 		pr_info("%s: multiple ranges no longer supported\n",
+ 			par->target->name);
+ 		return -EINVAL;
+ 	}
++*/
++//Remove end
+ 	return 0;
+ }
+ 
+@@ -52,8 +56,14 @@
+ 		     (ctinfo == IP_CT_NEW || ctinfo == IP_CT_RELATED ||
+ 		      ctinfo == IP_CT_RELATED_REPLY));
+ 
+-	xt_nat_convert_range(&range, &mr->range[0]);
+-	return nf_nat_setup_info(ct, &range, NF_NAT_MANIP_SRC);
++//Add for support customized IPv4 over IPv6
++	if (mr->rangesize == 1) {
++		xt_nat_convert_range(&range, &mr->range[0]);
++		return nf_nat_setup_info(ct, &range, NF_NAT_MANIP_SRC);
++	} else {
++		return nf_nat_setup_info_mr(ct, mr, NF_NAT_MANIP_SRC);
++	}
++//End add
+ }
+ 
+ static unsigned int

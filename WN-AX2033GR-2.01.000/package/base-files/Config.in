@@ -1,0 +1,8 @@
+if PACKAGE_base-files
+		menu"MSTC Dual Image with Persist Partition"
+ 		config MSTC_DUAL_IMAGE_WITH_PERSIST
+ 		bool "MSTC Dual Image Support with Persist Partition"
+ 		default n
+
+		endmenu
+endif

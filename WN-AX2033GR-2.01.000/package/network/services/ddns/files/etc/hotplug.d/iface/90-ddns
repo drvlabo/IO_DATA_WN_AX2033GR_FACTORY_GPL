@@ -1,0 +1,27 @@
+#!/bin/sh
+#___MSTC___YuLun: trigger the signal for DDNS service
+ParsID=`pgrep /usr/sbin/ddns`
+if [ "$ParsID" == "-ash: pgrep: not found" ]; then
+	ParsID=`ps | grep ddns | awk '{print $1}' | tr "\n" " " | awk '{print $1}'`
+fi
+if [ "$ParsID" != "" ]; then
+	if [ "$ACTION" == "ifdown" ]; then
+		#kill all wget from the ddns service.
+		PIDs=`ps -w | grep update.iobb.net | awk '{print $1}' | tr "\n" " "`
+		for PID in ${PIDs}
+		do
+			kill -9 ${PID}
+		done
+
+		PIDs=`ps -w | grep ipcheck.iobb.net | awk '{print $1}' | tr"\n" " "`
+		for PID in ${PIDs}
+		do
+			kill -9 ${PID}
+		done
+
+		kill -SIGUSR2 ${ParsID}
+
+	elif [ "$ACTION" == "ifup" ]; then
+		kill -SIGUSR1 ${ParsID}
+	fi
+fi

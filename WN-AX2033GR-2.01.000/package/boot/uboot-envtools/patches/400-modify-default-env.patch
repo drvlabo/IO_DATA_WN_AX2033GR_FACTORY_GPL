@@ -1,0 +1,33 @@
+Index: u-boot-2014.04/tools/env/fw_env.h
+===================================================================
+--- u-boot-2014.04.orig/tools/env/fw_env.h	2014-04-15 03:19:24.000000000 +0800
++++ u-boot-2014.04/tools/env/fw_env.h	2016-02-19 11:06:36.788227269 +0800
+@@ -37,7 +37,7 @@
+ #endif
+ 
+ #ifndef CONFIG_BAUDRATE
+-#define CONFIG_BAUDRATE		115200
++#define CONFIG_BAUDRATE		57600
+ #endif
+ 
+ #ifndef CONFIG_BOOTDELAY
+@@ -46,10 +46,15 @@
+ 
+ #ifndef CONFIG_BOOTCOMMAND
+ #define CONFIG_BOOTCOMMAND							\
+-	"bootp; "								\
+-	"setenv bootargs root=/dev/nfs nfsroot=${serverip}:${rootpath} "	\
+-	"ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}:${hostname}::off; "	\
+-	"bootm"
++	"tftp\0"										\
++	"ipaddr=10.10.10.123\0"							\
++	"serverip=10.10.10.3\0"							\
++	"stdin=serial\0"								\
++	"stdout=serial\0"								\
++	"stderr=serial\0"								\
++	"ethaddr=00:AA:BB:CC:DD:10\0"					\
++	"serialnum=S090Y00000000\0"						\
++	"countrycode=FF\0"
+ #endif
+ 
+ extern int   fw_printenv(int argc, char *argv[]);

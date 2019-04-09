@@ -1,0 +1,53 @@
+<form name="easysetup" method="POST" action="/cgi-bin/sec/easysetup.cgi">
+<input type="hidden" name="inputmethod">
+<table width="100%" height="97%" border="0" cellpadding="1" cellspacing="1">
+<tbody><tr>
+	<td align="center" valign="center">
+	
+<table width="500" border="1" align="center" cellpadding="5" cellspacing="0">
+<tbody><tr><td>
+<table width="500" border="0" cellpadding="5" cellspacing="0">
+<tbody><tr>
+<td colspan="2" align="left">
+プロバイダーから指定されたユーザーIDと接続パスワードを設定してください。<br><br>・ユーザーIDと接続パスワードはプロバイダーの資料を確認してください。<br>・NTTフレッツシリーズなど、「@」から後ろの部分も入力してください。<br>・ユーザーIDと接続パスワードが不明な場合、プロバイダーにお問い合わせください。<br>
+</td>
+</tr>
+<tr>
+<td>ユーザーID：</td>
+
+<td id="selfletsseries" align="left"><input type="radio" name="userinputmethod" value="fletsseries" checked onclick="JSUserInputSelect(0)">フレッツシリーズ
+<input type="radio" name="userinputmethod" value="userid" checked onclick="JSUserInputSelect(1)">その他</td>
+</tr>
+<tr>
+<td align="left"></td><td align="left"><input type="text" name="pppoefletsuser" size="13" maxlength="30" style="ime-mode:disabled;"> @ <input type="text" name="pppoefletsdomain" size="20" maxlength="34" style="ime-mode:disabled;"></td>
+
+</tr>
+<tr>
+<td align="left"></td><td align="left"><input type="text" name="pppoeuser" size="50" maxlength="128" style="ime-mode:disabled;"></td>
+</tr>
+<tr>
+<td align="left">接続パスワード：<td align="left"><input type="password" name="pppoepasswd" size="50" maxlength="128" style="ime-mode:disabled;"></td>
+</tr>
+</table>
+<font size="2">
+・大文字、小文字の違いにご注意ください。<br>
+</font>
+<br>
+</td>
+</tr>
+<tr>
+<td align="right">
+<input type="hidden" name="ottforcsrf">
+
+<input type="submit" name="EasySetupPPPoESetup1" value="次へ" onclick="return JSCheckConfigData(this.form)">&nbsp;
+<input type="submit" name="EasySetupCancel" value="キャンセル">
+</td>
+</tr>
+</table>
+</td>
+</tr></tbody>
+</table>
+</td>
+</tr></tbody>
+</table>
+</form>

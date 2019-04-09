@@ -1,0 +1,240 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "HELP"
+msgstr ""
+
+msgid "apn_help"
+msgstr "APN Description : ..."
+
+msgid "apn_table_apn_name"
+msgstr "APN Name"
+
+msgid "apn_table_apn_name_help"
+msgstr "APN > Name sedcription"
+
+msgid "apn_table_description"
+msgstr "Description"
+
+msgid "apn_table_ip_mode"
+msgstr "IP Mode"
+
+msgid "apn_table_ip_mode_help"
+msgstr "APN > IP Mode Description ..."
+
+msgid "apn_table_name"
+msgstr "Name"
+
+msgid "apn_title"
+msgstr "APN"
+
+msgid "backup_restore_help"
+msgstr "Maintenance > Backup/Restore Description..."
+
+msgid "backup_restore_title"
+msgstr "Backup/Restore"
+
+msgid "lte_status_help"
+msgstr "Monitor > internet status > LTE status Description ..."
+
+msgid "lte_status_title"
+msgstr "LTE Status"
+
+msgid "configuration_title"
+msgstr "Configuration"
+
+msgid "dashboard_title"
+msgstr "Dashboard"
+
+msgid "device_info"
+msgstr "Device Information"
+
+msgid "device_info_help"
+msgstr "Device Infomation description ..."
+
+msgid "device_status_help"
+msgstr "Monitor > internet status >device status description ..."
+
+msgid "device_status_title"
+msgstr "Device Status"
+
+msgid "dhcp_server_title"
+msgstr "DHCP Server"
+
+msgid "dhcp_table_help"
+msgstr "Monitor > DHCP Table Description ..."
+
+msgid "dhcp_table_title"
+msgstr "DHCP Table"
+
+msgid "dmz_help"
+msgstr "Network > DMZ Description ..."
+
+msgid "dmz_title"
+msgstr "DMZ"
+
+msgid "fw_upgrade_help"
+msgstr "Maintenance  > Firmware Upgrade Description ..."
+
+msgid "fw_upgrade_title"
+msgstr "Firmware Upgrade"
+
+msgid "general_help"
+msgstr "Network  > DHCP Server > General Description ..."
+
+msgid "general_title"
+msgstr "General"
+
+msgid "help_title"
+msgstr "Help"
+
+msgid "interface_status"
+msgstr "Interface Status"
+
+msgid "interface_status_help"
+msgstr "Interface Status Description ..."
+
+msgid "internet_status"
+msgstr "Internet Status"
+
+msgid "internet_status_help"
+msgstr "Internet Status Description ..."
+
+msgid "internet_status_title"
+msgstr "Internet Status"
+
+
+msgid "ipv6_help"
+msgstr "Network > LAN > IPv6 Description ..."
+
+msgid "ipv6_title"
+msgstr "IPv6"
+
+msgid "lan_help"
+msgstr "Network > LAN Description ..."
+
+msgid "lan_title"
+msgstr "LAN"
+
+msgid "language_help"
+msgstr "Maintenance > Language Description"
+
+msgid "language_title"
+msgstr "Language"
+
+msgid "log_help"
+msgstr "Monitor > Log Description ..."
+
+msgid "log_title"
+msgstr "Log"
+
+msgid "lte_title"
+msgstr "LTE"
+
+msgid "mac_filter_help"
+msgstr "Network > Wireless LAN > MAC Filter Description ..."
+
+msgid "mac_filter_title"
+msgstr "MAC Filter"
+
+msgid "maintenance_title"
+msgstr "Maintenance"
+
+msgid "manual_connection_help"
+msgstr "Monitor > Internet Status > Manual connection Description ..."
+
+msgid "manual_connection_title"
+msgstr "Manual Connection"
+
+msgid "monitor_title"
+msgstr "Monitor"
+
+msgid "network_select_help"
+msgstr "LTE > Network Settings > Network Select Description ..."
+
+msgid "network_select_title"
+msgstr "Network Select"
+
+msgid "network_setting_help"
+msgstr "LTE > Nework setting Description ..."
+
+msgid "network_setting_title"
+msgstr "Network Setting"
+
+msgid "network_title"
+msgstr "Network"
+
+msgid "oled_display_help"
+msgstr "Maintenance > Oled Display Description ..."
+
+msgid "oled_display_title"
+msgstr "OLED Display"
+
+msgid "password_help"
+msgstr "Maintenance > Password Description ..."
+
+msgid "password_title"
+msgstr "Password"
+
+msgid "restart_help"
+msgstr "Maintenance > Restart Description ..."
+
+msgid "restart_title"
+msgstr "Restart"
+
+msgid "sim_help"
+msgstr "LTE  > SIM Description ..."
+
+msgid "sim_title"
+msgstr "SIM"
+
+msgid "sms_list"
+msgstr "List"
+
+msgid "sms_list_help"
+msgstr "SMS List Description ..."
+
+msgid "sms_send"
+msgstr "Send"
+
+msgid "sms_send_character_set"
+msgstr "Character Set"
+
+msgid "sms_send_character_set_help"
+msgstr "SMS > Character Set Description ..."
+
+msgid "sms_send_content"
+msgstr "Content"
+
+msgid "sms_send_content_help"
+msgstr "SMS > Content Description ..."
+
+msgid "sms_send_help_title"
+msgstr "SMS Send Description : ..."
+
+msgid "sms_send_recever"
+msgstr "Recever"
+
+msgid "sms_send_recever_help"
+msgstr "SMS > Recever Description ..."
+
+msgid "sms_send_table_description"
+msgstr "Description"
+
+msgid "sms_send_table_name"
+msgstr "Name"
+
+msgid "sms_title"
+msgstr "SMS"
+
+msgid "system_status"
+msgstr "Sytem Status"
+
+msgid "system_status_help"
+msgstr "System status description ..."
+
+msgid "wlan_help"
+msgstr "Network > Wireless LAN Description ..."
+
+msgid "wlan_title"
+msgstr "Wireless LAN"

@@ -1,0 +1,50 @@
+msgid "Advanced"
+msgstr ""
+
+msgid "Client_List"
+msgstr ""
+
+msgid "DHCP_Error_4"
+msgstr ""
+
+msgid "DHCP_Error_5"
+msgstr ""
+
+msgid "DHCP_Error_6"
+msgstr ""
+
+msgid "DHCP_PoolSizes_Error_1"
+msgstr ""
+
+msgid "DHCP_PoolSizes_Error_2"
+msgstr ""
+
+msgid "DHCP_PoolSizes_Error_3"
+msgstr ""
+
+msgid "DHCP_PoolSizes_Error_4"
+msgstr ""
+
+msgid "DHCP_Server"
+msgstr ""
+
+msgid "General"
+msgstr ""
+
+msgid "IP_Error_3"
+msgstr ""
+
+msgid "IP_Error_4"
+msgstr ""
+
+msgid "IP_Pool_Starting_Address"
+msgstr ""
+
+msgid "Network"
+msgstr ""
+
+msgid "Pool_Size"
+msgstr ""
+
+msgid "msg_config"
+msgstr ""

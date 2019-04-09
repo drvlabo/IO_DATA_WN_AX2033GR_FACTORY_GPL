@@ -1,0 +1,9 @@
+if PACKAGE_uci		
+	menu"uci features"
+ 		
+	config PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
+ 	bool "uci commit for dual config"
+ 	default n
+
+	endmenu
+endif

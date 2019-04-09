@@ -1,0 +1,14 @@
+Index: linux-3.10.14/net/ipv6/Makefile
+===================================================================
+--- linux-3.10.14.orig/net/ipv6/Makefile	2016-01-08 14:07:06.000000000 +0800
++++ linux-3.10.14/net/ipv6/Makefile	2017-07-25 16:58:59.983194700 +0800
+@@ -8,7 +8,8 @@
+ 		addrlabel.o \
+ 		route.o ip6_fib.o ipv6_sockglue.o ndisc.o udp.o udplite.o \
+ 		raw.o icmp.o mcast.o reassembly.o tcp_ipv6.o \
+-		exthdrs.o datagram.o ip6_flowlabel.o inet6_connection_sock.o
++		exthdrs.o datagram.o ip6_flowlabel.o inet6_connection_sock.o \
++		ip4ov6jp_wrap.o
+ 
+ ipv6-offload :=	ip6_offload.o tcpv6_offload.o udp_offload.o exthdrs_offload.o
+ 

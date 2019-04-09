@@ -1,0 +1,57 @@
+Index: busybox-1.22.1/networking/ntpd.c
+===================================================================
+--- busybox-1.22.1.orig/networking/ntpd.c	2016-11-28 18:52:52.845995884 +0800
++++ busybox-1.22.1/networking/ntpd.c	2016-11-28 18:54:43.617997416 +0800
+@@ -941,6 +941,9 @@
+ 	struct timeval tvc, tvn;
+ 	char buf[sizeof("yyyy-mm-dd hh:mm:ss") + /*paranoia:*/ 4];
+ 	time_t tval;
++#ifdef HAVE_SIMPLE_LOG
++	char simLogCmd[128] = {0};
++#endif
+ 
+ 	gettimeofday(&tvc, NULL); /* never fails */
+ 	dtime = tvc.tv_sec + (1.0e-6 * tvc.tv_usec) + offset;
+@@ -956,6 +959,12 @@
+ 	tval = tvn.tv_sec;
+ 	strftime_YYYYMMDDHHMMSS(buf, sizeof(buf), &tval);
+ 	bb_error_msg("setting time to %s.%06u (offset %+fs)", buf, (unsigned)tvn.tv_usec, offset);
++#ifdef HAVE_SIMPLE_LOG
++	sprintf(simLogCmd, "simple_logrec.sh -w \"NTP, Time zone = `uci get system.@system[0].timezone`\"");
++	system(simLogCmd);
++	sprintf(simLogCmd, "simple_logrec.sh -w \"NTP, Local time= %s\"", buf);
++	system(simLogCmd);
++#endif
+ 
+ 	/* Correct various fields which contain time-relative values: */
+ 
+@@ -1478,7 +1487,13 @@
+ 		set_new_values(STATE_SYNC, offset, recv_time);
+ 
+ 	} else { /* abs_offset <= STEP_THRESHOLD */
+-
++#ifdef HAVE_SIMPLE_LOG
++		char simLogCmd[128] = {0};
++		sprintf(simLogCmd, "simple_logrec.sh -w \"NTP, Time zone = `uci get system.@system[0].timezone`\"");
++		system(simLogCmd);
++		sprintf(simLogCmd, "simple_logrec.sh -w \"NTP, Local time= `date +\"%%Y-%%m-%%d %%H:%%M:%%S\"`\"");
++		system(simLogCmd);
++#endif
+ 		if (G.poll_exp < MINPOLL && G.initial_poll_complete) {
+ 			VERB4 bb_error_msg("small offset:%+f, disabling burst mode", offset);
+ 			G.polladj_count = 0;
+Index: busybox-1.22.1/networking/udhcp/dhcpc.c
+===================================================================
+--- busybox-1.22.1.orig/networking/udhcp/dhcpc.c	2016-11-28 18:52:52.845995884 +0800
++++ busybox-1.22.1/networking/udhcp/dhcpc.c	2016-11-28 18:52:52.841995884 +0800
+@@ -1797,6 +1797,10 @@
+ 		perform_release(server_addr, requested_ip);
+ 	retval = 0;
+  ret:
++#ifdef HAVE_SIMPLE_LOG
++	/* MSTC, Terence, 20160527 Append simple log */
++	system("simple_logrec.sh -w \"WAN, stop DHCP mode\"");
++#endif
+ 	/*if (client_config.pidfile) - remove_pidfile has its own check */
+ 		remove_pidfile(client_config.pidfile);
+ 	return retval;

@@ -1,0 +1,148 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: header.htm 4891 2009-06-22 10:23:21Z jow $
+
+-%>
+<%
+require("luci.http").prepare_content("text/html")
+local uci = require("luci.model.uci").cursor()
+local i18n = require("luci.i18n")
+local lang = uci:get("luci","main","lang") 
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+-%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"  />
+<meta http-equiv="Pragma" content="no-cache">
+<title>.::<%:welcome_title_message%>::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<style>
+td {white-space: nowrap;}
+</style>
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script language="JavaScript" type="text/javascript">
+function btnApply()
+{
+	var submit_url = '<%=luci.dispatcher.build_url("expert","configuration","management","qos", "general")%>';
+	var loc = submit_url + '?apply=Apply';
+
+	
+	if ((document.QoSGeneral.UploadBandwidth.value < 64) || (document.QoSGeneral.UploadBandwidth.value > 1000000)) {
+	    alert("Please set Upstream Bandwidth between 64 ~ 1000000 kbps");
+            return false;
+	}
+	if ((document.QoSGeneral.DownloadBandwidth.value < 64) || (document.QoSGeneral.DownloadBandwidth.value > 1000000)) {
+	    alert("Please set Downstream Bandwidth between 64 ~ 1000000 kbps");
+            return false;
+	}
+
+	/* for shapping rate */
+	loc += '&UploadBandwidth=' + document.QoSGeneral.UploadBandwidth.value;
+	loc += '&DownloadBandwidth=' + document.QoSGeneral.DownloadBandwidth.value;
+	
+	with ( document.forms[0] ){
+		if(qosEnable.checked == true){
+			loc += '&qosEnable=' + 1;
+		}
+		else{
+			loc += '&qosEnable=' + 0;
+		}
+		
+		var code = 'location="' + loc + '"';
+     	eval(code);
+	}
+}
+function qos_switch()
+{
+        if (document.QoSGeneral.qosEnable.checked ){
+                document.QoSGeneral.UploadBandwidth.disabled = false;
+                document.QoSGeneral.DownloadBandwidth.disabled = false;
+        }else{
+                document.QoSGeneral.UploadBandwidth.disabled = true;
+                document.QoSGeneral.DownloadBandwidth.disabled = true;
+        }
+}
+</script>
+</head>
+<body>
+<form method="post" name="QoSGeneral">
+<div id="tabs">
+  <ul>
+    <li class="hightline"><a  title="<%:General%>"><span><%:General%></span></a></li>
+    <li><a href="<%=controller%>/expert/configuration/management/qos/advance" title="<%:Advanced%>"><span><%:Advanced%></span></a></li>
+  </ul>
+  <br class="clearfloat" />
+</div>
+<div id="table">
+  <ul>
+    <li class="table_top"></li>
+    <li class="table_content">
+      <div class="data">
+        <ul>
+          <li class="title">
+            <table border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <td nowrap id="bmTitle"><%:Service_Management%></td>
+              </tr>
+            </table>
+          </li>
+          <li class="w_text">
+	   <ul>
+            <table width="95%" border="0" align="center" cellpadding="0" cellspacing="0">
+                <% enable = uci:get("qos","general","enable") %>
+                  <input type="checkbox" name="qosEnable" value=1 <%if enable == "1" then%>checked<%end%> onclick="qos_switch()">
+                  <font id="bmEnableQos"><%:Enable_Bandwidth_Management%></font>
+            </table>
+	   </ul>
+          </li>
+
+	  <li class="w_text">
+          <ul>
+          <table align="center" border="0" cellpadding="0" cellspacing="0" width="95%">
+            <li class="left_table"><font id="advUpBWStr"><%:Upstream_Bandwidth%>:</font></li>
+            <% upShapeRate = uci:get("qos","shaper","port_rate_eth0")%>
+            <li class="right_table">
+            <input name="UploadBandwidth" size="8" <% if upShapeRate == "0" then %>value="" <%else%> value="<%=upShapeRate%>" <%end%> <%if enable == "0" then%>disabled<%end%> type="text" />&nbsp; (kbps)<!--<font id="advUpReserved">(10 kbps reserved)</font>-->
+            </li>
+            <li class="left_table"><font id="advDownBWStr"><%:Downstream_Bandwidth%>:</font></li>
+            <% downShapeRate = uci:get("qos","shaper","port_rate_lan")%>
+            <li class="right_table">
+            <input name="DownloadBandwidth" size="8" <% if downShapeRate == "0" then %>value="" <%else%> value="<%=downShapeRate%>" <%end%> <%if enable == "0" then%>disabled<%end%> type="text" />&nbsp; (kbps)<!--<font id="advDownReserved">(10 kbps reserved)</font>-->
+            </li>
+          </table>
+         </li>
+        </ul>
+      </div>
+      <div class="spaceair"></div>
+      <div class="w_text"><span class="i_note"><%:Note%>:</span></div>
+      <div class="w_text"><span class="i_note_a">1.&nbsp;&nbsp;Incorrect value will cause QoS fail.<br />2.&nbsp;&nbsp;50Mbps=50000kbps.</span>
+      <div class="spaceair"></div>
+    </li>
+    <li class="table_button">
+      <div class="button">
+        <center>
+          <input type="button" id="bmApply" name="apply" value="<%:Apply%>" onClick="btnApply()">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <input type="reset" id="bmReset" name="Cancel" value="<%:cancel%>">
+        </center>
+      </div>
+    </li>
+  </ul>
+</div>
+</form>
+</body>
+<script language="JavaScript">
+	showFullPath(' <%:Management%> > <%:Bandwidth_MGMT%>');
+</script>
+</html>

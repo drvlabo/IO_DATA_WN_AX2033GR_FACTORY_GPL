@@ -1,0 +1,1166 @@
+var sysOPMode_AR = 0;
+var sysOPMode_APRP = 1;
+var sysOPMode_AP = 2;
+var sysOPMode_CB   = 3;
+var sysOPMode_CR   = 4;
+var WebOpModeList = "0000101"
+var FunctionList = {HAS_DUAL_PPPOE:0,HAS_PASS_THROUGH:1,HAS_PORTBASED_QOS:0,HAS_WLAN_CONNECTION_CONTROL:1,HAS_5G_SETTING:1,HAS_RALINK_COUNTRY_SETTING:0,HAS_TX_NUM:3,HAS_RX_NUM:3,HAS_BOTTOM_IMG:0,HAS_NONE_LOGO_IMG:1,HAS_IPBASED_QOS:0,HAS_NEW_NAT_SERVER:1,HAS_WAN_3G_SETTING:0,HAS_IGMPPROXY:1,HAS_NETBIOS:0,HAS_UPNP_PORTFORWARDING:1,HAS_DNS_SERVERS_ASSIGNED_BY_DHCP_SERVER:0,HAS_MULTI_DNS_MODE:0,HAS_QOS_TOTAL_BANDWIDTH_SETTING:0,HAS_IOBB_DDNS:1,HAS_ADVANCED_DIAGNOSIS:0,USE_ONE_FW_IMAGE:1,HAS_PRIORITY_WEB_ACCOUNT:0,HAS_SNMP_TRAP_SUPPORT:0,HAS_IODATA_3G:0,HAS_WAN_XGP:0,HAS_WAN_WIMAX:0,HAS_WEB_USE_HTML_LOGIN:0,IO_6650_STYLE_LANG_STR:0,HAS_PPPOE_UNNUMBERED_IP:0,HAS_WAN_L2TP:0,HAS_WEB_3G_ISP_LIST:0,HAS_HWNAT:1,HAS_STA_WPSBUTTON:0,HAS_SUPPORT_SNMPD:0,HAS_WIMAX_OUTSIDE:0,HAS_WIMAX_MANUAL:0,HAS_NOT_SUPPORT_MULTI_LAN:0,HAS_WEB_ISOLATION_IN_ADV:0,HAS_IGMPPROXY_GUI:0,HAS_BSFILTER:1,HAS_WAN2_DEV:1,HAS_ADVANCED_ECO_SETTINGS:1,HAS_ECO_SUPPORT:1,HAS_NTPSERVER_SUPPORT_ONLY:1,HAS_FAKE_UBOOT_VERSION:1,HAS_RADIO_IN_WAN_SETTING:1,HAS_WEB_RADIUS_SETTING:0,HAS_WEB_SPANNING_TREE_SETTING:0,HAS_NOT_11N_SETTING:0,HAS_WIMAX_3G_MIXED:0,HAS_GIGA_LAN:1,HAS_BATTERY_HOLTEK:0,HAS_NETUSB:1,HAS_SCHEDULE_MACFILTER:0,HAS_NOT_DDNS_SETTING:0,WEB_HASNOT_TX_POWER:0,SUPPORT_3G_NIFTY_MOBILE_BB:0,HAS_WIMAX_3G_MIXED_UQC_STYLE:0,SUPPORT_AUTO_TXPOWER:0,SUPPORT_WEB_LAN_SUBNET_KEYIN:0,ECO_WITH_WLAN_LOW_RATE:1,HAS_WEB_HIDE_MAC:0,HAS_WEB_DISPLAY_BG_STRING:0,HAS_WEB_DISPLAY_3G_SIGNAL:0,HAS_WEB_HIDE_BUTTON:0,HAS_WEB_HIDE_WLAN_ONOFF:0,HAS_WEB_INTERNET_MENU_APMODE:0,HAS_VPN:1,HAS_VPN_REMOTE_WITHIN_LAN:1,HAS_RADIO_MIX_SETTINGS:1,SUPPORT_IODATA_DDNS_IN_BRIDGE_MODE:1,HAS_NOTIFICATION_ENABLE:1,HAS_IPV6_PATHTHROUGH_WIZARD_CONTROL:1,HAS_EZINET_SUPPORT:1,HAS_NETUSB_HOST:1,HAS_ARP_PROXY:0,HAS_USBTV_SUPPORT:0,HAS_WEB_WEP_ONLY_OPEN_SYS:0,HAS_WEB_HIDE_WPA_TKIP:0,HAS_WEB_HIDE_MULTIPLE_PPPOE:0,SUPPORT_BS_V2:1,HAS_WEB_GENERATE_DDNS:1,HAS_WEB_NEW_PPPOE_MTU_MINIMAL:1,HAS_WEB_HIDE_MULTICAST:0,NON_USED:0}
+var FunctionList2 = {HAS_SUPPORT_WEB_WPS20:1,HAS_WEB_CHANGE_APMODE:0,HAS_CHILD_SSID:0,HAS_IODATA_ISOLATION:1,HAS_WEB_HIDE_PPPOE_FLET_SQUARE:1,HAS_SXDLNA_FUNC:1,HAS_WEB_VPN_ONLY_MSCHAP_128:1,HAS_ONLINE_DOCUMENT:1,HAS_ATH_ETHERNET_SWITCH_S17_HWACCEL:1,HAS_IO_REMOTE_ACCESS_FUNC:1,HAS_SUPPORT_CAPTCHA_FOR_SYSPASSWORD:0,HAS_WEB_HIDE_UPNP_APMODE:1,HAS_5G_AC_SETTING:1,HAS_WEB_FEMINI_NTP_SERVER:0,HAS_WEB_HIDE_SSID_NUM_SELECT:0,HAS_WEB_HIDE_WEP_ENCRYPT:0,HAS_WEB_SHOW_WIRELESS_FRAGMENT_SETTING:0,HAS_NONE_TOP_LOGO_IMG:0,HAS_WEB_MENUALLY_TIME_SETTING:0,HAS_WEB_UPNPC:0,HAS_WEB_MIXED_BECOME_WPA_WPA2_AES:0,HAS_SUPPORT_BLUETOOTH_MODULE:0,HAS_WEB_WEP_ONLY_AUTO:1,HAS_MOBILE_PAGE_SUPPORT:1,HAS_WEB_SUPPORT_BAND:0,HAS_WEB_SUPPORT_WDS_SETTING:0,HAS_NETUSB_HOST_ONLY_PRINT_SERVER:0,FIRMWARE_UPGRADE_COUNTDOWNPAGE_BEFORE_ERASE_WRITE:0,HAS_SUPPORT_DUPLICATE_AP_SETTINGS:1,HAS_WEB_HTTPD_REMOTEPORT:0,HAS_WLAN_MACFLT:1,HAS_DMZ:1,HAS_WEB_MOBILE_WLBAISC_PAGE:1,FW_UPGRADE_ADD_WORDS:1,HAS_WEB_HARD_CODE_FW_VERSION:0,NON_USED:0}
+var tvMode=0;
+var wanConnectype=[[0,"Static IP"],[1,"PPPoE"],[2,"Dynamic IP Address"]];
+var Sys = {};
+var ua = navigator.userAgent.toLowerCase();
+var s;
+(s = ua.match(/msie ([\d.]+)/)) ? Sys.ie = s[1] :
+(s = ua.match(/firefox\/([\d.]+)/)) ? Sys.firefox = s[1] :
+(s = ua.match(/chrome\/([\d.]+)/)) ? Sys.chrome = s[1] :
+(s = ua.match(/opera.([\d.]+)/)) ? Sys.opera = s[1] :
+(s = ua.match(/version\/([\d.]+).*safari/)) ? Sys.safari = s[1] : 0;
+var VENDORS=
+{vendorMode:"WN-AC1600DGR", modelName:"WN-AC1600DGR", productID:"030A0060", vendorLogo:"logo.gif", bannerLogo:"banner.gif", titleLogo:"title.gif"};
+var vendorString = VENDORS.productID.substr(0,VENDORS.productID.length/2);
+var modelString = VENDORS.productID.substr(VENDORS.productID.length/2, VENDORS.productID.length-VENDORS.productID.length/2);
+var g_sysOPMode=0;
+var wlanApMode=0;
+var default_language = 'uk';
+var language = "jp";
+var xmlfile='file/'+language+'_xml.txt';
+document.write('<script language="javascript" src="<%=media%>"/jp.txt"></script>');
+function getCookie(c_name)
+{
+if (document.cookie.length>0)
+{
+c_start=document.cookie.indexOf(c_name + "=");
+if (c_start!=-1)
+{
+c_start=c_start + c_name.length+1;
+c_end=document.cookie.indexOf(";",c_start);
+if (c_end==-1)
+c_end=document.cookie.length;
+return unescape(document.cookie.substring(c_start,c_end))
+}
+}
+return default_language;
+}
+function readFile(url){
+var xmlhttp;
+/*@cc_on
+@if (@_jscript_version >= 5)
+try {
+xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+} catch (e) {
+try {
+xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+} catch (E) {
+xmlhttp = false;
+}
+}
+@else
+xmlhttp = false;
+@end @*/
+if (!xmlhttp && typeof XMLHttpRequest != 'undefined') {
+try {
+xmlhttp = new XMLHttpRequest();
+} catch (e) {
+xmlhttp = false;
+}
+}
+xmlhttp.open("GET",url,false);
+xmlhttp.send(null);
+return xmlhttp.responseText;
+}
+function decode(code)
+{
+code = code.replace(/"/g,'\\"');
+code = '"' + code + '"';
+code=(eval(code));
+return code
+}
+function replacespecial(val)
+{
+val=val.replace(/</g,"&lt;");
+val=val.replace(/>/g,"&gt;");
+val=val.replace(/ /g,"&nbsp;");
+return val;
+}
+function showText(number) 
+{
+return tekst_array[number];
+}
+function showXmlText(number)
+{
+var tekst=readFile(xmlfile);
+var tekst_array=tekst.split("~");
+return tekst_array[number];
+}
+function showFwFixed()
+{
+var tekst=readFile(xmlfile);
+var tekst_array=tekst.split("~");
+for(var i=3;i<tekst_array.length;i++){
+document.write("<tr><td align=\"left\"><li><script type=\"text/javascript\">document.write(showXmlText("+i+"))</script></li></td></tr>");}
+}
+var oWidth=12;
+var lWidth;
+var g_showHomeLink=new Array();
+var g_showHomeStr=new Array();
+var g_showFwLink=new Array();
+var g_showFwStr=new Array();
+var g_showWlanLink=new Array();
+var g_showWlanStr=new Array();
+var g_showra2WlanLink=new Array();
+var g_showra2WlanStr=new Array();
+var g_showAdvSetLink=new Array();
+var g_showAdvSetStr=new Array();
+var g_showToolBoxLink=new Array();
+var g_showToolBoxStr=new Array();
+var g_showEngineeringLink=new Array();
+var g_showEngineeringStr=new Array();
+var g_showBadSiteLink=new Array();
+var g_showBadSiteStr=new Array();
+var g_showLedInfoLink = new Array();
+var g_showLedInfoStr = new Array();
+var g_showNewInternetLink = new Array();
+var g_showNewInternetStr = new Array();
+var g_showNetUSBLink = new Array();
+var g_showNetUSBStr = new Array();
+var g_showBluetoothLink = new Array();
+var g_showBluetoothStr = new Array();
+function getOPMode(opmode)
+{
+var l2tpIdx=0;
+switch(opmode)
+{
+case 0://Ap router
+default :
+if(FunctionList.HAS_ARP_PROXY)
+{
+g_showHomeLink=new Array("lan","stadhcptbl","arpproxy");
+g_showHomeStr=new Array(showText(929),"DHCP","Proxy ARP");
+}
+else
+{
+g_showHomeLink=new Array("lan","stadhcptbl");
+g_showHomeStr=new Array(showText(929),"DHCP");
+}
+if(FunctionList.HAS_DUAL_PPPOE)
+{
+g_showIntLink=new Array("stanet","wizard_dynamic","wizard_static","wizard_pppoe","wizard_pptp","dual_pppoe_cfg");
+g_showIntStr=new Array(showText(7),showText(135),showText(136),"PPPoE","PPTP","Dual PPPoE");
+}
+else
+{ 
+if(FunctionList.IO_6650_STYLE_LANG_STR)
+{
+g_showIntLink=new Array("stanet");
+g_showIntStr=new Array(showText(7));
+//l2tpIdx=1;
+}
+else
+{
+g_showIntLink=new Array("stanet","wizard_dynamic","wizard_static","wizard_pppoe");
+g_showIntStr=new Array(showText(7),showText(135),showText(136),"PPPoE");
+//l2tpIdx=5;
+}
+}
+if(FunctionList.HAS_WIMAX_OUTSIDE)
+{	
+g_showIntLink.push("wimax_site");
+g_showIntStr.push(showText(835));
+}
+if(FunctionList.HAS_WIMAX_MANUAL)
+{
+if(FunctionList.HAS_WIMAX_3G_MIXED)
+{
+g_showIntLink.push("wimax_method");
+g_showIntStr.push("WiMAX");
+}
+else
+{
+g_showIntLink.push("wimax_method");
+g_showIntStr.push(showText(1055));
+}
+}
+if(FunctionList.HAS_WAN_3G_SETTING)
+{
+if(FunctionList.HAS_WIMAX_3G_MIXED)
+{
+if(FunctionList.HAS_WIMAX_3G_MIXED_UQC_STYLE==0)
+{
+g_showIntLink.push("wizard_3g");
+g_showIntStr.push("3G");
+}
+}
+else
+{	
+g_showIntLink.push("wizard_3g");
+g_showIntStr.push("DATA CARD");
+}
+}
+l2tpIdx=g_showIntLink.length;
+/*joey 2009-0714 add l2tp page*/
+if(FunctionList.HAS_WAN_L2TP)
+{
+g_showIntLink.splice(l2tpIdx,0,"wizard_l2tp");
+g_showIntStr.splice(l2tpIdx,0,"L2TP");
+}
+if(FunctionList2.HAS_WEB_HIDE_WPS)
+{
+g_showWlanLink=new Array("wlbasic","wlencrypt","wladvance","wlcontrol","staapclisurvey");
+g_showWlanStr=new Array(showText(77),showText(107),showText(78),showText(604),showText(605));
+}
+else
+{ 
+if(FunctionList.HAS_WLAN_CONNECTION_CONTROL)
+{	
+g_showWlanLink=new Array("wlbasic","wlencrypt","wladvance","wlcontrol","wps","staapclisurvey");
+g_showWlanStr=new Array(showText(77),showText(107),showText(78),showText(604),showText(306),showText(605));
+}
+else
+{
+g_showWlanLink=new Array("wlbasic","wlencrypt","wladvance","wlcontrol","wps","staapclisurvey");
+g_showWlanStr=new Array(showText(77),showText(107),showText(78),showText(604),showText(306),showText(605));
+}
+}
+if(FunctionList.HAS_SCHEDULE_MACFILTER)
+{
+g_showWlanLink.push("wlmac_schedule");
+g_showWlanStr.push(showText(1092));
+}
+if(FunctionList.HAS_5G_SETTING)
+{	
+g_showra2WlanLink=new Array("wlbasic_ra2","wlencrypt_ra2","wladvance_ra2");
+g_showra2WlanStr=new Array(showText(77),showText(107),showText(78));
+if(FunctionList2.HAS_WLAN_MACFLT)
+{
+g_showra2WlanLink.push("wlcontrol_ra2");
+g_showra2WlanStr.push(showText(604));
+}
+g_showra2WlanLink.push("wps_ra2");
+g_showra2WlanStr.push(showText(306));
+g_showra2WlanLink.push("staapclisurvey_ra2");
+g_showra2WlanStr.push(showText(605));
+if(FunctionList2.HAS_CHILD_SSID)
+{
+g_showra2WlanLink.push("wlchildssid");
+g_showra2WlanStr.push(showText(1332));
+}
+if(0)
+{
+g_showra2WlanLink.push("wlctl_ra2");
+g_showra2WlanStr.push(showText(519));
+}
+}
+if(FunctionList.HAS_PASS_THROUGH)
+{
+g_showFwLink.push("fwpass");
+g_showFwStr.push(showText(1002));
+}
+if(FunctionList2.HAS_DMZ)
+{
+g_showFwLink.push("fwdmz");
+g_showFwStr.push("DMZ");
+}
+g_showFwLink.push("fwdos");
+g_showFwStr.push("DoS");
+if(FunctionList2.HAS_WEB_HTTPD_REMOTEPORT)
+{
+g_showFwLink.push("fwremotelogin");
+g_showFwStr.push(showText(1488));
+}
+g_showAdvSetLink=new Array("natvser","natupnp");
+g_showAdvSetStr=new Array(showText(610),"UPnP");
+if(!FunctionList.HAS_NOT_DDNS_SETTING)
+{
+g_showAdvSetLink.push("wanddns_iobb");
+g_showAdvSetStr.push("iobb.net");
+}
+if(FunctionList.HAS_HWNAT)
+{
+g_showAdvSetLink.push("natmain");
+g_showAdvSetStr.push("NAT");
+}
+if(FunctionList.HAS_IGMPPROXY_GUI)
+{
+g_showAdvSetLink.push("wanadv");
+g_showAdvSetStr.push("IGMP");
+}
+if(FunctionList.HAS_EZINET_SUPPORT)
+{
+g_showAdvSetLink.push("ezinet_http_redirect");
+g_showAdvSetStr.push(showText(1225));
+}
+g_showToolBoxLink=new Array("syspasswd","systimezone","stasylog","tlupgrade","tlcon","tlreset");
+g_showToolBoxStr=new Array(showText(612),showText(613),showText(11),showText(213),showText(214),showText(945));		
+if(wlanApMode==5)
+{
+g_showToolBoxLink.splice(3, 1);
+g_showToolBoxStr.splice(3, 1);
+}
+if(FunctionList.HAS_BSFILTER)
+{
+g_showBadSiteLink=new Array("bsmain","bsurlfilter","bslog");
+g_showBadSiteStr=new Array(showText(905),showText(608),showText(902));
+}
+g_showLedInfoLink=new Array("ledinfo");
+if(FunctionList.HAS_ADVANCED_ECO_SETTINGS || FunctionList.HAS_WAN_WIMAX)
+g_showLedInfoStr=new Array(showText(933));
+else
+g_showLedInfoStr=new Array(showText(934));
+g_showNewInternetLink = new Array("wizard_dynamic","wizard_static","wizard_pppoe");
+g_showNewInternetStr = new Array(showText(395),showText(949),showText(950));
+if(FunctionList.HAS_WAN_3G_SETTING)
+{
+g_showNewInternetLink.push("wizard_3g");
+g_showNewInternetStr.push(showText(788));
+}
+if(FunctionList2.HAS_WEB_CHANGE_APMODE)
+{
+g_showNewInternetLink.push("wizard_change_apmode");
+g_showNewInternetStr.push(showText(1275));
+}
+g_showNetUSBLink = new Array();
+g_showNetUSBStr = new Array();
+if(FunctionList.HAS_NETUSB_HOST)
+{
+g_showNetUSBLink.push("netusb_host");
+g_showNetUSBStr.push("USB"+showText(46));
+if(!FunctionList2.HAS_NETUSB_HOST_ONLY_PRINT_SERVER)
+{
+g_showNetUSBLink.push("netusb_nas");
+if(FunctionList2.HAS_IO_REMOTE_ACCESS_FUNC)
+{
+g_showNetUSBStr.push(showText(1366));
+}
+else
+{
+g_showNetUSBStr.push("NAS"+showText(46));
+}
+}
+}
+else
+{
+g_showNetUSBLink.push("netusb");
+g_showNetUSBStr.push(showText(7));
+}		
+if(FunctionList.HAS_VPN)
+{
+//VPN
+g_showVPNLink=new Array("vpnconnstainfo","vpn_user_io");
+g_showVPNStr=new Array(showText(7),showText(539));
+}
+if(FunctionList2.HAS_SUPPORT_BLUETOOTH_MODULE)
+{
+g_showBluetoothLink=new Array("blt_maset","blt_security","blt_connect");
+g_showBluetoothStr=new Array(showText(1419),showText(1428),showText(1437));
+}
+break;
+case 1: // repeater mode
+case 2: // ap mode
+if(FunctionList.HAS_ARP_PROXY)
+{
+g_showHomeLink=new Array("lan", "arpproxy");
+g_showHomeStr=new Array(showText(929),"Proxy ARP");
+}
+//this is support WN-G300TVGR for TV mode using.
+else if(tvMode==1)
+{
+g_showHomeLink=new Array("lan","stadhcptbl");
+g_showHomeStr=new Array(showText(929),"DHCP");
+}
+else
+{
+g_showHomeLink=new Array("lan");
+g_showHomeStr=new Array(showText(929));
+}
+if(FunctionList.HAS_DUAL_PPPOE)
+{
+g_showIntLink=new Array("stanet","wizard_dynamic","wizard_static","wizard_pppoe","wizard_pptp","dual_pppoe_cfg");
+g_showIntStr=new Array(showText(7),showText(135),showText(136),"PPPoE","PPTP","Dual PPPoE");
+}
+else
+{
+g_showIntLink=new Array("stanet");
+g_showIntStr=new Array(showText(7));
+}
+if(FunctionList.HAS_WIMAX_OUTSIDE)
+{	
+g_showIntLink.push("wimax_site");
+g_showIntStr.push(showText(835));
+}
+if(FunctionList.HAS_WIMAX_MANUAL)
+{
+if(FunctionList.HAS_WIMAX_3G_MIXED)
+{
+g_showIntLink.push("wimax_method");
+g_showIntStr.push("WiMAX");
+}
+else
+{
+g_showIntLink.push("wimax_method");
+g_showIntStr.push(showText(1055));
+}
+}
+if(FunctionList.HAS_WAN_3G_SETTING)
+{
+if(FunctionList.HAS_WIMAX_3G_MIXED)
+{
+if(FunctionList.HAS_WIMAX_3G_MIXED_UQC_STYLE==0)
+{
+g_showIntLink.push("wizard_3g");
+g_showIntStr.push("3G");
+}
+}
+else
+{	
+g_showIntLink.push("wizard_3g");
+g_showIntStr.push("3G");
+}
+}
+if(FunctionList2.HAS_WEB_HIDE_WPS)
+{
+//modify WPS for iodata
+g_showWlanLink1=new Array("wlbasic","wlencrypt","wladvance","wlcontrol","staapclisurvey");
+g_showWlanStr1=new Array(showText(77),showText(107),showText(78),showText(604),showText(605));		
+}
+else
+{
+if(FunctionList.HAS_WLAN_CONNECTION_CONTROL)
+{
+//modify WPS for iodata
+g_showWlanLink1=new Array("wlbasic","wlencrypt","wladvance","wlcontrol","wps","staapclisurvey");
+g_showWlanStr1=new Array(showText(77),showText(107),showText(78),showText(604),showText(306),showText(605));		
+}
+else
+{
+g_showWlanLink1=new Array("wlbasic","wlencrypt","wladvance","wlcontrol","wps","staapclisurvey");
+g_showWlanStr1=new Array(showText(77),showText(107),showText(78),showText(604),showText(306),showText(605));		
+}
+}
+if(FunctionList.HAS_5G_SETTING)
+{
+g_showra2WlanLink=new Array("wlbasic_ra2","wlencrypt_ra2","wladvance_ra2","wlcontrol_ra2","wps_ra2","staapclisurvey_ra2");
+g_showra2WlanStr=new Array(showText(77),showText(107),showText(78),showText(604),showText(306),showText(605));
+if(FunctionList2.HAS_CHILD_SSID)
+{
+g_showra2WlanLink.push("wlchildssid");
+g_showra2WlanStr.push(showText(1332))
+}
+}
+if(FunctionList.HAS_PASS_THROUGH)
+{
+g_showFwLink.push("fwpass");
+g_showFwStr.push(showText(1002));
+}
+if(FunctionList2.HAS_DMZ)
+{
+g_showFwLink.push("fwdmz");
+g_showFwStr.push("DMZ");
+}
+g_showFwLink.push("fwdos");
+g_showFwStr.push("DoS");
+if(FunctionList2.HAS_WEB_HIDE_UPNP_APMODE==1 && FunctionList2.HAS_WEB_UPNPC==0)
+{
+//hidden upnp page
+}
+else
+{
+g_showAdvSetLink=new Array("natupnp");
+g_showAdvSetStr=new Array("UPnP");
+}
+if(FunctionList.SUPPORT_IODATA_DDNS_IN_BRIDGE_MODE)
+{
+g_showAdvSetLink.push("wanddns_iobb");
+g_showAdvSetStr.push("iobb.net");
+}
+g_showToolBoxLink=new Array("syspasswd","systimezone","stasylog","tlupgrade","tlcon","tlreset");
+g_showToolBoxStr=new Array(showText(612),showText(613),showText(11),showText(213),showText(214),showText(945));				
+if(FunctionList.HAS_BSFILTER)
+{
+g_showBadSiteLink=new Array("bsmain","bsurlfilter","bslog");
+g_showBadSiteStr=new Array(showText(905),showText(608),showText(902));
+}
+g_showLedInfoLink=new Array("ledinfo");
+if(FunctionList.HAS_ADVANCED_ECO_SETTINGS || FunctionList.HAS_WAN_WIMAX)
+g_showLedInfoStr=new Array(showText(933));
+else
+g_showLedInfoStr=new Array(showText(934));
+g_showNewInternetLink = new Array("wizard_dynamic","wizard_static","wizard_pppoe");
+g_showNewInternetStr = new Array(showText(395),showText(949),showText(950));
+if(FunctionList2.HAS_WEB_CHANGE_APMODE)
+{
+g_showNewInternetLink.push("wizard_change_apmode");
+g_showNewInternetStr.push(showText(1275));
+}
+g_showNetUSBLink = new Array();
+g_showNetUSBStr = new Array();
+if(FunctionList.HAS_NETUSB_HOST)
+{
+g_showNetUSBLink.push("netusb_host");
+g_showNetUSBStr.push("USB"+showText(46));
+g_showNetUSBLink.push("netusb_nas");
+if(FunctionList2.HAS_IO_REMOTE_ACCESS_FUNC)
+{
+g_showNetUSBStr.push(showText(1366));
+}
+else
+{
+g_showNetUSBStr.push("NAS"+showText(46));
+}
+}
+else
+{
+g_showNetUSBLink.push("netusb");
+g_showNetUSBStr.push(showText(7));
+}
+if(FunctionList.HAS_VPN)
+{
+//VPN
+g_showVPNLink=new Array("vpnconnstainfo","vpn_user_io");
+g_showVPNStr=new Array(showText(7),showText(539));
+}
+if(FunctionList2.HAS_SUPPORT_BLUETOOTH_MODULE)
+{	
+g_showBluetoothLink=new Array("blt_maset","blt_security","blt_connect");
+g_showBluetoothStr=new Array(showText(1419),showText(1428),showText(1437));
+}	
+break;
+case 5://WDS
+g_showHomeLink=new Array("lan","stadhcptbl");
+g_showHomeStr=new Array(showText(929),"DHCP");
+g_showWlanLink=new Array("wlbasic");
+g_showWlanStr=new Array(showText(77));
+if(FunctionList.HAS_PASS_THROUGH)
+{
+g_showFwLink.push("fwpass");
+g_showFwStr.push(showText(1002));
+}
+if(FunctionList2.HAS_DMZ)
+{
+g_showFwLink.push("fwdmz");
+g_showFwStr.push("DMZ");
+}
+g_showFwLink.push("fwdos");
+g_showFwStr.push("DoS");
+g_showAdvSetLink=new Array("natvser","natupnp","wanddns_iobb");
+g_showAdvSetStr=new Array(showText(610),"UPnP","iobb.net");
+g_showToolBoxLink=new Array("syspasswd","systimezone","stasylog","tlupgrade","tlcon","tlreset");
+g_showToolBoxStr=new Array(showText(210),showText(211),showText(11),showText(213),showText(214),showText(945));		
+break;
+case sysOPMode_CB:
+//g_showHomeLink=new Array("lan","stasmonitor");
+g_showHomeLink=new Array("lan");
+g_showHomeStr=new Array(showText(929),showText(602));
+/*if(!FunctionList.HAS_NOT_SUPPORT_MULTI_LAN)
+{
+g_showHomeLink.push("stamultilan");
+g_showHomeStr.push(showText(603));
+}*/
+if(FunctionList2.HAS_WEB_HIDE_WPS)
+{
+g_showWlanLink3=new Array("wlbasic");
+g_showWlanStr3=new Array(showText(77),showText(78),"AP Profile");
+}
+else
+{
+if(FunctionList.HAS_STA_WPSBUTTON)
+{
+g_showWlanLink3=new Array("wlbasic","wps");
+g_showWlanStr3=new Array(showText(77),showText(78),showText(306),"AP Profile");
+}
+else
+{
+g_showWlanLink3=new Array("wlbasic");
+g_showWlanStr3=new Array(showText(77),showText(78),"AP Profile");		
+}
+}
+//ECO Mode
+g_showLedInfoLink=new Array("ledinfo");
+g_showLedInfoStr=new Array(showText(933));
+g_showToolBoxLink=new Array("syspasswd","systimezone","stasylog","tlupgrade","tlcon","tlreset");
+g_showToolBoxStr=new Array(showText(612),showText(613),showText(11),showText(213),showText(214),showText(945));
+break;
+case sysOPMode_CR:
+g_showHomeLink=new Array("lan","stadhcptbl","stasmonitor");
+g_showHomeStr=new Array(showText(929),"DHCP",showText(602));
+if(!FunctionList.HAS_NOT_SUPPORT_MULTI_LAN)
+{
+g_showHomeLink.push("stamultilan");
+g_showHomeStr.push(showText(603));
+}
+g_showIntLink=new Array("stanet","wizard_dynamic","wizard_static","wizard_pppoe","wizard_pptp");
+g_showIntStr=new Array(showText(7),showText(135),showText(136),"PPPoE","PPTP");		
+if(FunctionList2.HAS_WEB_HIDE_WPS)
+{
+g_showWlanLink3=new Array("wlbasic","wladvance","wlapprofile");
+g_showWlanStr3=new Array(showText(77),showText(78),"AP Profile");
+}
+else
+{
+if(FunctionList.HAS_STA_WPSBUTTON)
+{
+g_showWlanLink3=new Array("wlbasic","wladvance","wps","wlapprofile");
+g_showWlanStr3=new Array(showText(77),showText(78),showText(306),"AP Profile");
+}
+else
+{
+g_showWlanLink3=new Array("wlbasic","wladvance","wlapprofile");
+g_showWlanStr3=new Array(showText(77),showText(78),"AP Profile");		
+}
+}
+g_showFwLink=new Array("fwdmz","fwdos","fwmaccontrol","fwipcontrol","fwurlb");
+g_showFwStr=new Array("DMZ","DoS",showText(606),showText(607),showText(608));	
+g_showAdvSetLink=new Array("natmain","natpfw","natvser","natsapp","natalg","natupnp","wanqos","natsrout");
+g_showAdvSetStr=new Array("NAT",showText(609),showText(610),showText(611),"ALG","UPnP","QoS",showText(436));
+g_showToolBoxLink=new Array("syspasswd","systimezone","stasylog","wanddns","sysdiag","tlupgrade","tlcon","tlreset");
+g_showToolBoxStr=new Array(showText(612),showText(613),showText(11),"DDNS",showText(615),showText(213),showText(214),showText(945));				
+break;
+}
+}
+function showButton() {
+document.write('<input type="submit" width="105" height="30" border="0" value="'+showText(46)+'" name="save" onClick="return saveChanges(3)">')
+document.write('&nbsp;')
+document.write('<input type="button" value="'+showText(47)+'" onClick="window.location.reload()" width="105" height="30" border="0">')
+}
+function sysLink(index,opmode)
+{
+syswidth = 15;
+getOPMode(opmode);
+lWidth=(100-syswidth*g_showHomeLink.length);
+document.write("<tr>");
+for(i=1;i<=g_showHomeLink.length;i++){
+var picStr=(index==g_showHomeLink[i-1])?"on":"off";
+if(index==g_showHomeLink[i-1])
+{document.write("<td width=\""+syswidth+"%\" height=\"30px\"background=\"<%=media%>\"+\"image/"+"on"+".gif\" align=\"center\">");}
+else
+{document.write("<td width=\""+syswidth+"%\" background=\"<%=media%>\"+\"image/"+"off"+".gif\" align=\"center\">");}
+document.write("<a class=\"1\" href=\""+g_showHomeLink[i-1]+".htm\" target=\"iframe\"><font class=\"tab"+picStr+"\">"+g_showHomeStr[i-1]+"</a></td>");
+}
+document.write("<td width=\""+lWidth+"%\" ></td>");
+document.write("</tr>");
+}
+function internetLink(index,opmode)
+{
+getOPMode(opmode);
+lWidth=(100-oWidth*g_showIntLink.length);
+document.write("<tr>");
+for(i=1;i<=g_showIntLink.length;i++)
+{
+var picStr=(index==g_showIntLink[i-1])?"on":"off";
+if(index==g_showIntLink[i-1])
+{document.write("<td width=\""+oWidth+"%\" height=\"30px\"background=\"<%=media%>\"+\"image/"+"on"+".gif\" align=\"center\">");}
+else
+{document.write("<td width=\""+oWidth+"%\" background=\"<%=media%>\"+\"image/"+"off"+".gif\" align=\"center\">");}
+document.write("<a class=\"whitelink\" href=\""+g_showIntLink[i-1]+".htm\" target=\"iframe\"><font class=\"tab"+picStr+"\">"+g_showIntStr[i-1]+"</a></td>");
+}
+document.write("<td width=\""+lWidth+"%\" ></td>");
+document.write("</tr>");
+}
+function newInternetLink(url,opmode)
+{
+var index = 0;
+getOPMode(opmode);
+document.write('<BR><BR><BR><BR><tr><td align="center">'+showText(948));
+document.write('</td></tr>');
+document.write('<tr>');
+document.write('<td align="center">');
+for(index=0;index<g_showNewInternetLink.length;index++)
+{
+document.write('<input type="radio" name="newInternetBtn" value="'+index+'"');
+if(url==g_showNewInternetLink[index])
+document.write(' checked ');
+document.write('onClick = "greet('+index+');">'+g_showNewInternetStr[index]);
+document.write('&nbsp;&nbsp;');
+}
+document.write('</td>');
+document.write('</tr>');
+}
+function greet(x)
+{
+window.open(g_showNewInternetLink[x]+".htm",'iframe','');
+}
+function vpnLink(index,opmode)
+{
+getOPMode(opmode);
+if(opmode==0)
+oWidth=12;
+lWidth=(100-(oWidth*g_showVPNLink.length));
+document.write("<tr>");
+for(i=1;i<=g_showVPNLink.length;i++){
+var picStr=(index==g_showVPNLink[i-1])?"on":"off";
+if(index==g_showVPNLink[i-1]){document.write("<td nowrap width=\""+oWidth+"%\" height=\"30px\"background=\"<%=media%>\"+\"image/"+"on"+".gif\" align=\"center\">");}
+else{document.write("<td nowrap width=\""+oWidth+"%\" background=\"<%=media%>\"+\"image/"+"off"+".gif\" align=\"center\">");}
+document.write("<a class=\"1\" href=\""+g_showVPNLink[i-1]+".htm\" target=\"iframe\"><font class=\"tab"+picStr+"\">"+g_showVPNStr[i-1]+"</a></td>");
+}
+document.write("<td nowrap width=\""+lWidth+"%\"></td>");
+document.write("</tr>");
+}
+function wlanLink(index,opmode,ssidnum)
+{
+var showWlanLink=new Array();
+var showWlanStr=new Array();
+getOPMode(opmode);
+if(opmode==0){
+lWidth=(100-oWidth*g_showWlanLink.length);
+showWlanLink=g_showWlanLink;
+showWlanStr=g_showWlanStr;
+}
+else if(opmode==sysOPMode_APRP && ssidnum==1){
+lWidth=(100-oWidth*g_showWlanLink2.length);
+showWlanLink=g_showWlanLink2;
+showWlanStr=g_showWlanStr2;
+}
+else if(opmode==sysOPMode_CB || opmode==sysOPMode_CR)
+{
+lWidth=(100-oWidth*g_showWlanLink3.length);
+showWlanLink=g_showWlanLink3;
+showWlanStr=g_showWlanStr3;
+}
+else if(opmode==sysOPMode_AP)
+{
+lWidth=(100-oWidth*g_showWlanLink1.length);
+showWlanLink=g_showWlanLink1;
+showWlanStr=g_showWlanStr1;
+}
+else{
+lWidth=(100-oWidth*g_showWlanLink1.length);
+showWlanLink=g_showWlanLink1;
+showWlanStr=g_showWlanStr1;
+}
+document.write("<tr>");
+for(i=1;i<=showWlanLink.length;i++){
+var picStr=(index==showWlanLink[i-1])?"on":"off";
+if(index==showWlanLink[i-1]){document.write("<td nowrap width=\""+oWidth+"%\" height=\"30px\"background=\"<%=media%>\"+\"image/"+"on"+".gif\" align=\"center\">");}
+else{document.write("<td nowrap width=\""+oWidth+"%\" background=\"<%=media%>\"+\"image/"+"off"+".gif\" align=\"center\">");}
+document.write("<a class=\"1\" href=\""+showWlanLink[i-1]+".htm\" target=\"iframe\"><font class=\"tab"+picStr+"\">"+showWlanStr[i-1]+"</a></td>");
+}
+document.write("<td width=\""+lWidth+"%\" ></td>");
+document.write("</tr>");
+}
+function wlanra2Link(index,opmode,ssidnum)
+{
+var showra2WlanLink=new Array();
+var showra2WlanStr=new Array();
+getOPMode(opmode);
+if(opmode==0){
+lWidth=(100-oWidth*g_showra2WlanLink.length);
+showra2WlanLink=g_showra2WlanLink;
+showra2WlanStr=g_showra2WlanStr;
+}
+else if(opmode==sysOPMode_AP)
+{
+lWidth=(100-oWidth*g_showra2WlanLink.length);
+showra2WlanLink=g_showra2WlanLink;
+showra2WlanStr=g_showra2WlanStr;
+}
+document.write("<tr>");
+for(i=1;i<=showra2WlanLink.length;i++){
+var picStr=(index==showra2WlanLink[i-1])?"on":"off";
+if(index==showra2WlanLink[i-1]){document.write("<td nowrap width=\""+oWidth+"%\" height=\"30px\"background=\"<%=media%>\"+\"image/"+"on"+".gif\" align=\"center\">");}
+else{document.write("<td nowrap width=\""+oWidth+"%\" background=\"<%=media%>\"+\"image/"+"off"+".gif\" align=\"center\">");}
+document.write("&nbsp;&nbsp;"+"<a class=\"1\" href=\""+showra2WlanLink[i-1]+".htm\" target=\"iframe\"><font class=\"tab"+picStr+"\">"+showra2WlanStr[i-1]+"</a>&nbsp;&nbsp;</td>");
+}
+document.write("<td width=\""+lWidth+"%\" ></td>");
+document.write("</tr>");
+}
+function fwLink(index,enable)
+{
+getOPMode(g_sysOPMode);
+lWidth=(100-oWidth*g_showFwLink.length);
+document.write("<tr>");
+if(enable==0){document.write("<td width=\""+oWidth+"%\" height=\"30px\" background=\"<%=media%>\"+\"image/on.gif\" valign=\"middle\" align=\"center\">");
+document.write("<a class=\"1\" href=\"fwmain.htm\" target=\"iframe\"><font class=\"tabon\"><script type=\"text/javascript\">document.write(showText(87))</script></a></td>");
+document.write('<td width=\"85%\"></td>');}
+else{for(i=1;i<=g_showFwLink.length;i++){
+var picStr=(index==g_showFwLink[i-1])?"on":"off";
+if(index==g_showFwLink[i-1]){document.write("<td width=\""+oWidth+"%\" height=\"30px\"background=\"<%=media%>\"+\"image/"+"on"+".gif\" align=\"center\">");}
+else{document.write("<td width=\""+oWidth+"%\" background=\"<%=media%>\"+\"image/"+"off"+".gif\" align=\"center\">");}
+document.write("<a class=\"1\" href=\""+g_showFwLink[i-1]+".htm\" target=\"iframe\"><font class=\"tab"+picStr+"\">"+g_showFwStr[i-1]+"</a></td>");}
+document.write("<td width=\""+lWidth+"%\"></td>");}
+document.write("</tr>");
+}
+function toolboxLink(index,opmode)
+{
+getOPMode(opmode);
+oWidth=15;
+lWidth=(100-(oWidth*g_showToolBoxLink.length));
+document.write("<tr>");
+for(i=1;i<=g_showToolBoxLink.length;i++){
+var picStr=(index==g_showToolBoxLink[i-1])?"on":"off";
+if(index==g_showToolBoxLink[i-1]){document.write("<td width=\""+oWidth+"%\" height=\"30px\"background=\"<%=media%>\"+\"image/"+"on"+".gif\" align=\"center\">");}
+else{document.write("<td width=\""+oWidth+"%\" background=\"<%=media%>\"+\"image/"+"off"+".gif\" align=\"center\">");}
+document.write("<a class=\"1\" href=\""+g_showToolBoxLink[i-1]+".htm\" target=\"iframe\"><font class=\"tab"+picStr+"\">"+g_showToolBoxStr[i-1]+"</a></td>");
+}
+document.write("<td width=\""+lWidth+"%\"></td>");
+document.write("</tr>");
+}
+function engineeringLink(index,opmode)
+{
+getOPMode(opmode);
+if(opmode==0)
+oWidth=12;
+lWidth=(100-(oWidth*g_showEngineeringLink.length));
+document.write("<tr>");
+for(i=1;i<=g_showEngineeringLink.length;i++){
+var picStr=(index==g_showEngineeringLink[i-1])?"on":"off";
+if(index==g_showEngineeringLink[i-1]){document.write("<td width=\""+oWidth+"%\" height=\"30px\"background=\"<%=media%>\"+\"image/"+"on"+".gif\" align=\"center\">");}
+else{document.write("<td width=\""+oWidth+"%\" background=\"<%=media%>\"+\"image/"+"off"+".gif\" align=\"center\">");}
+document.write("<a class=\"1\" href=\""+g_showEngineeringLink[i-1]+".htm\" target=\"iframe\"><font class=\"tab"+picStr+"\">"+g_showEngineeringStr[i-1]+"</a></td>");
+}
+document.write("<td width=\""+lWidth+"%\"></td>");
+document.write("</tr>");
+}
+function BSLink(index,enable)
+{
+bswidth = 17;
+getOPMode(g_sysOPMode);
+lWidth=(100-bswidth*g_showBadSiteLink.length);
+document.write("<tr>");
+if(enable==0){
+document.write("<td width=\""+bswidth+"%\" height=\"30px\" background=\"<%=media%>\"+\"image/on.gif\" valign=\"middle\" align=\"center\">");
+document.write("<a class=\"1\" href=\"bsmain.htm\" target=\"iframe\"><font class=\"tabon\"><script type=\"text/javascript\">document.write(showText(87))</script></a></td>");
+document.write('<td width=\"85%\"></td>');}
+else
+{
+for(i=1;i<=g_showBadSiteLink.length;i++)
+{
+var picStr=(index==g_showBadSiteLink[i-1])?"on":"off";
+if(index==g_showBadSiteLink[i-1])
+{document.write("<td width=\""+bswidth+"%\" height=\"30px\"background=\"<%=media%>\"+\"image/"+"on"+".gif\" align=\"center\">");}
+else
+{document.write("<td width=\""+bswidth+"%\" background=\"<%=media%>\"+\"image/"+"off"+".gif\" align=\"center\">");}
+document.write("<a class=\"1\" href=\""+g_showBadSiteLink[i-1]+".htm\" target=\"iframe\"><font class=\"tab"+picStr+"\">"+g_showBadSiteStr[i-1]+"</a></td>");}
+document.write("<td width=\""+lWidth+"%\"></td>");}
+document.write("</tr>");
+}
+function ledLink(index,opmode)
+{
+getOPMode(opmode);
+lWidth=(100-oWidth*g_showLedInfoLink.length);
+document.write("<tr>");
+for(i=1;i<=g_showLedInfoLink.length;i++)
+{
+var picStr=(index==g_showLedInfoLink[i-1])?"on":"off";
+if(index==g_showLedInfoLink[i-1])
+{document.write("<td width=\""+oWidth+"%\" height=\"30px\"background=\"<%=media%>\"+\"image/"+"on"+".gif\" align=\"center\">");}
+else
+{document.write("<td width=\""+oWidth+"%\" background=\"<%=media%>\"+\"image/"+"off"+".gif\" align=\"center\">");}
+document.write("<a class=\"1\" href=\""+g_showLedInfoLink[i-1]+".htm\" target=\"iframe\"><font class=\"tab"+picStr+"\">"+g_showLedInfoStr[i-1]+"</a></td>");
+}
+document.write("<td width=\""+lWidth+"%\" ></td>");
+document.write("</tr>");
+}
+function netusbLink(index,opmode)
+{
+getOPMode(opmode);
+lWidth=(100-oWidth*g_showNetUSBLink.length);
+document.write("<tr>");
+for(i=1;i<=g_showNetUSBLink.length;i++)
+{
+var picStr=(index==g_showNetUSBLink[i-1])?"on":"off";
+if(index==g_showNetUSBLink[i-1])
+{document.write("<td width=\""+oWidth+"%\" height=\"30px\"background=\"<%=media%>\"+\"image/"+"on"+".gif\" align=\"center\">");}
+else
+{document.write("<td width=\""+oWidth+"%\" background=\"<%=media%>\"+\"image/"+"off"+".gif\" align=\"center\">");}
+document.write("<a class=\"1\" href=\""+g_showNetUSBLink[i-1]+".htm\" target=\"iframe\"><font class=\"tab"+picStr+"\">"+g_showNetUSBStr[i-1]+"</a></td>");
+}
+document.write("<td width=\""+lWidth+"%\" ></td>");
+document.write("</tr>");
+}
+function upperEverFirst(str){
+var upperStr = str.replace(/\s[a-z]/g,function($1){return $1.toLocaleUpperCase()}).replace(/^[a-z]/,function($1){return $1.toLocaleUpperCase()});
+return upperStr;
+}
+function wanTypeList(index)
+{
+var selectArry=new Array();
+for(i=1;i<=4;i++)
+{
+selectArry[i]=(i==index)?"selected":"";
+}
+document.write("<option value=\"select\">-- Select one --</option>");
+document.write("<option value=\"static\" "+selectArry[1]+">Static IP Address</option>");
+document.write("<option value=\"dynamic\""+selectArry[2]+">Dynamic IP Address</option>");
+document.write("<option value=\"pppoe\""+selectArry[3]+">PPP over Ethernet</option>");
+document.write("<option value=\"pptp\""+selectArry[4]+">PPTP</option>");
+}
+function advSettingLink(index,enable,opmode)
+{
+getOPMode(opmode);
+if(g_showAdvSetLink.length>=8)
+oWidth--;
+if(oWidth<10)
+oWidth=10;
+lWidth=(100-oWidth*g_showAdvSetLink.length); 
+document.write("<tr>");
+if(enable==0)
+{
+document.write("<td width=\""+oWidth+"%\" height=\"30px\" background=\"<%=media%>/image/on.gif\" valign=\"middle\" align=\"center\">");
+document.write("<a class=\"1\" href=\"natmain.htm\" target=\"iframe\"><font class=\"tabon\"><script type=\"text/javascript\">document.write(showText(87))</script></a></td>");
+document.write("<td width=\""+oWidth+"%\" height=\"30px\" background=\"<%=media%>/image/off.gif\" valign=\"middle\" align=\"center\">");
+document.write("<a class=\"1\" href=\"natsrout.htm\" target=\"iframe\"><font class=\"taboff\">Routing</a></td>");
+document.write('<td width=\"76%\"></td>');
+}
+else
+{
+for(i=1;i<=g_showAdvSetLink.length;i++)
+{
+var picStr=(index==g_showAdvSetLink[i-1])?"on":"off";
+if(index==g_showAdvSetLink[i-1])
+{document.write("<td width=\""+oWidth+"%\" height=\"30px\"background=\"<%=media%>\"+\"image/"+"on"+".gif\" align=\"center\">");}
+else
+{document.write("<td width=\""+oWidth+"%\" background=\"<%=media%>\"+\"image/"+"off"+".gif\" align=\"center\">");}
+document.write("<a class=\"1\" href=\""+g_showAdvSetLink[i-1]+".htm\" target=\"iframe\"><font class=\"tab"+picStr+"\">"+g_showAdvSetStr[i-1]+"</a></td>");
+}
+}
+document.write("<td width=\""+lWidth+"%\" ></td>");
+document.write("</tr>");
+}
+function bluetoothLink(index,opmode)
+{
+getOPMode(opmode);
+if(g_showBluetoothLink.length>=8)
+oWidth--;
+if(oWidth<10)
+oWidth=10;
+for(i=1;i<=g_showBluetoothLink.length;i++)
+{
+var picStr=(index==g_showBluetoothLink[i-1])?"on":"off";
+if(index==g_showBluetoothLink[i-1])
+{document.write("<td width=\""+120+"\" height=\"30px\"background=\"<%=media%>\"+\"image/"+"on2"+".gif\" align=\"center\">");}
+else
+{document.write("<td width=\""+120+"\" height=\"30px\"background=\"<%=media%>\"+\"image/"+"off2"+".gif\" align=\"center\">");}
+document.write("<a class=\"1\" href=\""+g_showBluetoothLink[i-1]+".htm\" target=\"iframe\"><font class=\"tab"+picStr+"\">"+g_showBluetoothStr[i-1]+"</a></td>");
+if(i!=g_showBluetoothLink.length)
+document.write("<td style='width:0.5' background=\"<%=media%>\"+\"image/"+"off2"+".gif\"><img src=\"<%=media%>\"+\"image/"+"line2"+".gif\"></td>");
+}
+document.write("<td width=\""+lWidth+"%\" ></td>");
+document.write("</tr>");
+}
+var FIRMWAREVER=[
+{model:"WN-AC1600DGR",clonedMac:"true",webtitle:"I-O DATA Wireless Router",hasAutoChan:"1",pwrEth:"0",showDhcpcName:"0",portbaseQoS:"1"}
+];
+var g_modeTbl = new Array("AP Router","Station-Ad Hoc","Station-Infrastructure","AP Bridge-Point to Point","AP Bridge-Point to Multi-Point","WDS","AP Repeater");
+var s_modeTbl = new Array("AP Router","AP Repeater","AP","Client Bridge");
+function setFocus(field) {
+field.value = field.defaultValue;
+field.focus();
+return;
+}
+function showSpacedText(str)
+{
+str=str.replace(/ /g,"&nbsp;");
+return str;
+}
+function dw(str)
+{
+document.write(str);
+}
+function checkStaRoutingIPAddr(field)
+{
+if ( validateKey(field.value) == 0)
+return false;
+if ( !checkDigitRange(field.value,1,1,254))
+return false;
+if ( !checkDigitRange(field.value,2,0,254))
+return false;
+if ( !checkDigitRange(field.value,3,0,254)) 
+return false;
+if ( !checkDigitRange(field.value,4,0,254)) 
+return false;
+return true;
+}
+function checkMaskAddr(field)
+{
+if ( validateKey(field.value) == 0)
+return false;
+if ( !checkDigitRange(field.value,1,1,255))
+return false;
+if ( !checkDigitRange(field.value,2,0,255))
+return false;
+if ( !checkDigitRange(field.value,3,0,255)) 
+return false;
+if ( !checkDigitRange(field.value,4,0,255)) 
+return false;
+return true;
+}
+function checkIPAddr(field)
+{
+if ( validateKey(field.value) == 0)
+return false;
+if ( !checkDigitRange(field.value,1,1,255))
+return false;
+if ( !checkDigitRange(field.value,2,0,255))
+return false;
+if ( !checkDigitRange(field.value,3,0,255)) 
+return false;
+if ( !checkDigitRange(field.value,4,1,254)) 
+return false;
+return true;
+}
+function isRange(value, minValue, maxValue)
+{
+if(value <= maxValue && value >= minValue)
+return true;
+else
+return false;
+}
+function calcDHCPMaxIP(str)
+{
+var num;
+var zero="";
+var bin="";
+for(var i=1;i<=4;i++)
+{
+zero = "";
+num = getDigit(str,i);
+var length = (rvt(num)).length;
+if(length < 8)
+{			
+for(var j=1;j<=(8-length);j++)
+{
+zero = zero + '0';
+}			
+}		
+bin = bin + zero + rvt(num);
+}
+return Math.pow(2,32 - bin.lastIndexOf('1') - 1) - 2;
+}
+function wlanTitlefor5G(band)
+{
+if(band==0)  // 2.4G wireless
+dw('<tr><td><font size="4"><b>2.4G Setting:</b></font></td></tr>');
+else if(band==1)   // 5G wireless
+dw('<tr><td><font size="4"><b>5G Setting:</b></font></td></tr>');
+}
+function checkPincodeFormat(str)
+{
+var PIN = 0;
+for(i=0;i<8;i++)
+PIN = PIN + parseInt(str.charAt(i)) * Math.pow(10,7-i);
+var accum = 0;
+accum += 3 * parseInt((PIN / 10000000) % 10);
+accum += 1 * parseInt((PIN / 1000000) % 10);
+accum += 3 * parseInt((PIN / 100000) % 10);
+accum += 1 * parseInt((PIN / 10000) % 10);
+accum += 3 * parseInt((PIN / 1000) % 10);
+accum += 1 * parseInt((PIN / 100) % 10);
+accum += 3 * parseInt((PIN / 10) % 10);
+accum += 1 * parseInt((PIN / 1) % 10);
+return (0 == parseInt((accum % 10)));
+}
+function checkPincodeFormatMix(str_f, str_s)
+{
+var PIN_F = parseInt(str_f,10);
+var PIN_S = parseInt(str_s,10);
+var accum = 0;
+accum += 3 * parseInt((PIN_F / 1000) % 10);
+accum += 1 * parseInt((PIN_F / 100) % 10);
+accum += 3 * parseInt((PIN_F / 10) % 10);
+accum += 1 * parseInt((PIN_F / 1) % 10);
+accum += 3 * parseInt((PIN_S / 1000) % 10);
+accum += 1 * parseInt((PIN_S / 100) % 10);
+accum += 3 * parseInt((PIN_S / 10) % 10);
+accum += 1 * parseInt((PIN_S / 1) % 10);
+return (0 == parseInt((accum % 10)));
+}
+function checkMACAddress(str)
+{	
+if(str.length < 12)
+return false;
+if(str.charAt(0) != '0' || str.charAt(1) != '0')
+return false;
+if(str.length == 12)
+{
+for(var i=2;i<str.length;i++) 
+{
+if((str.charAt(i) >= '0' && str.charAt(i) <= '9') ||
+(str.charAt(i) >= 'a' && str.charAt(i) <= 'f') ||
+(str.charAt(i) >= 'A' && str.charAt(i) <= 'F') )
+continue;		
+else
+return false;
+}
+}
+else if(str.length == 17)
+{	
+for(var i=2;i<str.length;i++)
+{
+if((i==2 || i== 5 || i == 8 || i == 11 || i == 14) && str.charAt(i)!= ':')
+{
+return false;
+}
+else if((str.charAt(i) >= '0' && str.charAt(i) <= '9') ||
+(str.charAt(i) >= 'a' && str.charAt(i) <= 'f') ||
+(str.charAt(i) >= 'A' && str.charAt(i) <= 'F') )
+{
+continue;		
+}
+else if(i!=2 && i!= 5 && i != 8 && i != 11 && i != 14)
+{
+return false;		
+}
+}
+}
+else
+return false;
+return true;
+}
+function FullMACFormat(str)
+{
+var mac="";
+for(var i=0;i<str.length;i++)
+{
+if(i!=0 && (i%2 == 0))
+mac += ':';
+mac += str.charAt(i);
+}
+return mac;	
+}
+function checkUrlFilterString(str)
+{
+var strLen=str.length;
+var checkStr;
+var checkStrArr=new Array("http://","https://");
+for(j=0;j<checkStrArr.length;j++)
+{
+checkStr=checkStrArr[j];
+for(i=0;i<checkStr.length-strLen+1;i++)
+{
+if(checkStr.substr(i,strLen)==str)
+return false;
+}
+}
+return true;
+}
+function checkLANandWANSubnet(lan_ip,lan_mask,wan_ip,wan_mask)
+{
+var lan_ip_t = lan_ip.split(".");
+var lan_mask_t = lan_mask.split(".");
+var wan_ip_t = wan_ip.split(".");
+var wan_mask_t = wan_mask.split(".");
+for(var i=0;i<4;i++){
+if( (parseInt(lan_ip_t[i])&parseInt(lan_mask_t[i])) != (parseInt(wan_ip_t[i])&parseInt(wan_mask_t[i])))
+return false;
+}
+return true;
+}
+function sprintf(fmt)
+{
+var reg = /%s/, space = / /;;
+var result = new String(fmt);
+var tmp="";
+for (var i = 1; i < arguments.length; i++) 
+{      
+tmp=arguments[i];
+if(language=="tw" || language=="cn"){
+/* remove useless padding space */
+if(!isContainAlphabet(tmp))
+tmp=tmp.toString().replace(space, "");
+}
+result = result.replace(reg, new String(tmp));
+}
+//if(language=="tw" || language=="cn")
+//	result = result.replace(space, "");
+return result; 
+}

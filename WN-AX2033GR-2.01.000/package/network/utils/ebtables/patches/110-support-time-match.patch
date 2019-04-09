@@ -1,0 +1,501 @@
+Index: ebtables-v2.0.10-4/extensions/Makefile
+===================================================================
+--- ebtables-v2.0.10-4.orig/extensions/Makefile	2016-11-04 11:59:07.447363101 +0800
++++ ebtables-v2.0.10-4/extensions/Makefile	2016-11-04 11:59:33.942146000 +0800
+@@ -7,6 +7,10 @@
+ EXT_FUNC+=siteblock
+ endif
+ 
++ifeq ($(CONFIG_EBT_MATCH_TIME),y)
++EXT_FUNC+=time
++endif
++
+ EXT_TABLES+=filter nat broute
+ EXT_OBJS+=$(foreach T,$(EXT_FUNC), extensions/ebt_$(T).o)
+ EXT_OBJS+=$(foreach T,$(EXT_TABLES), extensions/ebtable_$(T).o)
+Index: ebtables-v2.0.10-4/extensions/ebt_time.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ ebtables-v2.0.10-4/extensions/ebt_time.c	2016-11-04 11:59:56.151304262 +0800
+@@ -0,0 +1,481 @@
++/* ebt_time
++ * 
++ * Authors:
++ * Terence Yang <terence.yang@mitrastar>
++ *
++ */
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <stdbool.h>
++#include <getopt.h>
++#include <time.h>
++#include <linux/types.h>
++#include "../include/ebtables_u.h"
++#include <ebt_time.h>
++
++enum {
++	O_DATE_START = 0,
++	O_DATE_STOP,
++	O_TIME_START,
++	O_TIME_STOP,
++	O_TIME_CONTIGUOUS,
++	O_MONTHDAYS,
++	O_WEEKDAYS,
++	O_LOCAL_TZ,
++	O_UTC,
++	O_KERNEL_TZ,
++	F_LOCAL_TZ  = 1 << O_LOCAL_TZ,
++	F_UTC       = 1 << O_UTC,
++	F_KERNEL_TZ = 1 << O_KERNEL_TZ,
++	F_TIME_CONTIGUOUS = 1 << O_TIME_CONTIGUOUS,
++};
++
++static const char *const week_days[] = {
++	NULL, "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",
++};
++
++static struct option opts[] =
++{
++	{ "datestart"		, required_argument, 0, O_DATE_START		},
++	{ "datestop"		, required_argument, 0, O_DATE_STOP			},
++	{ "timestart"		, required_argument, 0, O_TIME_START		},
++	{ "timestop"		, required_argument, 0, O_TIME_STOP			},
++	{ "contiguous"		, 		no_argument, 0, O_TIME_CONTIGUOUS	},
++	{ "weekdays"		, required_argument, 0, O_WEEKDAYS			},
++	{ "monthdays"		, required_argument, 0, O_MONTHDAYS			},
++	{ "localtz"			, 		no_argument, 0, O_LOCAL_TZ			},
++	{ "utc"				, 		no_argument, 0, O_UTC				},
++	{ "kerneltz"		, 		no_argument, 0, O_KERNEL_TZ			},
++	{ 0 }
++};
++
++static void time_help(void)
++{
++	printf(
++"time match options:\n"
++"    --datestart time     Start and stop time, to be given in ISO 8601\n"
++"    --datestop time      (YYYY[-MM[-DD[Thh[:mm[:ss]]]]])\n"
++"    --timestart time     Start and stop daytime (hh:mm[:ss])\n"
++"    --timestop time      (between 00:00:00 and 23:59:59)\n"
++"[!] --monthdays value    List of days on which to match, separated by comma\n"
++"                         (Possible days: 1 to 31; defaults to all)\n"
++"[!] --weekdays value     List of weekdays on which to match, sep. by comma\n"
++"                         (Possible days: Mon,Tue,Wed,Thu,Fri,Sat,Sun or 1 to 7\n"
++"                         Defaults to all weekdays.)\n"
++"    --kerneltz           Work with the kernel timezone instead of UTC\n");
++}
++
++static void time_init(struct ebt_entry_match *match)
++{
++	struct ebt_time_info *info = (struct ebt_time_info *) match->data;
++
++	/* By default, we match on every day, every daytime */
++	info->monthdays_match = EBT_TIME_ALL_MONTHDAYS;
++	info->weekdays_match  = EBT_TIME_ALL_WEEKDAYS;
++	info->daytime_start   = EBT_TIME_MIN_DAYTIME;
++	info->daytime_stop    = EBT_TIME_MAX_DAYTIME;
++
++	/* ...and have no date-begin or date-end boundary */
++	info->date_start = 0;
++	info->date_stop  = INT_MAX;
++}
++
++static time_t time_parse_date(const char *s, bool end)
++{
++	unsigned int month = 1, day = 1, hour = 0, minute = 0, second = 0;
++	unsigned int year  = end ? 2038 : 1970;
++	const char *os = s;
++	struct tm tm;
++	time_t ret;
++	char *e;
++
++	year = strtoul(s, &e, 10);
++	if ((*e != '-' && *e != '\0') || year < 1970 || year > 2038)
++		goto out;
++	if (*e == '\0')
++		goto eval;
++
++	s = e + 1;
++	month = strtoul(s, &e, 10);
++	if ((*e != '-' && *e != '\0') || month > 12)
++		goto out;
++	if (*e == '\0')
++		goto eval;
++
++	s = e + 1;
++	day = strtoul(s, &e, 10);
++	if ((*e != 'T' && *e != '\0') || day > 31)
++		goto out;
++	if (*e == '\0')
++		goto eval;
++
++	s = e + 1;
++	hour = strtoul(s, &e, 10);
++	if ((*e != ':' && *e != '\0') || hour > 23)
++		goto out;
++	if (*e == '\0')
++		goto eval;
++
++	s = e + 1;
++	minute = strtoul(s, &e, 10);
++	if ((*e != ':' && *e != '\0') || minute > 59)
++		goto out;
++	if (*e == '\0')
++		goto eval;
++
++	s = e + 1;
++	second = strtoul(s, &e, 10);
++	if (*e != '\0' || second > 59)
++		goto out;
++
++ eval:
++	tm.tm_year = year - 1900;
++	tm.tm_mon  = month - 1;
++	tm.tm_mday = day;
++	tm.tm_hour = hour;
++	tm.tm_min  = minute;
++	tm.tm_sec  = second;
++	tm.tm_isdst = 0;
++	/*
++	 * Offsetting, if any, is done by ebt_time.ko,
++	 * so we have to disable it here in userspace.
++	 */
++	setenv("TZ", "UTC", true);
++	tzset();
++	ret = mktime(&tm);
++	if (ret >= 0)
++		return ret;
++	perror("mktime");
++	ebt_print_error("mktime returned an error");
++
++ out:
++	ebt_print_error("Invalid date \"%s\" specified. Should "
++	           "be YYYY[-MM[-DD[Thh[:mm[:ss]]]]]", os);
++	return -1;
++}
++
++static unsigned int time_parse_minutes(const char *s)
++{
++	unsigned int hour, minute, second = 0;
++	char *e;
++
++	hour = strtoul(s, &e, 10);
++	if (*e != ':' || hour > 23)
++		goto out;
++
++	s = e + 1;
++	minute = strtoul(s, &e, 10);
++	if ((*e != ':' && *e != '\0') || minute > 59)
++		goto out;
++	if (*e == '\0')
++		goto eval;
++
++	s = e + 1;
++	second = strtoul(s, &e, 10);
++	if (*e != '\0' || second > 59)
++		goto out;
++
++ eval:
++	return 60 * 60 * hour + 60 * minute + second;
++
++ out:
++	ebt_print_error("invalid time \"%s\" specified, "
++	           "should be hh:mm[:ss] format and within the boundaries", s);
++	return -1;
++}
++
++static const char *my_strseg(char *buf, unsigned int buflen,
++    const char **arg, char delim)
++{
++	const char *sep;
++
++	if (*arg == NULL || **arg == '\0')
++		return NULL;
++	sep = strchr(*arg, delim);
++	if (sep == NULL) {
++		snprintf(buf, buflen, "%s", *arg);
++		*arg = NULL;
++		return buf;
++	}
++	snprintf(buf, buflen, "%.*s", (unsigned int)(sep - *arg), *arg);
++	*arg = sep + 1;
++	return buf;
++}
++
++static uint32_t time_parse_monthdays(const char *arg)
++{
++	char day[3], *err = NULL;
++	uint32_t ret = 0;
++	unsigned int i;
++
++	while (my_strseg(day, sizeof(day), &arg, ',') != NULL) {
++		i = strtoul(day, &err, 0);
++		if ((*err != ',' && *err != '\0') || i > 31)
++			ebt_print_error("%s is not a valid day for --monthdays", day);
++		ret |= 1 << i;
++	}
++
++	return ret;
++}
++
++static unsigned int time_parse_weekdays(const char *arg)
++{
++	char day[4], *err = NULL;
++	unsigned int i, ret = 0;
++	bool valid;
++
++	while (my_strseg(day, sizeof(day), &arg, ',') != NULL) {
++		i = strtoul(day, &err, 0);
++		if (*err == '\0') {
++			if (i == 0)
++				ebt_print_error("No, the week does NOT begin with Sunday.");
++			ret |= 1 << i;
++			continue;
++		}
++
++		valid = false;
++		for (i = 1; i < ARRAY_SIZE(week_days); ++i)
++			if (strncmp(day, week_days[i], 2) == 0) {
++				ret |= 1 << i;
++				valid = true;
++			}
++
++		if (!valid)
++			ebt_print_error("%s is not a valid day specifier", day);
++	}
++
++	return ret;
++}
++
++#define OPT_DATE_START		0x001
++#define OPT_DATE_STOP		0x002
++#define OPT_TIME_START		0x004
++#define OPT_TIME_STOP		0x008
++#define OPT_TIME_CONTIGUOUS	0x010
++#define OPT_LOCAL_TZ		0x020
++#define OPT_KERNEL_TZ		0x040
++#define OPT_MONTHDAYS		0x080
++#define OPT_WEEKDAYS		0x100
++static int time_parse(int c, char **argv, int argc, const struct ebt_u_entry *entry,
++   unsigned int *flags, struct ebt_entry_match **match)
++{
++	struct ebt_time_info *info = (struct ebt_time_info *) (*match)->data;
++
++	switch (c) {
++		case O_DATE_START:
++			ebt_check_option2(flags, OPT_DATE_START);
++			info->date_start = time_parse_date(optarg, false);
++			break;
++		case O_DATE_STOP:
++			ebt_check_option2(flags, OPT_DATE_STOP);
++			info->date_stop = time_parse_date(optarg, true);
++			break;
++		case O_TIME_START:
++			ebt_check_option2(flags, OPT_TIME_START);
++			info->daytime_start = time_parse_minutes(optarg);
++			break;
++		case O_TIME_STOP:
++			ebt_check_option2(flags, OPT_TIME_STOP);
++			info->daytime_stop = time_parse_minutes(optarg);
++			break;
++		case O_TIME_CONTIGUOUS:
++			ebt_check_option2(flags, OPT_TIME_CONTIGUOUS);
++			info->flags |= EBT_TIME_CONTIGUOUS;
++			break;
++		case O_LOCAL_TZ:
++			fprintf(stderr, "WARNING: --localtz is being replaced by "
++					"--kerneltz, since \"local\" is ambiguous. Note the "
++					"kernel timezone has caveats - "
++					"see manpage for details.\n");
++			/* fallthrough */
++		case O_KERNEL_TZ:
++			if (c == O_LOCAL_TZ) {
++				ebt_check_option2(flags, OPT_LOCAL_TZ);
++			}
++			else if (c == O_KERNEL_TZ) {
++				ebt_check_option2(flags, OPT_KERNEL_TZ);
++			}
++			info->flags |= EBT_TIME_LOCAL_TZ;
++			break;
++		case O_MONTHDAYS:
++			ebt_check_option2(flags, OPT_MONTHDAYS);
++			info->monthdays_match = time_parse_monthdays(optarg);
++			break;
++		case O_WEEKDAYS:
++			ebt_check_option2(flags, OPT_WEEKDAYS);
++			info->weekdays_match = time_parse_weekdays(optarg);
++			break;
++		default:
++			return 0;
++	}
++	return 1;
++}
++
++static void time_check(const struct ebt_u_entry *entry,
++   const struct ebt_entry_match *match, const char *name,
++   unsigned int hookmask, unsigned int time)
++{
++	struct ebt_time_info *info = (struct ebt_time_info *) match->data;
++
++	if ((info->flags & EBT_TIME_CONTIGUOUS) &&
++	     info->daytime_start < info->daytime_stop)
++		ebt_print_error("time: --contiguous only makes sense when stoptime is smaller than starttime");
++}
++
++static void time_print_date(time_t date, const char *command)
++{
++	struct tm *t;
++
++	/* If it is the default value, do not print it. */
++	if (date == 0 || date == LONG_MAX)
++		return;
++
++	t = gmtime(&date);
++	if (command != NULL)
++		/*
++		 * Need a contiguous string (no whitespaces), hence using
++		 * the ISO 8601 "T" variant.
++		 */
++		printf(" %s %04u-%02u-%02uT%02u:%02u:%02u",
++		       command, t->tm_year + 1900, t->tm_mon + 1,
++		       t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
++	else
++		printf(" %04u-%02u-%02u %02u:%02u:%02u",
++		       t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
++		       t->tm_hour, t->tm_min, t->tm_sec);
++}
++
++static void time_print_monthdays(uint32_t mask, bool human_readable)
++{
++	unsigned int i, nbdays = 0;
++
++	printf(" ");
++	for (i = 1; i <= 31; ++i)
++		if (mask & (1 << i)) {
++			if (nbdays++ > 0)
++				printf(",");
++			printf("%u", i);
++			if (human_readable)
++				switch (i % 10) {
++					case 1:
++						printf("st");
++						break;
++					case 2:
++						printf("nd");
++						break;
++					case 3:
++						printf("rd");
++						break;
++					default:
++						printf("th");
++						break;
++				}
++		}
++}
++
++static void time_print_weekdays(unsigned int mask)
++{
++	unsigned int i, nbdays = 0;
++
++	printf(" ");
++	for (i = 1; i <= 7; ++i)
++		if (mask & (1 << i)) {
++			if (nbdays > 0)
++				printf(",%s", week_days[i]);
++			else
++				printf("%s", week_days[i]);
++			++nbdays;
++		}
++}
++
++static inline void divide_time(unsigned int fulltime, unsigned int *hours,
++    unsigned int *minutes, unsigned int *seconds)
++{
++	*seconds  = fulltime % 60;
++	fulltime /= 60;
++	*minutes  = fulltime % 60;
++	*hours    = fulltime / 60;
++}
++
++
++static void time_print(const struct ebt_u_entry *entry,
++   const struct ebt_entry_match *match)
++{
++	struct ebt_time_info *info = (struct ebt_time_info *)match->data;
++	unsigned int h, m, s;
++
++	printf(" TIME");
++
++	if (info->daytime_start != EBT_TIME_MIN_DAYTIME ||
++	    info->daytime_stop != EBT_TIME_MAX_DAYTIME) {
++		divide_time(info->daytime_start, &h, &m, &s);
++		printf(" from %02u:%02u:%02u", h, m, s);
++		divide_time(info->daytime_stop, &h, &m, &s);
++		printf(" to %02u:%02u:%02u", h, m, s);
++	}
++	if (info->weekdays_match != EBT_TIME_ALL_WEEKDAYS) {
++		printf(" on");
++		time_print_weekdays(info->weekdays_match);
++	}
++	if (info->monthdays_match != EBT_TIME_ALL_MONTHDAYS) {
++		printf(" on");
++		time_print_monthdays(info->monthdays_match, true);
++	}
++	if (info->date_start != 0) {
++		printf(" starting from");
++		time_print_date(info->date_start, NULL);
++	}
++	if (info->date_stop != INT_MAX) {
++		printf(" until date");
++		time_print_date(info->date_stop, NULL);
++	}
++	if (!(info->flags & EBT_TIME_LOCAL_TZ))
++		printf(" UTC");
++	if (info->flags & EBT_TIME_CONTIGUOUS)
++		printf(" contiguous");
++
++	printf(" ");
++}
++
++static int time_compare(const struct ebt_entry_match *m1,
++   const struct ebt_entry_match *m2)
++{
++	struct ebt_time_info *info1 = (struct ebt_time_info *)m1->data;
++	struct ebt_time_info *info2 = (struct ebt_time_info *)m2->data;
++
++	if (info1->date_start != info2->date_start)
++		return 0;
++	if (info1->date_stop != info2->date_stop)
++		return 0;
++	if (info1->daytime_start != info2->daytime_start)
++		return 0;
++	if (info1->daytime_stop != info2->daytime_stop)
++		return 0;
++	if (info1->monthdays_match != info2->monthdays_match)
++		return 0;
++	if (info1->weekdays_match != info2->weekdays_match)
++		return 0;
++	
++	return 1;
++}
++
++static struct ebt_u_match time_match =
++{
++	.name		= "time",
++	.size		= sizeof(struct ebt_time_info),
++	.help		= time_help,
++	.init		= time_init,
++	.parse		= time_parse,
++	.final_check	= time_check,
++	.print		= time_print,
++	.compare	= time_compare,
++	.extra_ops	= opts,
++};
++
++void _init(void)
++{
++	ebt_register_match(&time_match);
++}
++

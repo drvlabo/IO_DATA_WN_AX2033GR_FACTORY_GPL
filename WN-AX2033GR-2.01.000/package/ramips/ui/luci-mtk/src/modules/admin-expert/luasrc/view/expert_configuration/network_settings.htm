@@ -1,0 +1,194 @@
+<%#
+LuCI - Lua Configuration Interface
+Copyright 2008 Steven Barth <steven@midlink.org>
+Copyright 2008 Jo-Philipp Wich <xm@leipzig.freifunk.net>
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+$Id: header.htm 4891 2009-06-22 10:23:21Z jow $
+
+-%>
+<%
+require "luci.sys"
+require("luci.i18n").loadc("default")
+local i18n = require("luci.i18n")
+require("luci.http").prepare_content("text/html")
+local uci = require("luci.model.uci").cursor()
+local sys = require("luci.sys")
+local lang = uci:get("luci","main","lang")
+i18n.load("admin-core",lang)
+i18n.setlanguage(lang)
+-%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"  />
+<title>.::Welcome to the Web-Based Configurator::.</title>
+<link href="<%=media%>/css/expert.css" rel="stylesheet" type="text/css" />
+<style>
+.on {display:on}
+.off {display:none}
+</style>
+<script type="text/javascript" src="<%=media%>/js/baseJS.js" ></script>
+<script type="text/javascript" src="<%=media%>/js/jquery-1.6.2.min.js" ></script>
+<script language="javascript">
+$(function(){
+	RefreshModeSelect();
+	RefreshMTU();
+});
+
+function RefreshModeSelect()
+{
+	var NetModePref= '<%=uci:get("wanconfig","wanconfig","netmode")%>';
+	
+	document.getElementById("_select_wan_mode").value = NetModePref;
+	
+	switch(NetModePref)
+	{
+		case "60":
+			document.getElementById("select_wan_mode").value = "4G3G2G";
+			break;
+		case "56":
+			document.getElementById("select_wan_mode").value = "4G3G";
+			break;
+		case "44":
+			document.getElementById("select_wan_mode").value = "3G2G";
+			break;
+		case "16":
+			document.getElementById("select_wan_mode").value = "4G";
+			break;
+		case "40":
+			document.getElementById("select_wan_mode").value = "3G";
+			break;
+	}
+}
+
+function UpdateModeSelect(Val)
+{
+	switch(Val)
+	{
+		case "4G3G2G":
+			document.getElementById("_select_wan_mode").value = "60";
+			break;
+		case "4G3G":
+			document.getElementById("_select_wan_mode").value = "56";
+			break;
+		case "3G2G":
+			document.getElementById("_select_wan_mode").value = "44";
+			break;
+		case "4G":
+			document.getElementById("_select_wan_mode").value = "16";
+			break;
+		case "3G":
+			document.getElementById("_select_wan_mode").value = "40";
+			break;
+	}
+}
+
+function chkMtu()
+{
+	if (document.getElementById("mtu").value > 1500 || document.getElementById("mtu").value < 1280) {
+		alert("<%:WAN_Error_20%>");
+		RefreshMTU();
+		return;
+	}
+}
+
+function RefreshMTU() {
+	document.getElementById("mtu").value = '<%=uci:get("wanconfig","wanconfig","mtu_size")%>';
+}
+
+function submit_apply() {
+	showWebMessage( 1 , "<%:Message%>" , "<%:msg_config%>" );
+}
+
+function path_msg_init(){
+	showFullPath(' <%:LTE%> > <%:NETWORK_SETTINGS%>');
+	showWebMessage( 0, "<%:Message%>", "<%:Ready%>");
+}
+</script>
+</head>
+<body onload="path_msg_init();">
+<form onSubmit="return submit_apply()" method="post" name="lteNWSetForm" id="lteNWSetForm" action="<%=controller%>/expert/configuration/lte/network_settings">
+<div id="tabs" style="word-break:break-all;(">
+  <ul>
+	<li class="hightline"><a title="<%:NETWORK_SETTINGS%>"><span><%:NETWORK_SETTINGS%></span></a></li>
+	<li><a href="<%=controller%>/expert/configuration/lte/network_settings/network_select" title="<%:NETWORK_SELECT%>"><span><%:NETWORK_SELECT%></span></a></li>
+  </ul>
+  <br class="clearfloat" />
+</div>
+
+<div id="table">
+  <ul>
+    <li class="table_top"></li>
+    <li class="table_content">
+      <div class="data">
+        <ul>
+          <div class="w_text">
+            <ul>
+			  <li class="title">
+				<%:NETWORK_MODE%>
+			  </li>
+			</ul>
+		</div>
+
+		<div>
+			<div class="w_text">		
+				<ul>
+					<input name="_select_wan_mode" id="_select_wan_mode" type="hidden" value="4"/>
+					<li class="left_table"><%:NETWORK_MODE_PREFERENCE%></li>
+					<li class="right_table">
+						<select id="select_wan_mode" size="1" onChange="UpdateModeSelect(this.options[this.selectedIndex].value);">
+								<option value="3G">3G</option>
+								<option value="4G">4G</option>
+								<option value="4G3G">4G/3G</option>
+								<option value="3G2G">3G/2G</option>
+								<option value="4G3G2G">4G/3G/2G</option>
+						</select>
+					</li>
+				</ul>
+			</div>	  
+		</div>	
+  
+      <div class="spaceair"></div>    
+	  </ul>				
+     </div>
+	 <div class="data">
+        <ul>
+		  <div class="w_text">
+            <ul>
+			  <li class="title">
+				<%:MTU%>
+			  </li>
+			</ul>
+		  </div>
+          <div class="w_text">
+            <ul>
+              <li class="left_table"><%:MTU_SIZE%></li>
+              <li class="right_table">
+                <input name="mtu" id="mtu" size="30" maxlength="30" type="text" onblur="chkMtu()"/>
+              </li>
+            </ul>
+          </div>
+          <div class="spaceair"></div>
+        </ul>
+      </div>
+    </li>
+    <li class="table_button"> 
+      <div class="button" align="center">
+        <input name="sysSubmit" value="<%:apply%>" type="submit" />
+        &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+        <input name="Cancel" value="<%:cancel%>" type="button" onclick="window.location.href=window.location.href" /> 
+      </div> 
+    </li>
+  </ul>
+</div>	
+
+</form>
+</body>
+</html>

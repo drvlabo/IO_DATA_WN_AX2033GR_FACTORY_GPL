@@ -1,0 +1,240 @@
+<html>
+
+<!-- Mirrored from 192.168.0.1/index.htm?showPC by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 24 Feb 2016 01:58:16 GMT -->
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Cache-Control" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<link href="<%=media%>/setcss.css" type="text"/css rel="stylesheet">
+<script type="text/javascript" src="<%=media%>/setlanguagejs.htm"></script>
+<script type="text/javascript" src="<%=media%>/getlanguagejs.htm"></script>
+<script type="text/javascript" src="<%=media%>/iwizard_js.html"></script>
+<script language="javascript">
+dw('<title>' + VENDORS.vendorMode + '</title>');
+var sysOPMode=0;
+var st={apMode:'0',iframeIdx:'0'};
+var notifyFW = "false";
+var color = {title_bg:"000000", title_font:"FFFFFF", menu_bg:"1FB2FF", menu_font:"FFFFFF", label_bg:"1FB2FF", label_font:"FFFFFF"};
+var modeTbl = new Array(showText(375),showText(623),showText(650),"Client Bridge Mode","Client Router Mode","WDSB","ARRP"); 
+function resizeIframe(obj)
+{
+var pageHeight = obj.contentWindow.document.body.scrollHeight;
+obj.style.height = pageHeight + 'px';
+if(obj.contentDocument)
+{
+var com = "obj.contentDocument.documentElement";
+}
+else
+{
+var com = "obj.contentWindow.document.body";
+}
+if (FunctionList.HAS_BOTTOM_IMG==1)
+{
+eval(com+'.height=pageHeight+20');
+}
+else
+{
+eval(com+'.height=pageHeight+100');
+}
+}
+function resetClick()
+{
+var f=document.tF;
+if (!confirm(showText(359) + '\n' + showText(360))) {
+return false;
+}
+f.submit();
+return true;
+}
+function frameSelect()
+{
+var f = document.tF;
+var url, ary;
+if (!FunctionList.HAS_5G_SETTING && !FunctionList.IO_6650_STYLE_LANG_STR)
+f.apMode.value=sysOPMode;
+if (notifyFW=="true")
+parent.iframe.location.href="stafwinfo.html";
+else
+{
+if (FunctionList.HAS_WEB_USE_HTML_LOGIN) 
+{
+if (st.iframeIdx==1)
+parent.iframe.location.href="iwizard_intro.html";
+else
+parent.iframe.location.href="stainfo.htm";
+}
+else
+{
+//alert(window.location.toString()) //ex: http://192.168.0.1/index.htm
+url = window.location.toString();
+if(url.indexOf("?")!=-1)
+{
+if(url.split("?")[1]=="showPC")
+{
+parent.iframe.location.href="stainfo.htm";		
+}
+else
+{
+parent.iframe.location.href= url.split("?")[1]+'.htm'; //redirect to bsmain.htm
+}
+}
+else
+{
+parent.iframe.location.href="stainfo.htm";
+}
+}
+}
+}
+</script>
+</head>
+<script language="javascript">
+var mobiles = new Array('DO_NOT_REMOVE_ME','docomo','blackberry','iphone','android','ipod');
+var ua = navigator.userAgent.toLowerCase();
+var isMobile = false;
+var url2 = window.location.toString();
+if(url2.indexOf("?")!=-1)
+{
+}
+else
+{
+for (var i = 1; i < mobiles.length; i++) {
+if (ua.indexOf(mobiles[i]) > 0) {
+isMobile = true;
+break;
+}
+}
+if(isMobile)
+{
+window.location.href = 'smartindex.html';	
+}
+}
+var HS= screen.availHeight;
+classType=(HS > 830)?"class=\"nonscrollbar\"":"";
+dw('<body '+classType+' onLoad="frameSelect()" topmargin="5" leftmargin="0" link="#' + color.menu_font + '" vlink="#' + color.menu_font + '" alink="#' + color.menu_font + '">');</script>
+<form name="tF" method="post" action="">
+<script language="javascript">
+document.write('<input type="hidden" name="csrfmagic" value="uoqcvrtcrogggtr">')
+</script>
+<input type="hidden" name="page" value="index">
+<center>
+<table width="975px" height="99%" border="0" cellspacing="0" cellpading="0">
+<tr>
+<td valign="middle">
+<table width="100%" border="0" cellspacing="0" cellpadding="1">
+</td>
+</tr>
+<tr>
+<td rowspan="5" width="0"></td>
+<td width="227" height="5px"></td>
+<td width="10" rowspan="2"></td>
+<td colspan="2"></td>
+<td rowspan="5" width="0"></td>
+</tr>
+<tr>
+<script language="javascript">
+if (FunctionList2.HAS_NONE_TOP_LOGO_IMG == 1)
+dw('<td bgcolor="#' + color.menu_bg + '" width="227" height="0" rowspan="2">');
+else
+dw('<td bgcolor="#' + color.menu_bg + '" width="227" height="87" rowspan="2">');
+if (!FunctionList.HAS_NONE_LOGO_IMG)
+dw('<img src="pictures/' + VENDORS.vendorLogo + '" width="227">');
+</script>
+</td>
+<script language="javascript">
+if (FunctionList2.HAS_NONE_TOP_LOGO_IMG == 1)
+dw('<td>');
+else
+dw('<td background="pictures/'+VENDORS.titleLogo+'" align="right"  width="719" height="36" border="0">');
+</script>
+<script language="javascript">
+if (!FunctionList.HAS_5G_SETTING && !FunctionList.IO_6650_STYLE_LANG_STR) {
+dw('<select name="apMode" style="display:none" onChange="return resetClick()">');
+for (i=0;i<modeTbl.length;i++) {
+if (i==sysOPMode) {
+if (WebOpModeList.charAt((WebOpModeList.length - 1) - i) == "1")
+dw('<option selected value="'+i+'">&nbsp;'+modeTbl[i]+'&nbsp;</option>');
+} else {
+if (WebOpModeList.charAt((WebOpModeList.length - 1) - i) == "1")
+dw('<option value="'+i+'">&nbsp;'+modeTbl[i]+'&nbsp;</option>');
+}
+}
+dw('</select>');
+}
+</script>
+&nbsp;&nbsp;</td>
+</tr>
+<tr>
+<script type="text/javascript">
+if (!(VENDORS.productID=="03040001" || VENDORS.productID=="03040003" || VENDORS.productID=="03040007" || VENDORS.productID=="03040008"))
+dw('<td rowspan="3"></td>');
+</script>
+<td colspan="2" rowspan="3" align="right" valign="top" bordercolor="">
+<script language="javascript">
+if (FunctionList.HAS_BOTTOM_IMG==1)
+dw('<iframe src="" name="iframe" width="720px" height="470px" frameborder="no"></iframe>');
+else
+dw('<iframe src="" name="iframe" width="720px" height="550px" frameborder="no"></iframe>');
+</script>
+</td>
+<td width="0" height="42"></td>
+</tr>
+<tr>
+<script type="text/javascript">
+if (VENDORS.productID=="03040001" || VENDORS.productID=="03040003" || VENDORS.productID=="03040007" || VENDORS.productID=="03040008") {
+dw('<td height="20" valign="top" bgcolor="#' + color.menu_bg + '" align="middle">');
+dw('<font color="#ffffff" size="+1"><b>' + VENDORS.modelName + '&nbsp;&nbsp;&nbsp;</b></font>');
+dw('<br><font color="#ffffff"><b>WLAN 802.11n/b/g Router&nbsp;&nbsp;&nbsp;<b></font>');
+} else if (vendorString=="0308" || vendorString=="0408") {
+dw('<td height="20" valign="top" bgcolor="#' + color.menu_bg + '" align="middle">');
+dw('<font color="#' + color.menu_font + '" size="+1"><b>Velocity Series&nbsp;&nbsp;&nbsp;</b></font>');  
+} else if (VENDORS.productID=="030E0007") {
+dw('<td height="20" valign="top" bgcolor="#' + color.menu_bg + '" align="left">');
+dw('<font color="#' + color.menu_font + '" size="+1"><b>' + VENDORS.modelName + '&nbsp;&nbsp;&nbsp;</b></font>');  
+} else if (VENDORS.productID=="030A003E"){
+dw('<td height="20" valign="top" bgcolor="#' + color.menu_bg + '" align="left">');
+dw('<font color="#' + color.menu_font + '" size="+1" face="Verdana"><b>&nbsp;&nbsp;' + VENDORS.modelName +"(S)" + '</b></font>');  
+} else {
+dw('<td height="20" valign="top" bgcolor="#' + color.menu_bg + '" align="left">');
+dw('<font color="#' + color.menu_font + '" size="+1" face="Verdana"><b>&nbsp;&nbsp;' + VENDORS.modelName + '</b></font>');  
+}
+</script>
+</td>
+</tr>
+<tr>
+<script type="text/javascript">
+var spaceStr="";
+if (VENDORS.productID=="03040001" || VENDORS.productID=="03040003" || VENDORS.productID=="03040007" || VENDORS.productID=="03040008")
+dw('<td height="300" valign="top" bgcolor="#' + color.menu_bg + '" align="middle">');
+else {
+spaceStr="&nbsp;&nbsp;&nbsp;";
+dw('<td height="300" valign="top" bgcolor="#' + color.menu_bg + '" align="left">');
+}
+dw('<iframe src="" name="menu_frame" width="227px" height="450px" onload="javascript:resizeIframe(this);" frameborder="no"></iframe>');
+parent.menu_frame.location.href="menu.html";
+</script>
+</tr>
+</table>
+</center>
+<table width="100%" cellspacing="0" cellpadding="0" border="0">
+<script type="text/javascript">
+if (!(VENDORS.productID=="03040001" || VENDORS.productID=="03040003" || VENDORS.productID=="03040007" || VENDORS.productID=="03040008"))
+dw('<tr><td height="10" width="5px"></td></tr>');
+</script>
+</table>
+<script language="javascript">
+if (FunctionList.HAS_BOTTOM_IMG==1) {
+dw('<table width=100% cellspacing=0 cellpadding=0 border=0><tr><td width="5"></td>');
+if (VENDORS.productID=="030E0007") {
+dw('<td width="575px">');
+} else
+dw('<td width="575px" bgcolor="#' + color.menu_bg + '">');
+dw('<img src="pictures/' + VENDORS.bannerLogo + '">');
+dw('</td><td width="5px;"></td><td width="5px;"></td></table>');
+}
+</script>
+</form>
+</body>
+
+<!-- Mirrored from 192.168.0.1/index.htm?showPC by HTTrack Website Copier/3.x [XR&CO'2014], Wed, 24 Feb 2016 01:58:16 GMT -->
+</html>

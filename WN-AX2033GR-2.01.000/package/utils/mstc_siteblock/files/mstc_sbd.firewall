@@ -1,0 +1,38 @@
+#!/bin/sh
+
+. /lib/functions.sh
+. /lib/functions/network.sh
+
+config_load siteblock
+config_get TIMEOUT "config" "timeout"
+
+config_load network
+config_get WAN_MODE "wan" "mode"
+
+[ -n "$TIMEOUT" ] && {
+        TIMEOUT="--timeout $TIMEOUT"
+}
+
+# get wan interface
+[ -n "$extifname" ] || network_get_device extifname wan
+
+#MSTC MBA Sean, the v6 mode use different wan interface
+if [ "${WAN_MODE}" = "v6plus" -o "${WAN_MODE}" = "transix" ]; then 
+	extifname="ip4ov6jp0"
+fi
+
+if [ "${WAN_MODE}" = "router" -o "${WAN_MODE}" = "v6plus" -o "${WAN_MODE}" = "transix" ]; then
+	chk_mod=`lsmod | grep ipt_SITEBLOCK`
+	[ -z "${chk_mod}" ] && {
+		insmod ipt_SITEBLOCK
+	}
+
+	iptables -A forwarding_rule -i br-lan -o ${extifname} -p tcp -j SITEBLOCK --trigger_step forward $TIMEOUT
+elif [ "${WAN_MODE}" = "ap" ]; then
+	chk_mod=`lsmod | grep ebt_siteblock`
+	[ -z "${chk_mod}" ] && {
+		insmod ebt_siteblock
+	}
+
+	ebtables -t filter -A FORWARD -p IPv4 --ip-proto tcp --ip-dport 80 -o eth1 -j SITEBLOCK $TIMEOUT
+fi

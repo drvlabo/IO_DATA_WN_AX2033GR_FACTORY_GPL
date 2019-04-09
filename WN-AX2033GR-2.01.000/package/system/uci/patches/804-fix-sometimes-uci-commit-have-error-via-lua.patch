@@ -1,0 +1,54 @@
+Index: uci-2014-04-11.1/lua/uci.c
+===================================================================
+--- uci-2014-04-11.1.orig/lua/uci.c	2017-03-23 11:04:18.339384170 +0800
++++ uci-2014-04-11.1/lua/uci.c	2017-03-23 11:13:50.545253635 +0800
+@@ -678,6 +678,7 @@
+ 	FILE *fp;
+ 	struct timespec ts;
+ 	int st;
++	struct uci_ptr tmp_ptr;
+ 	#endif
+ 
+ #ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
+@@ -795,14 +796,35 @@
+ 			#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
+ 			for (i=0; i<gint_pathc; i++) {
+ 				if(config[i]){
+-					uci_lookup_ptr(ctx, &ptr, config[i], true);
+-			#endif
+-			#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
+-					uci_commit(ctx, &ptr.p, false);
+-			#else
+-					uci_commit(ctx, &p, false);
++					if (strcmp(p->e.name, config[i]) != 0) {
++						if( 1 == checkConfigWhiteList(config[i]) ){
++							uci_lookup_ptr(ctx, &tmp_ptr, config[i], true);
++							snprintf(buf, sizeof(buf), "cat %s >> %s", tmp_ptr.p->path, CONFIG_ALL_UCI_COMMIT);
++							status = system(buf);
++							if(status < 0)
++							{
++								fprintf(stderr,"cmd: %s\t error: %s", buf, strerror(errno));
++								goto err;
++							}
++							if(WIFEXITED(status))
++							{
++								//printf("normal termination, exit status = %d\n", WEXITSTATUS(status));
++							}
++							else if(WIFSIGNALED(status))
++							{
++								fprintf(stderr,"abnormal termination,signal number =%d\n", WTERMSIG(status));
++							}
++							else if(WIFSTOPPED(status))
++							{
++								fprintf(stderr,"process stopped, signal number =%d\n", WSTOPSIG(status));
++							}
++						}
++					}
++					else {
+ 			#endif
++						uci_commit(ctx, &p, false);
+ 			#ifdef CONFIG_PACKAGE_uci_MSTC_DUAL_CONFIG_UCI_COMMIT
++					}
+ 				}
+ 			}			
+ 			#endif

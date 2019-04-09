@@ -1,0 +1,20 @@
+#!/bin/sh /etc/rc.common
+
+START=01
+MSTC_PERSIST=/sbin/mstc_persist
+
+write_default_update_flag() {
+	$MSTC_PERSIST write magic_num default
+}
+
+check_update_flag() {
+	magic_num=`$MSTC_PERSIST read magic_num`
+	if [ "$magic_num" == "Magic_Num_Error" -o "$magic_num" == "Persist_Data_Broken" ]; then
+		write_default_update_flag
+	fi
+}
+
+start() {
+	check_update_flag
+}
+

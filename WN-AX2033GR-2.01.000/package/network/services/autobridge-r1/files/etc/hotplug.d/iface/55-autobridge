@@ -1,0 +1,73 @@
+#!/bin/sh
+
+if [ -f "/tmp/etc_tmp/auto_switch_on" ]; then
+	[ ! -f "/tmp/etc_tmp/sec_chk_autoswitch" ] && {
+		auto_gpio_num=`uci -c /etc/buttons.d/ get buttons.auto_bridge_on.gpio_num`
+		switch_val=`gpio g $auto_gpio_num | awk '{print $4}' 2>/dev/null`
+		[ ! -z "$switch_val" ] && [ "$switch_val" != "1" ]&& {
+			rm -rf /tmp/etc_tmp/auto_switch_on
+			touch /tmp/etc_tmp/sec_chk_autoswitch
+			exit 0
+		}
+	}
+	
+	mode=`uci get network.wan.mode 2>/dev/null`
+	[ "$mode" != "ap" ] && {
+		ether_lan=`uci get network.lan.ifname 2>/dev/null`
+		ether_wan=`uci get network.wan.ifname 2>/dev/null`			
+		acquisition_ip=`uci get network.wan.proto 2>/dev/null`
+		[ "$acquisition_ip" = "dhcp" ] && [ ! -z $ether_lan ] && [ ! -z $ether_wan ] && {
+			wan_addr=`ifconfig $ether_wan | grep 'inet addr:' | sed 's/^.*addr://g' | awk '{print $1}' 2>/dev/null`
+			wan_mask=`ifconfig $ether_wan | grep 'inet addr:' | awk '{print $4}' | sed -e 's/Mask://' 2>/dev/null`
+			[ ! -z "$wan_addr" ] && {
+				wan_addr_class=`ifconfig $ether_wan | grep 'inet addr:' | sed 's/^.*addr://g' | awk '{print $1}' | sed -e 's/\(.*\)\.\(.*\)\.\(.*\)/\1/' 2>/dev/null`
+				[ "$wan_addr_class" = "192.168" ] && [ "$wan_mask" = "255.255.255.0" ] && {
+					gateway=`/sbin/route -n | grep "UG" | awk '{print $2}' 2>/dev/null`
+					lan_addr=`/sbin/ifconfig br-lan | grep 'inet addr:' | sed 's/^.*addr://g' | awk '{print $1}' 2>/dev/null`
+					[ "$gateway" = "$lan_addr" ] && {
+						/sbin/ifconfig br-lan 0.0.0.0
+						sleep 1
+					}
+					ret_val=`inetchk -i $ether_wan ; echo $?`
+					if [ "$ret_val" = "1" ]; then 
+						`echo "Auto Bridge reboot to take effect!!" > /dev/console`		
+						LUA_BIN=/usr/bin/lua
+						LUA_SRC=/usr/lib/lua/luci/controller/iodata/internet_mode_switch.lua
+						wan_mode="ap"
+						command="$LUA_BIN $LUA_SRC --wan_mode=$wan_mode"
+						eval $command
+					else
+						[ "$gateway" = "$lan_addr" ] && {
+							`echo "Auto Bridge:WAN DHCP peer gateway IP conflict with LAN IP!!" > /dev/console`
+							/sbin/ifconfig $ether_wan 0.0.0.0
+							/sbin/ifconfig br-lan $lan_addr
+							/sbin/ifconfig $ether_wan $wan_addr netmask $wan_mask
+						}
+					fi
+				}
+			}
+		}	
+	}
+else
+	#__MSTC__, Vincent: WAN DHCP client obtain ip but gateway conflict with LAN ip
+	mode=`uci get network.wan.mode 2>/dev/null`
+	[ "$mode" != "ap" ] && {
+		ether_lan=`uci get network.lan.ifname 2>/dev/null`
+		ether_wan=`uci get network.wan.ifname 2>/dev/null`
+		acquisition_ip=`uci get network.wan.proto 2>/dev/null`
+		[ "$acquisition_ip" = "dhcp" ] && [ ! -z $ether_lan ] && [ ! -z $ether_wan ] && {
+			wan_addr=`ifconfig $ether_wan | grep 'inet addr:' | sed 's/^.*addr://g' | awk '{print $1}' 2>/dev/null`
+			[ ! -z "$wan_addr" ] && {
+					wan_mask=`ifconfig $ether_wan | grep 'inet addr:' | awk '{print $4}' | sed -e 's/Mask://' 2>/dev/null`
+					gateway=`/sbin/route -n | grep "UG" | awk '{print $2}' 2>/dev/null`
+					lan_addr=`/sbin/ifconfig br-lan | grep 'inet addr:' | sed 's/^.*addr://g' | awk '{print $1}' 2>/dev/null`
+					ezsetup=`ps | grep cgi | grep -v grep 2>/dev/null`
+					[ "$gateway" = "$lan_addr" ] && [ -z "$ezsetup" ] && {
+						`echo "WAN DHCP peer gateway IP conflict with LAN IP!!" > /dev/console`			
+						/sbin/ifconfig $ether_wan 0.0.0.0
+						/sbin/ifconfig $ether_wan $wan_addr netmask $wan_mask
+					}
+			}
+		}
+	}
+fi

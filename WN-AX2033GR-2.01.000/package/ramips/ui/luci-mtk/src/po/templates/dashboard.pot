@@ -1,0 +1,170 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Configuration"
+msgstr ""
+
+msgid "Dashboard"
+msgstr ""
+
+msgid "LAN"
+msgstr ""
+
+msgid "LTE_ConnectionUpTime"
+msgstr ""
+
+msgid "LTE_FWVersion"
+msgstr ""
+
+msgid "LTE_FrequencyBand"
+msgstr ""
+
+msgid "LTE_IMEI"
+msgstr ""
+
+msgid "LTE_IMSI"
+msgstr ""
+
+msgid "LTE_ServiceProvider"
+msgstr ""
+
+msgid "LTE_SignalStrength"
+msgstr ""
+
+msgid "LTE_Status"
+msgstr ""
+
+msgid "Maintenance"
+msgstr ""
+
+msgid "Monitor"
+msgstr ""
+
+msgid "WAN_Status"
+msgstr ""
+
+msgid "channel"
+msgstr ""
+
+msgid "cpu_usage"
+msgstr ""
+
+msgid "current_date_time"
+msgstr ""
+
+msgid "dashboard_data"
+msgstr ""
+
+msgid "dashboard_item"
+msgstr ""
+
+msgid "day"
+msgstr ""
+
+msgid "device_host_name"
+msgstr ""
+
+msgid "device_info"
+msgstr ""
+
+msgid "device_model_name"
+msgstr ""
+
+msgid "device_status"
+msgstr ""
+
+msgid "fw_version"
+msgstr ""
+
+msgid "hr"
+msgstr ""
+
+msgid "iface"
+msgstr ""
+
+msgid "iface_down"
+msgstr ""
+
+msgid "iface_lan"
+msgstr ""
+
+msgid "iface_status"
+msgstr ""
+
+msgid "iface_up"
+msgstr ""
+
+msgid "iface_wan"
+msgstr ""
+
+msgid "iface_wlan"
+msgstr ""
+
+msgid "interface_status"
+msgstr ""
+
+msgid "interval_select_none"
+msgstr ""
+
+msgid "ip_addr"
+msgstr ""
+
+msgid "ip_subnet_mask"
+msgstr ""
+
+msgid "lan_info"
+msgstr ""
+
+msgid "lan_ipv6"
+msgstr ""
+
+msgid "mac_addr"
+msgstr ""
+
+msgid "memory_usage"
+msgstr ""
+
+msgid "min"
+msgstr ""
+
+msgid "msg_confirm_1"
+msgstr ""
+
+msgid "refresh_interval"
+msgstr ""
+
+msgid "refresh_now"
+msgstr ""
+
+msgid "sec"
+msgstr ""
+
+msgid "seconds"
+msgstr ""
+
+msgid "serial_number"
+msgstr ""
+
+msgid "system_resource"
+msgstr ""
+
+msgid "system_status"
+msgstr ""
+
+msgid "system_up_time"
+msgstr ""
+
+msgid "wan2_info"
+msgstr ""
+
+msgid "wan_info"
+msgstr ""
+
+msgid "welcome"
+msgstr ""
+
+msgid "welcome_title_message"
+msgstr ""
+
+msgid "wlan24G_info"
+msgstr ""

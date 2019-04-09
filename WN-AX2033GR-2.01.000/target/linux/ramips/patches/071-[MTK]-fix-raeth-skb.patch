@@ -1,0 +1,47 @@
+Index: linux-3.10.14/include/linux/skbuff.h
+===================================================================
+--- linux-3.10.14.orig/include/linux/skbuff.h	2015-12-31 11:56:19.000000000 +0800
++++ linux-3.10.14/include/linux/skbuff.h	2016-04-18 17:18:06.785601777 +0800
+@@ -1866,7 +1866,7 @@
+  */
+ #ifndef NET_SKB_PAD
+ #if defined (CONFIG_PPPOPPTP) || defined (CONFIG_PPPOL2TP)
+-#define NET_SKB_PAD             96
++#define NET_SKB_PAD             128
+ #define NET_SKB_PAD_ORIG        max(32, L1_CACHE_BYTES)
+ #else
+ #define NET_SKB_PAD             max(32, L1_CACHE_BYTES)
+Index: linux-3.10.14/drivers/net/raeth/raether.c
+===================================================================
+--- linux-3.10.14.orig/drivers/net/raeth/raether.c	2016-04-18 17:18:06.769601777 +0800
++++ linux-3.10.14/drivers/net/raeth/raether.c	2016-04-18 17:20:38.586363162 +0800
+@@ -982,7 +982,13 @@
+         else
+ #endif  /* CONFIG_RAETH_HW_LRO */
+ #ifdef CONFIG_ETH_SLAB_ALLOC_SKB
+-		skb = alloc_skb(MAX_RX_LENGTH + NET_IP_ALIGN, GFP_ATOMIC);
++		skb = alloc_skb(MAX_RX_LENGTH + NET_IP_ALIGN + NET_SKB_PAD, GFP_ATOMIC);
++		skb_reserve(skb, NET_SKB_PAD);
++#elif defined (CONFIG_ETH_PAGE_ALLOC_SKB)
++		//__MSTC__, Marlon: Reference MTK's modification. Add NET_SKB_PAD when you enable ETH_SKB_ALLOC_SELECT
++		skb = __dev_alloc_skb(MAX_RX_LENGTH + NET_IP_ALIGN + NET_SKB_PAD, GFP_ATOMIC);
++		//__MSTC__, Marlon: Uses Unknown. If necessary ,you can enable it.
++		//skb_reserve(skb, NET_SKB_PAD);
+ #else
+     		skb = __dev_alloc_skb(MAX_RX_LENGTH + NET_IP_ALIGN, GFP_ATOMIC);
+ #endif
+@@ -3279,7 +3285,13 @@
+                 ei_local->netrx0_skbuf[i] = skbmgr_dev_alloc_skb2k();
+ #else
+ #ifdef CONFIG_ETH_SLAB_ALLOC_SKB
+-		ei_local->netrx0_skbuf[i] = alloc_skb(MAX_RX_LENGTH + NET_IP_ALIGN, GFP_ATOMIC);
++		ei_local->netrx0_skbuf[i] = alloc_skb(MAX_RX_LENGTH + NET_IP_ALIGN + NET_SKB_PAD, GFP_ATOMIC);
++		skb_reserve(ei_local->netrx0_skbuf[i], NET_SKB_PAD);
++#elif defined (CONFIG_ETH_PAGE_ALLOC_SKB)
++		//__MSTC__, Marlon: Reference MTK's modification. Add NET_SKB_PAD when you enable ETH_SKB_ALLOC_SELECT
++		ei_local->netrx0_skbuf[i] = dev_alloc_skb(MAX_RX_LENGTH + NET_IP_ALIGN + NET_SKB_PAD);
++		//__MSTC__, Marlon: Uses Unknown. If necessary ,you can enable it.
++		//skb_reserve(ei_local->netrx0_skbuf[i], NET_SKB_PAD);
+ #else
+                 ei_local->netrx0_skbuf[i] = dev_alloc_skb(MAX_RX_LENGTH + NET_IP_ALIGN);
+ #endif

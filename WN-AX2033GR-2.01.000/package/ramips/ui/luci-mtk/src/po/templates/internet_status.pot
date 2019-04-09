@@ -1,0 +1,110 @@
+msgid "APN"
+msgstr ""
+
+msgid "Connect"
+msgstr ""
+
+msgid "Disconnect"
+msgstr ""
+
+msgid "LTE_Auto_Connect_From_Boot"
+msgstr ""
+
+msgid "LTE_CellID"
+msgstr ""
+
+msgid "LTE_ConnectionUpTime"
+msgstr ""
+
+msgid "LTE_Connection_Status"
+msgstr ""
+
+msgid "LTE_DeviceIMEI"
+msgstr ""
+
+msgid "LTE_Device_Status"
+msgstr ""
+
+msgid "LTE_Downlink_Bandwidth"
+msgstr ""
+
+msgid "LTE_Downlink_Frequency"
+msgstr ""
+
+msgid "LTE_DynamicAPN"
+msgstr ""
+
+msgid "LTE_FrequencyBand"
+msgstr ""
+
+msgid "LTE_Maunal_Connection"
+msgstr ""
+
+msgid "LTE_RSRP"
+msgstr ""
+
+msgid "LTE_RSRQ"
+msgstr ""
+
+msgid "LTE_RoamingStatus"
+msgstr ""
+
+msgid "LTE_SIMCardIMSI"
+msgstr ""
+
+msgid "LTE_ServiceProvider"
+msgstr ""
+
+msgid "LTE_SignalStrength"
+msgstr ""
+
+msgid "LTE_Status"
+msgstr ""
+
+msgid "LTE_Uplink_Bandwidth"
+msgstr ""
+
+msgid "LTE_Uplink_Frequency"
+msgstr ""
+
+msgid "Set"
+msgstr ""
+
+msgid "WAN_Status"
+msgstr ""
+
+msgid "dashboard_data"
+msgstr ""
+
+msgid "dashboard_item"
+msgstr ""
+
+msgid "day"
+msgstr ""
+
+msgid "hr"
+msgstr ""
+
+msgid "interval_select_none"
+msgstr ""
+
+msgid "min"
+msgstr ""
+
+msgid "msg_config"
+msgstr ""
+
+msgid "poll_interval"
+msgstr ""
+
+msgid "sec"
+msgstr ""
+
+msgid "seconds"
+msgstr ""
+
+msgid "set_interval"
+msgstr ""
+
+msgid "stop_interval"
+msgstr ""

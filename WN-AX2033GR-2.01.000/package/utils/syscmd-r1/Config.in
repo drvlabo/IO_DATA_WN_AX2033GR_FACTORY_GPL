@@ -1,0 +1,123 @@
+if PACKAGE_syscmd-r1
+		menu"sys command"
+ 		config SYSCMD_CMD_ATSH
+ 		bool "atsh"
+ 		default n
+
+ 		config SYSCMD_CMD_ATWZ
+ 		bool "atwz"
+ 		default n
+
+		config SYSCMD_WAN_MAC_SHIFT
+		string "shift value of WAN MAC"
+		depends SYSCMD_CMD_ATWZ
+		default 1
+		
+		config SYSCMD_WLAN1_MAC_SHIFT
+		string "shift value of WLAN1 MAC"
+		depends SYSCMD_CMD_ATWZ
+		default 2
+		
+		config SYSCMD_WLAN2_MAC_SHIFT
+		string "shift value of WLAN2 MAC"
+		depends SYSCMD_CMD_ATWZ
+		default 3
+
+ 		config SYSCMD_CMD_IF
+ 		bool "if"
+ 		default n
+
+ 		config SYSCMD_CMD_ATSN
+ 		bool "atsn"
+ 		default n
+	
+		config SYSCMD_CMD_IMEI
+ 		bool "imei"
+ 		default n
+
+		config SYSCMD_CMD_IMSI
+		bool "imsi"
+		default n
+
+		config SYSCMD_CMD_LEDCTL
+                bool "ledctl"
+                default n
+		
+		config SYSCMD_CMD_OLEDCTL
+                bool "oledctl"
+                default n
+
+		config SYSCMD_CMD_BTT
+		bool "btt"
+		default n
+
+		config SYSCMD_CMD_SIM
+		bool "sim"
+		default n
+
+		config SYSCMD_CMD_ROMRESET
+		bool "romreset"
+		default n
+
+		config SYSCMD_CMD_BUZZ
+		bool "buzz"
+		default n
+
+		config SYSCMD_CMD_LTEFW
+		bool "ltefw"
+		default n
+
+		config SYSCMD_CMD_ATLTE
+		bool "atlte"
+		default n
+
+		config SYSCMD_CMD_SDCC
+		bool "sdcc"
+		default n
+
+		config SYSCMD_CMD_FDANT
+                bool "fdant"
+                default n
+
+		config SYSCMD_CMD_ATHWVER
+		bool "athwver"
+		default n
+
+		config SYSCMD_CMD_USB
+                bool "usb"
+                default n
+
+		config SYSCMD_CMD_SETIMEI
+                bool "setimei"
+                default n
+
+		config SYSCMD_CMD_PHONETEST
+                bool "phonetest"
+                default n
+
+		config SYSCMD_CMD_PSPEED
+                bool "pspeed"
+                default n
+
+		config SYSCMD_CMD_CALCHK
+				bool "calchk"
+				default n
+
+		config SYSCMD_CMD_MRD
+		bool "mrd"
+		default n
+		
+		config SYSCMD_CMD_HTP
+		bool "htp"
+		default n
+
+		config SYSCMD_CMD_LOADROM
+		bool "loadrom"
+		default n
+
+		config SYSCMD_CMD_DEBUGFLAG
+		bool "debugflag"
+		default n
+
+		endmenu
+endif

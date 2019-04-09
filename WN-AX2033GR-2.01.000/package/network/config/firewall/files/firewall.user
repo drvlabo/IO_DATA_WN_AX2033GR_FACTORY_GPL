@@ -1,0 +1,67 @@
+# This file is interpreted as shell script.
+# Put your custom iptables rules here, they will
+# be executed with each firewall (re-)start.
+
+# Internal uci firewall chains are flushed and recreated on reload, so
+# put custom rules into the root chains e.g. INPUT or FORWARD or into the
+# special user chains, e.g. input_wan_rule or postrouting_lan_rule.
+
+	siteblock=`uci get siteblock.config.enabled`
+	urlfilter=`uci get siteblock.urlfilter.enabled`
+	parentalcontrol=`uci get parentalcontrol.config.enable_time_limit`
+	guestssid=`uci get wireless.mt7603e.guest_ssid_seperation`
+
+	if [ "$guestssid" = "1" -o "$siteblock" = "1" -o "$urlfilter" = "1" -o "$parentalcontrol" = "1" -o "$v6jp" = "1" ]; then
+		[ ! -z "`lsmod | grep ebtable_broute`" ] && {
+			rmmod ebtable_broute
+		}
+		[ ! -z "`lsmod | grep ebtable_nat`" ] && {
+			rmmod ebtable_nat
+		}
+		[ -z "`lsmod | grep ebtables`" ] && {
+			insmod ebtables
+		}
+		[ -z "`lsmod | grep ebtable_filter`" ] && {
+			insmod ebtable_filter
+		}
+		ebtables -t filter -F
+	else
+		ebtables -t filter -F
+		ebtables -X guestssid
+		[ ! -z "`lsmod | grep ebtable_broute`" ] && {
+			rmmod ebtable_broute
+		}
+		[ ! -z "`lsmod | grep ebtable_filter`" ] && {
+			rmmod ebtable_filter
+		}
+		[ ! -z "`lsmod | grep ebtable_nat`" ] && {
+			rmmod ebtable_nat
+		}
+		[ ! -z "`lsmod | grep ebtables`" ] && {
+			rmmod ebtables
+		}
+	fi
+
+	case $guestssid in
+		"0")
+			iptables -t filter -D input_lan_rule -i br-lan -m mark --mark 80 -j DROP
+			;;
+		"1")
+			ebtables -N guestssid
+			ebtables -P guestssid DROP
+			ebtables -t filter -A FORWARD -i ra1 -j guestssid
+			ebtables -t filter -A FORWARD -o ra1 -j guestssid
+
+			wanmode=`uci get network.wan.mode`
+
+			if [ $wanmode = "ap" ]; then
+				ebtables -t filter -A guestssid -i ra1 -o eth1 -j ACCEPT
+				ebtables -t filter -A guestssid -i eth1 -o ra1 -j ACCEPT
+			fi
+			ebtables -t filter -A INPUT -i ra1 -p ipv4 --ip-protocol tcp --ip-destination-port 80 -j mark --set-mark 80 --mark-target CONTINUE
+			iptables -t filter -A input_lan_rule -i br-lan -m mark --mark 80 -j DROP
+			;;
+		*)
+			echo "wrong value in Guest SSID settings"
+			;;
+	esac

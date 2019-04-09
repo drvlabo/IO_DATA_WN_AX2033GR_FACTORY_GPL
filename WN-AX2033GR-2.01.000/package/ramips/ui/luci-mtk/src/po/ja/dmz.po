@@ -1,0 +1,35 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "DMZ"
+msgstr "DMZ"
+
+msgid "DMZ_Server_IP"
+msgstr "DMZ Server IP Address : "
+
+msgid "IP_Error_1"
+msgstr "Error. IP address is empty."
+
+msgid "IP_Error_2"
+msgstr "It should be a [0-9] number."
+
+msgid "IP_Error_3"
+msgstr "IP adress format error."
+
+msgid "NAT_Error_2"
+msgstr "Invalid default server ip address!\nIt should be located in the same subnet of current LAN IP address."
+
+msgid "Network"
+msgstr "Network"
+
+msgid "msg_config"
+msgstr "Configuration Update is proceeding. Please Wait..."
+
+msgid "DMZ Description."
+msgstr "DMZ設定をおこなうことで、インターネット上にDMZホストによるサービスを提供することができます。ただし、ローカルプライベートネットワーク(LAN)への不正アクセス等、外部からの侵入を防止することができなくなりますので注意が必要です。通常、DMZホストには、ウェブ(HTTP)サーバー、FTPサーバー、SMTP(メール)サーバー等、インターネットから直接アクセスが必要なデバイスが該当します。"
+
+msgid "Local IP address"
+msgstr "ローカルIPアドレス"
+
+msgid "IP address is empty."
+msgstr "IPアドレスを入力してください。"

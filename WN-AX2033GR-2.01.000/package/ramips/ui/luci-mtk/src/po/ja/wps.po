@@ -1,0 +1,89 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Configured"
+msgstr ""
+
+msgid "Connect"
+msgstr "接続"
+
+msgid ""
+"If the equipment to be connected there is a PIN code , enter the PIN code "
+"below ,and please click on the [ connection ] button ."
+msgstr "接続する機器にPINコードがある場合は、下にPINコードを入力し、［接続］ボタンをクリックしてください。"
+
+msgid ""
+"If there is a button on the device to be connected , you can either click on "
+"the button below , press the [WPS] button on the body to the WPS lamp "
+"blinks , please press the button of the device to be connected ."
+msgstr "接続する機器にボタンがある場合は、下のボタンをクリックするか、WPSランプが点滅するまで本体の［WPS］ボタンを押し、接続する機器のボタンを押してください。"
+
+msgid "Pin Code"
+msgstr "PINコード"
+
+msgid "Reset WPS Settings"
+msgstr "設定をリセットする"
+
+msgid "Setup"
+msgstr "設定"
+
+msgid "Start the WPS.\\n"
+msgstr "WPSを開始します。"
+
+msgid ""
+"Start the WPS.\\n Please press the WPS button on the handset to be connected "
+"within two minutes"
+msgstr "WPSを開始します。\\n2分以内に接続する子機のWPSボタンを押してください。"
+
+msgid "WPS"
+msgstr ""
+
+msgid "WPS Information"
+msgstr "WPS情報"
+
+msgid "WPS PBC Settings"
+msgstr "WPSプッシュボタン設定"
+
+msgid "WPS Pin Code Settings"
+msgstr "WPS PINコード設定"
+
+msgid "WPS Setup information"
+msgstr "Wi-Fi Protected Setup情報"
+
+msgid "When the SSID notification is disabled , you can not use WPS."
+msgstr "SSID通知が無効に設定されているときは、WPSを使用できません。"
+
+msgid "When the encryption of SSID1 is set to WEP, you can not use the WPS."
+msgstr "SSID1の暗号化がWEPに設定されているときは、WPSを使用できません。"
+
+msgid "When the encryption of SSID2 is set to WEP, you can not use the WPS."
+msgstr "SSID2の暗号化がWEPに設定されているときは、WPSを使用できません。"
+
+msgid "When the encryption of SSID1 is disabled , you can not use WPS."
+msgstr "SSID1の暗号化が無効に設定されているときは、WPSを使用できません。"
+
+msgid "When the encryption of SSID2 is disabled , you can not use WPS."
+msgstr "SSID2の暗号化が無効に設定されているときは、WPSを使用できません。"
+
+msgid "When the MAC Filter is disabled , you can not use WPS."
+msgstr "MACアドレスフィルターが有効に設定されているときは、WPSを使用できません。"
+
+msgid "effective"
+msgstr "有効"
+
+msgid ""
+"if you want to enter the PIN code in the device, please enter the PIN code "
+"below"
+msgstr "接続する機器に、PINコードを入力する場合は、下のPINコードを入力してください。"
+
+msgid "it will reset the wireless setting"
+msgstr "無線設定をリセットします。"
+
+msgid "unConfigured"
+msgstr ""
+
+msgid "Please enter the correct pin code!"
+msgstr "正しいPINコードを入力してください。"
+
+msgid "mobile Setup"
+msgstr "セットアップ"

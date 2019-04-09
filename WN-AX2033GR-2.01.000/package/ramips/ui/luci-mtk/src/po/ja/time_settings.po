@@ -1,0 +1,17 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "NTP Server:"
+msgstr "NTPサーバー："
+
+msgid "Time Settings"
+msgstr "時刻の設定"
+
+msgid "Use NTP Server"
+msgstr "NTPサーバーとの同期"
+
+msgid "You can set the time settings here"
+msgstr "時刻の設定をおこないます。"
+
+msgid "how to set time:"
+msgstr "時刻の設定方法："

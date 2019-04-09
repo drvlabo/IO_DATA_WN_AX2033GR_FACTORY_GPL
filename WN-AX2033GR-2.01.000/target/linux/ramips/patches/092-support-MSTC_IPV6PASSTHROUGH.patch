@@ -1,0 +1,136 @@
+Index: linux-3.10.14/net/Kconfig
+===================================================================
+--- linux-3.10.14.orig/net/Kconfig	2015-12-31 11:56:27.000000000 +0800
++++ linux-3.10.14/net/Kconfig	2016-05-18 19:29:08.897550912 +0800
+@@ -1,7 +1,6 @@
+ #
+ # Network configuration
+ #
+-
+ menuconfig NET
+ 	bool "Networking support"
+ 	select NLATTR
+@@ -23,6 +22,11 @@
+ 
+ if NET
+ 
++config MSTC_IPV6PASSTHROUGH
++	bool "MSTC IPv6 Passthrough"
++	help
++	  Kernel HOOK for MSTC IPv6 Passthrough (netif_rx/netif_receive_skb)
++
+ config WANT_COMPAT_NETLINK_MESSAGES
+ 	bool
+ 	help
+Index: linux-3.10.14/net/core/dev.c
+===================================================================
+--- linux-3.10.14.orig/net/core/dev.c	2015-12-31 11:56:28.000000000 +0800
++++ linux-3.10.14/net/core/dev.c	2016-05-18 19:29:08.897550912 +0800
+@@ -3152,6 +3152,13 @@
+ 	return NET_RX_DROP;
+ }
+ 
++#if defined (CONFIG_MSTC_IPV6PASSTHROUGH)
++long mstc_ipv6passthrough_enable = 0;
++unsigned long (*mstcIpv6PassthroughHandle_p)(struct sk_buff *skb) = NULL;
++EXPORT_SYMBOL(mstcIpv6PassthroughHandle_p);
++EXPORT_SYMBOL(mstc_ipv6passthrough_enable);
++#endif
++
+ /**
+  *	netif_rx	-	post buffer to the network code
+  *	@skb: buffer to post
+@@ -3171,6 +3178,20 @@
+ {
+ 	int ret;
+ 
++#if defined (CONFIG_MSTC_IPV6PASSTHROUGH)
++	if (mstc_ipv6passthrough_enable == 1)
++	{
++		if (mstcIpv6PassthroughHandle_p != NULL)
++		{
++			ret = mstcIpv6PassthroughHandle_p(skb);
++			if (ret == 0)
++				return NET_RX_DROP;
++			else if (ret == 2)
++				return NET_RX_SUCCESS;
++		}
++	}
++#endif
++
+ 	/* if netpoll wants it, pretend we never saw it */
+ 	if (netpoll_rx(skb))
+ 		return NET_RX_DROP;
+@@ -3609,6 +3630,20 @@
+  */
+ int netif_receive_skb(struct sk_buff *skb)
+ {
++#if defined (CONFIG_MSTC_IPV6PASSTHROUGH)
++	int ret;
++	if (mstc_ipv6passthrough_enable == 1)
++	{
++		if (mstcIpv6PassthroughHandle_p != NULL)
++		{
++			ret = mstcIpv6PassthroughHandle_p(skb);
++			if (ret == 0)
++				return NET_RX_DROP;
++			else if (ret == 2)
++				return NET_RX_SUCCESS;
++		}
++	}
++#endif
+ 	net_timestamp_check(netdev_tstamp_prequeue, skb);
+ 
+ 	if (skb_defer_rx_timestamp(skb))
+Index: linux-3.10.14/net/bridge/br_fdb.c
+===================================================================
+--- linux-3.10.14.orig/net/bridge/br_fdb.c	2015-12-31 11:56:27.000000000 +0800
++++ linux-3.10.14/net/bridge/br_fdb.c	2016-05-18 19:29:08.897550912 +0800
+@@ -258,6 +258,7 @@
+ 	}
+ 	spin_unlock_bh(&br->hash_lock);
+ }
++EXPORT_SYMBOL(br_fdb_delete_by_port);
+ 
+ /* No locking or refcounting, assumes caller has rcu_read_lock */
+ struct net_bridge_fdb_entry *__br_fdb_get(struct net_bridge *br,
+@@ -278,6 +279,9 @@
+ 
+ 	return NULL;
+ }
++#if 1 //Terence
++EXPORT_SYMBOL(__br_fdb_get);
++#endif
+ 
+ #if IS_ENABLED(CONFIG_ATM_LANE)
+ /* Interface used by ATM LANE hook to test
+@@ -487,6 +491,7 @@
+ 		spin_unlock(&br->hash_lock);
+ 	}
+ }
++EXPORT_SYMBOL(br_fdb_update);
+ 
+ static int fdb_to_nud(const struct net_bridge_fdb_entry *fdb)
+ {
+Index: linux-3.10.14/net/bridge/br_forward.c
+===================================================================
+--- linux-3.10.14.orig/net/bridge/br_forward.c	2015-12-31 11:56:27.000000000 +0800
++++ linux-3.10.14/net/bridge/br_forward.c	2016-05-18 19:31:04.504331949 +0800
+@@ -115,6 +115,9 @@
+ 
+ 	kfree_skb(skb);
+ }
++#if 1 /* __MSTC__, Vincent: Ipv6 passthrouh*/
++EXPORT_SYMBOL(br_deliver);
++#endif
+ 
+ /* called with rcu_read_lock */
+ void br_forward(const struct net_bridge_port *to, struct sk_buff *skb, struct sk_buff *skb0)
+@@ -207,6 +210,7 @@
+ {
+ 	br_flood(br, skb, NULL, __br_deliver);
+ }
++EXPORT_SYMBOL(br_flood_deliver);
+ 
+ /* called under bridge lock */
+ void br_flood_forward(struct net_bridge *br, struct sk_buff *skb,

@@ -1,0 +1,20 @@
+#!/bin/sh
+
+[ "$ACTION" = ifup -o "$ACTION" = ifupdate ] || exit 0
+[ "$ACTION" = ifupdate -a -z "$IFUPDATE_ADDRESSES" -a -z "$IFUPDATE_DATA" ] && exit 0
+
+#echo "[SeanDebug] firewall hotplug trigger INTERFACE:$INTERFACE ACTION:$ACTION " > /dev/console
+#echo "[SeanDebug] IFUPDATE_ADDRESSES:$IFUPDATE_ADDRESSES IFUPDATE_DATA:$IFUPDATE_DATA !!!" > /dev/console
+
+/etc/init.d/firewall enabled || exit 0
+
+#MSTC MBA Sean, do not run firewall again if we run v6 plus
+[ "$wan_mode" = "transix" -o "$wan_mode" = "v6plus" ] && exit 0
+
+#echo "[SeanDebug] run firewall hotplug fw3 -q network!!!" > /dev/console
+fw3 -q network "$INTERFACE" >/dev/null || exit 0
+
+#echo "[SeanDebug] run firewall hotplug fw3 reload!!!" > /dev/console
+logger -t firewall "Reloading firewall due to $ACTION of $INTERFACE ($DEVICE)"
+fw3 -q reload
+
